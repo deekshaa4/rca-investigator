@@ -27,13 +27,11 @@ from .schema import (
     FactorCategory,
     Priority,
     RCAReport,
-    Sufficiency,
     Verdict,
 )
+from .sufficiency import CAUSE_GRACE_MIN, assess, engine_factor, find_candidate
 
 MAX_FACTORS = 3
-CAUSE_GRACE_MIN = 5  # minutes after the change a cause may still be first reported
-CHANGE_SOURCES = {"deploys", "config_changes", "tickets", "alerts"}
 
 SYSTEM_PROMPT = """You are a careful incident investigator doing root cause analysis.
 Rules:
@@ -119,7 +117,7 @@ def build_evidence(analysis: ChangeAnalysis, hits: list[RecordHit]) -> list[dict
         when = f"{abs(h.minutes_from_change):.0f} min {'before' if h.minutes_from_change <= 0 else 'after'} the change"
         where = ", ".join(v for v in (rec.get("service"), rec.get("region")) if v) or "all"
         evidence.append({"kind": "record", "source": rec["source"],
-                         "minutes": h.minutes_from_change,
+                         "minutes": h.minutes_from_change, "record_id": rec["id"],
                          "summary": f"{rec['text']} ({where}; {when}; record {rec['id']})",
                          "timestamp": rec["timestamp"]})
     for i, e in enumerate(evidence, start=1):
@@ -143,29 +141,6 @@ def build_prompt(question: str, evidence: list[dict]) -> str:
         "addresses."),
     ]
     return "\n".join(lines)
-
-
-def preliminary_sufficiency(analysis: ChangeAnalysis, hits: list[RecordHit],
-                            n_factors: int) -> Sufficiency:
-    """A simple first version; the full evidence-sufficiency check comes later."""
-    if not analysis.detected:
-        return Sufficiency(verdict=Verdict.INSUFFICIENT, score=0.0,
-                           reasons=["No significant change was found in the data."],
-                           missing_data=["A clearer description of what changed and when."])
-    causes = [h for h in hits if h.record["source"] in CHANGE_SOURCES and h.score >= 0.3]
-    if causes and n_factors:
-        return Sufficiency(
-            verdict=Verdict.SUFFICIENT, score=round(min(1.0, causes[0].score + 0.3), 2),
-            reasons=[(f"A change event ({causes[0].record['source']}) matches the affected "
-                     f"segment and timing ({'; '.join(causes[0].reasons[:2])}).")],
-        )
-    return Sufficiency(
-        verdict=Verdict.INSUFFICIENT, score=round(hits[0].score if hits else 0.0, 2),
-        reasons=[("No deploy, config change, ticket or alert lines up with the affected "
-                 "segment at the time of the change.")],
-        missing_data=["Deploy and config history for the affected segment",
-                      "Logs or traces from the affected segment around the change"],
-    )
 
 
 def _clean(reply: dict, evidence: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
@@ -227,7 +202,12 @@ def investigate(incident_id: str, question: str, metric: str, metrics: pd.DataFr
                                  system=SYSTEM_PROMPT)
         factors, ruled_out, actions = _clean(reply, evidence)
 
-    sufficiency = preliminary_sufficiency(analysis, hits, len(factors))
+    if analysis.detected and not factors:
+        # No usable factor from the model: fall back to the engines' best candidate.
+        cand = find_candidate(hits, factors, evidence)
+        if cand is not None and cand.evidence_id:
+            factors = [engine_factor(cand, analysis)]
+    sufficiency = assess(analysis, hits, factors, evidence)
     if sufficiency.verdict == Verdict.INSUFFICIENT:
         # Without enough evidence, present factors as unconfirmed rather than as the answer.
         for f in factors:

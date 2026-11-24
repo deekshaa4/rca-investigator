@@ -13,7 +13,7 @@ A focused 2-week build, using only free and open tools.
 
 ## Week 2: trust and presentation (v1.0)
 
-- [ ] Evidence sufficiency check: timing match, agreement between numbers and records, ruled-out alternatives, data gaps
+- [x] Evidence sufficiency check: timing match, agreement between numbers and records, ruled-out alternatives, data gaps
 - [ ] Harder incidents: noise, red herrings, overlapping changes, missing records
 - [ ] Evaluation: top-1 / top-3 cause accuracy, citation accuracy, invented-evidence rate, correct "insufficient" verdicts
 - [ ] Web interface with an animated investigator bot that shows each step live and presents the report

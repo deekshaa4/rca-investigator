@@ -98,9 +98,25 @@ Current results on the 16 explainable incidents: **true cause ranked first in 16
 1. Python gathers the facts (numerical and text engines) and numbers them as evidence `E1`, `E2`, ...
 2. The model reasons only over that evidence: contributing factors with a "5 Whys" chain, ruled-out alternatives, corrective and preventive actions. Its reply is constrained to a JSON schema.
 3. Guardrails check the reply: invented evidence IDs are removed, factors without evidence are dropped, factors resting only on records *after* the change (symptoms) are dropped, and the report must pass schema validation.
-4. When the evidence is insufficient, factors are shown as **possible leads (not confirmed)** with low confidence, together with the data that would settle the question.
+4. If the model gives no usable factor, the engines' best candidate is used instead, so a report never depends on the model alone.
+5. When the evidence is insufficient, factors are shown as **possible leads (not confirmed)** with low confidence, together with the data that would settle the question.
 
-Example reports from `qwen2.5:3b`: [bad deploy](examples/reports/bad_deploy.md), [traffic spike](examples/reports/traffic_spike.md).
+Example reports from `qwen2.5:3b`: [bad deploy](examples/reports/bad_deploy.md), [traffic spike](examples/reports/traffic_spike.md), [no clear cause](examples/reports/no_clear_cause.md).
+
+## Is the evidence enough?
+
+`sufficiency.py` decides the verdict with transparent rules, not the model's opinion. Each check is listed in the report with ✓ or ✗:
+
+| Check | Weight | Passes when |
+|---|---|---|
+| Timing | 0.35 | a deploy, config change, ticket or alert happened just before the change (or names its time) |
+| Segment | 0.15 | that event concerns the affected service/region |
+| Symptoms | 0.15 | logs or alerts after the change confirm the problem |
+| Metrics agree | 0.10 | a traffic cause comes with a traffic rise; any other cause does not |
+| Distinct | 0.10 | no competing change event fits as well |
+| Cited | 0.15 | the main factor actually rests on that event |
+
+Score ≥ 0.7 is **sufficient**, ≥ 0.45 **partial**, otherwise **insufficient**. Without an event that is both close in time and in the affected segment there is no credible cause, so the verdict is insufficient. Every failed check adds the data that would help to the report.
 
 ## Results (v0.1)
 
@@ -125,6 +141,7 @@ src/rca_investigator/
   analyze.py    numerical engine: change point, size of change, affected segment
   records.py    text engine: ranked records with reasons, event timeline
   investigate.py  evidence pack, model prompt, guardrails, Markdown report
+  sufficiency.py  rules-based evidence-sufficiency verdict
   evaluate.py   scores reports against the known truth
   cli.py        command-line interface (`rca ...`)
 schemas/        JSON Schema of the report

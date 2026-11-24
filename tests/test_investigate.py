@@ -68,11 +68,11 @@ def test_no_clear_cause_is_insufficient_and_capped():
     assert all(f.confidence <= 0.3 for f in report.contributing_factors)
 
 
-def test_no_llm_still_gives_a_report():
+def test_no_llm_falls_back_to_engine_factor():
     inc = generate_incident("INC-T", "config_change", seed=3)
     report = investigate("INC-T", inc.question, inc.metric, inc.metrics, inc.records, None)
-    assert report.contributing_factors == []
-    assert report.sufficiency.verdict.value == "insufficient"
+    assert report.contributing_factors[0].category.value == "config_change"
+    assert report.sufficiency.verdict.value == "sufficient"
     assert "## Evidence" in to_markdown(report)
 
 
