@@ -1,0 +1,14 @@
+{
+  "scenario": "dependency_outage",
+  "category": "dependency",
+  "metric": "error_rate",
+  "segment": {
+    "service": "search"
+  },
+  "change_start": "2026-03-16T11:05:00Z",
+  "cause_record_ids": [
+    "R013"
+  ],
+  "expected_verdict": "sufficient",
+  "twist": "red_herring_early"
+}

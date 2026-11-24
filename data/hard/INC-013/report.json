@@ -1,0 +1,187 @@
+{
+  "incident_id": "INC-013",
+  "question": "Why did the p95 latency go up on 16 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "region": "us-east"
+    },
+    "change_start": "2026-03-16T04:40:00Z",
+    "baseline_value": 137.4007536257936,
+    "current_value": 270.37548041333804,
+    "relative_change": 0.9678,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The deployment of catalog v3.20 likely caused the increase in p95 latency.",
+      "category": "deployment",
+      "confidence": 0.3,
+      "why_chain": [
+        "The deployment of catalog v3.20 introduced changes that affected the system's performance.",
+        "The change in catalog v3.20 led to a rise in request volume, which in turn increased p95 latency.",
+        "The rise in request volume caused the autoscaler to scale out, leading to increased latency."
+      ],
+      "evidence_ids": [
+        "E6",
+        "E2",
+        "E4",
+        "E5",
+        "E7"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The error rate increase could be a symptom of the underlying issues.",
+      "category": "unknown",
+      "confidence": 0.3,
+      "why_chain": [
+        "The error rate increase could be due to the deployment of catalog v3.20.",
+        "The deployment of catalog v3.20 may have introduced bugs or changes that affected error handling.",
+        "The bugs or changes led to an increase in error rate, which could be a symptom of the underlying issues."
+      ],
+      "evidence_ids": [
+        "E4",
+        "E6"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in p95 latency was due to a configuration change.",
+      "reason": "No evidence supports a configuration change as the cause of the increase in p95 latency.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The increase in p95 latency was due to a dependency issue with an external service.",
+      "reason": "No evidence supports a dependency issue with an external service as the cause of the increase in p95 latency.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The increase in p95 latency was due to a sudden increase in network traffic.",
+      "reason": "The increase in request volume and error rate are more likely causes than a sudden increase in network traffic.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for region us-east rose from 137 ms to 270 ms (+97%), with a change point at 2026-03-16T04:40:00Z.",
+      "timestamp": "2026-03-16T04:40:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in region us-east: 4 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.02).",
+      "timestamp": "2026-03-16T04:40:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for region us-east rose (2707 per 5 min before, 10491 per 5 min after, +288%).",
+      "timestamp": "2026-03-16T04:40:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for region us-east rose (0.40% before, 0.78% after, +97%).",
+      "timestamp": "2026-03-16T04:40:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Request volume 3x normal in us-east (us-east; 12 min after the change; record R009)",
+      "timestamp": "2026-03-16T04:52:00Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v3.20 to us-east (routine release) (catalog, us-east; 126 min before the change; record R008)",
+      "timestamp": "2026-03-16T02:33:27Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "autoscaler: scaling out, 4 new instances requested (us-east; 20 min after the change; record R010)",
+      "timestamp": "2026-03-16T05:00:00Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.4,
+    "reasons": [
+      "\u2717 The closest change event is 126 min before the change, too far to be convincing.",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 2 log/alert record(s) after the change agree with the numbers.",
+      "\u2717 Request volume also rose, so a traffic explanation is still open.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records from the hour before the change",
+      "Traffic source breakdown (campaigns, bots, partners)"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the catalog v3.20 deployment to revert the changes introduced by the deployment.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the system closely for any further changes or issues related to the catalog v3.20 deployment.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and optimize the autoscaler configuration to ensure it scales appropriately under normal and increased load conditions.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

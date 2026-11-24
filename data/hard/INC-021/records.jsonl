@@ -1,0 +1,21 @@
+{"id": "R001", "timestamp": "2026-03-06T01:00:56Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Customer reports a typo on the help page."}
+{"id": "R002", "timestamp": "2026-03-06T08:20:13Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: INFO certificate check passed"}
+{"id": "R003", "timestamp": "2026-03-06T09:45:23Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R004", "timestamp": "2026-03-06T14:25:44Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: INFO certificate check passed"}
+{"id": "R005", "timestamp": "2026-03-06T15:00:36Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R006", "timestamp": "2026-03-06T19:35:38Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v4.17 to ap-south (routine release)"}
+{"id": "R007", "timestamp": "2026-03-06T20:28:26Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R008", "timestamp": "2026-03-06T22:41:15Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Customer asks how to download an invoice."}
+{"id": "R009", "timestamp": "2026-03-07T02:23:43Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v2.16 to us-east (routine release)"}
+{"id": "R010", "timestamp": "2026-03-07T05:01:36Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v1.24 to us-east (routine release)"}
+{"id": "R011", "timestamp": "2026-03-07T08:18:02Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v2.23 to us-east"}
+{"id": "R012", "timestamp": "2026-03-07T08:30:00Z", "source": "alerts", "service": "catalog", "region": "us-east", "text": "High error rate on catalog in us-east"}
+{"id": "R013", "timestamp": "2026-03-07T08:34:20Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v2.23)"}
+{"id": "R014", "timestamp": "2026-03-07T08:50:27Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v2.23)"}
+{"id": "R015", "timestamp": "2026-03-07T08:55:52Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v2.23)"}
+{"id": "R016", "timestamp": "2026-03-07T10:33:05Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v3.20 to ap-south (routine release)"}
+{"id": "R017", "timestamp": "2026-03-07T10:40:03Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R018", "timestamp": "2026-03-07T15:10:00Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R019", "timestamp": "2026-03-07T16:19:23Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R020", "timestamp": "2026-03-07T21:39:53Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R021", "timestamp": "2026-03-07T21:56:33Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}

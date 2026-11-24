@@ -1,0 +1,165 @@
+{
+  "incident_id": "INC-041",
+  "question": "Why did the error rate go up on 07 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "catalog",
+      "region": "us-east"
+    },
+    "change_start": "2026-03-07T05:25:00Z",
+    "baseline_value": 0.003740481586402267,
+    "current_value": 0.02043928251121076,
+    "relative_change": 4.4643,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New UI flow feature flag change introduced a bug in the catalog v3.14 release.",
+      "category": "config_change",
+      "confidence": 0.9,
+      "why_chain": [
+        "The new UI flow feature flag was changed to 50% in record R011, which occurred 3 minutes before the error rate spike.",
+        "The catalog v3.14 release (record R012) was deployed 2 minutes before the error rate spike.",
+        "The NullPointerException in RequestHandler.serialize (record R013 and R014) occurred 3 and 8 minutes after the catalog v3.14 release.",
+        "The error rate increased from 0.37% to 2.04% (record E1), indicating a new issue introduced by the catalog v3.14 release.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in request volume caused the error rate to spike.",
+      "reason": "The request volume stayed about the same (record E3), and the p95 latency also stayed about the same (record E4).",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of catalog v3.14 caused the error rate to spike.",
+      "reason": "The error rate spike occurred after the catalog v3.14 deployment (record E5), but the error rate increase was not immediately after the deployment.",
+      "evidence_ids": [
+        "E5"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service catalog in region us-east rose from 0.37% to 2.04% (+446%), with a change point at 2026-03-07T05:25:00Z.",
+      "timestamp": "2026-03-07T05:25:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service catalog in region us-east: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.12).",
+      "timestamp": "2026-03-07T05:25:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service catalog in region us-east stayed about the same (735 per 5 min before, 852 per 5 min after, +16%).",
+      "timestamp": "2026-03-07T05:25:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service catalog in region us-east stayed about the same (121 ms before, 120 ms after, -1%).",
+      "timestamp": "2026-03-07T05:25:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v3.14 to us-east (catalog, us-east; 2 min before the change; record R012)",
+      "timestamp": "2026-03-07T05:22:39Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "config_changes",
+      "summary": "Changed catalog feature flag new_ui_flow to 50% in us-east (catalog, us-east; 3 min before the change; record R011)",
+      "timestamp": "2026-03-07T05:22:04Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "High error rate on catalog in us-east (catalog, us-east; 10 min after the change; record R015)",
+      "timestamp": "2026-03-07T05:35:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.14) (catalog, us-east; 3 min after the change; record R013)",
+      "timestamp": "2026-03-07T05:28:17Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.14) (catalog, us-east; 8 min after the change; record R014)",
+      "timestamp": "2026-03-07T05:33:04Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "partial",
+    "score": 0.9,
+    "reasons": [
+      "\u2713 A change event (deploys) lines up in time (2 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 3 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2717 1 other change event(s) fit about as well.",
+      "\u2713 The main factor rests on this event.",
+      "\u2717 Two or more changes fit equally well, so the cause cannot be confirmed."
+    ],
+    "missing_data": [
+      "Details to tell the competing changes apart (e.g. a rollback test)"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Fix the NullPointerException in RequestHandler.serialize in the catalog v3.14 release.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the error rate and request volume closely after any catalog release to catch issues early.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Roll back the new UI flow feature flag change to 50% if the error rate does not improve.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

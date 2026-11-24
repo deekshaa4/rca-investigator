@@ -1,0 +1,177 @@
+{
+  "incident_id": "INC-031",
+  "question": "Why did the error rate go up on 03 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "catalog",
+      "region": "us-east"
+    },
+    "change_start": "2026-03-03T09:50:00Z",
+    "baseline_value": 0.004509310344827586,
+    "current_value": 0.024939058823529415,
+    "relative_change": 4.5306,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New deployment of catalog v4.7 introduced a NullPointerException.",
+      "category": "deployment",
+      "confidence": 0.9,
+      "why_chain": [
+        "v4.7 deployment caused the error rate to rise.",
+        "NullPointerException in RequestHandler.serialize (v4.7) triggered the error.",
+        "The error rate spike is directly linked to the deployment of v4.7."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The deployment of v4.7 was followed by a deployment of v5.11, which may have introduced the issue.",
+      "category": "unknown",
+      "confidence": 0.8,
+      "why_chain": [
+        "v4.7 deployment followed by v5.11 deployment.",
+        "v5.11 deployment may have introduced the issue.",
+        "The error rate spike is not explained by v5.11 alone."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E7"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate was due to a sudden increase in request volume.",
+      "reason": "Request volume stayed about the same before and after the change.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a change in latency.",
+      "reason": "p95 latency stayed about the same before and after the change.",
+      "evidence_ids": [
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a configuration change.",
+      "reason": "No configuration change was mentioned in the evidence.",
+      "evidence_ids": []
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service catalog in region us-east rose from 0.45% to 2.49% (+453%), with a change point at 2026-03-03T09:50:00Z.",
+      "timestamp": "2026-03-03T09:50:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service catalog in region us-east: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.13).",
+      "timestamp": "2026-03-03T09:50:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service catalog in region us-east stayed about the same (727 per 5 min before, 904 per 5 min after, +24%).",
+      "timestamp": "2026-03-03T09:50:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service catalog in region us-east stayed about the same (121 ms before, 120 ms after, -1%).",
+      "timestamp": "2026-03-03T09:50:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v4.7 to us-east (catalog, us-east; 2 min before the change; record R013)",
+      "timestamp": "2026-03-03T09:47:39Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "High error rate on catalog in us-east (catalog, us-east; 10 min after the change; record R014)",
+      "timestamp": "2026-03-03T10:00:00Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v5.11 to us-east (catalog, us-east; 212 min before the change; record R012)",
+      "timestamp": "2026-03-03T06:18:07Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR NullPointerException in RequestHandler.serialize (v4.7) (catalog, us-east; 21 min after the change; record R015)",
+      "timestamp": "2026-03-03T10:10:44Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR NullPointerException in RequestHandler.serialize (v4.7) (catalog, us-east; 26 min after the change; record R016)",
+      "timestamp": "2026-03-03T10:15:55Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 1.0,
+    "reasons": [
+      "\u2713 A change event (deploys) lines up in time (2 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 3 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Roll back the deployment of catalog v4.7 to address the NullPointerException.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the system closely for any new deployments and ensure proper testing before deployment.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Investigate the root cause of the NullPointerException in RequestHandler.serialize (v4.7).",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

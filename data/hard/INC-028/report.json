@@ -1,0 +1,157 @@
+{
+  "incident_id": "INC-028",
+  "question": "Why did the p95 latency go up on 12 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "region": "ap-south"
+    },
+    "change_start": "2026-03-12T06:35:00Z",
+    "baseline_value": 136.9665574715629,
+    "current_value": 252.06797729391502,
+    "relative_change": 0.8404,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The flash sale campaign likely caused the increase in request volume and error rate.",
+      "category": "traffic",
+      "confidence": 0.9,
+      "why_chain": [
+        "The flash sale campaign went live at the change point (E5).",
+        "This led to a significant increase in request volume (E2, E4).",
+        "The increased load caused higher error rates (E4).",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E5",
+        "E2",
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The deployment of catalog v6.12 caused the increase in latency.",
+      "reason": "The deployment of catalog v6.12 happened 3 minutes before the change point (E8).",
+      "evidence_ids": [
+        "E8"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of checkout v1.8 caused the increase in latency.",
+      "reason": "The deployment of checkout v1.8 happened 272 minutes before the change point (E9).",
+      "evidence_ids": [
+        "E9"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for region ap-south rose from 137 ms to 252 ms (+84%), with a change point at 2026-03-12T06:35:00Z.",
+      "timestamp": "2026-03-12T06:35:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in region ap-south: 4 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.01).",
+      "timestamp": "2026-03-12T06:35:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for region ap-south rose (1235 per 5 min before, 4430 per 5 min after, +259%).",
+      "timestamp": "2026-03-12T06:35:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for region ap-south rose (0.38% before, 0.76% after, +101%).",
+      "timestamp": "2026-03-12T06:35:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "Marketing: flash sale campaign goes live in ap-south at 06:35 UTC (ap-south; 288 min before the change; record R010)",
+      "timestamp": "2026-03-12T01:47:32Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Request volume 3x normal in ap-south (ap-south; 12 min after the change; record R014)",
+      "timestamp": "2026-03-12T06:47:00Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "autoscaler: scaling out, 4 new instances requested (ap-south; 20 min after the change; record R015)",
+      "timestamp": "2026-03-12T06:55:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v6.12 to us-east (catalog, us-east; 3 min before the change; record R013)",
+      "timestamp": "2026-03-12T06:32:08Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed checkout v1.8 to us-east (routine release) (checkout, us-east; 272 min before the change; record R011)",
+      "timestamp": "2026-03-12T02:03:24Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 1.0,
+    "reasons": [
+      "\u2713 A change event (tickets) lines up in time (288 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 2 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume rose, as a traffic cause requires.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Review and optimize the autoscaler configuration to handle sudden spikes in load more efficiently.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Implement a traffic management system to handle sudden spikes in request volume during campaigns.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor and adjust the autoscaler configuration to better handle sudden increases in load.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

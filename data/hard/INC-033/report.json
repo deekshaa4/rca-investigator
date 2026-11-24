@@ -1,0 +1,177 @@
+{
+  "incident_id": "INC-033",
+  "question": "Why did the p95 latency go up on 12 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "region": "us-east"
+    },
+    "change_start": "2026-03-12T15:10:00Z",
+    "baseline_value": 136.77888034915065,
+    "current_value": 295.4685482908366,
+    "relative_change": 1.1602,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The deployment of a new authentication version caused the increase in latency and request volume.",
+      "category": "deployment",
+      "confidence": 0.3,
+      "why_chain": [
+        "The deployment of auth v5.3 led to increased request volume and latency.",
+        "The increased request volume overwhelmed the system, causing autoscaler to scale out.",
+        "The scaling out process increased latency due to the load balancing and resource allocation delays."
+      ],
+      "evidence_ids": [
+        "E7",
+        "E2",
+        "E4",
+        "E9"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The flash sale campaign likely caused the spike in request volume and error rate.",
+      "category": "traffic",
+      "confidence": 0.3,
+      "why_chain": [
+        "The flash sale campaign went live, causing a sudden increase in request volume.",
+        "The increased request volume overwhelmed the system, leading to higher error rates.",
+        "The system's inability to handle the sudden surge in traffic caused the observed latency and error rate spikes."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E3"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The autoscaler scaling out was the cause of the increase in latency.",
+      "reason": "The autoscaler scaling out happened after the change, not before.",
+      "evidence_ids": [
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "The customer support request was the cause of the increase in latency and error rate.",
+      "reason": "The customer support request happened before the change.",
+      "evidence_ids": [
+        "E8"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for region us-east rose from 137 ms to 295 ms (+116%), with a change point at 2026-03-12T15:10:00Z.",
+      "timestamp": "2026-03-12T15:10:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in region us-east: 4 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.01).",
+      "timestamp": "2026-03-12T15:10:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for region us-east rose (2792 per 5 min before, 10655 per 5 min after, +282%).",
+      "timestamp": "2026-03-12T15:10:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for region us-east rose (0.43% before, 0.89% after, +106%).",
+      "timestamp": "2026-03-12T15:10:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "Marketing: flash sale campaign goes live in us-east at 15:10 UTC (us-east; 158 min before the change; record R015)",
+      "timestamp": "2026-03-12T12:31:48Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Request volume 3x normal in us-east (us-east; 12 min after the change; record R017)",
+      "timestamp": "2026-03-12T15:22:00Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed auth v5.3 to us-east (auth, us-east; 167 min before the change; record R014)",
+      "timestamp": "2026-03-12T12:23:17Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "Customer asks how to download an invoice. (search, us-east; 171 min before the change; record R013)",
+      "timestamp": "2026-03-12T12:19:17Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "autoscaler: scaling out, 4 new instances requested (us-east; 20 min after the change; record R018)",
+      "timestamp": "2026-03-12T15:30:00Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.4,
+    "reasons": [
+      "\u2717 The closest change event is 167 min before the change, too far to be convincing.",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 2 log/alert record(s) after the change agree with the numbers.",
+      "\u2717 Request volume also rose, so a traffic explanation is still open.",
+      "\u2717 2 other change event(s) fit about as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records from the hour before the change",
+      "Traffic source breakdown (campaigns, bots, partners)",
+      "Details to tell the competing changes apart (e.g. a rollback test)"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the deployment of auth v5.3 to mitigate the increased latency and request volume.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Implement traffic management and load balancing to handle sudden spikes in request volume.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        2
+      ]
+    },
+    {
+      "action": "Optimize the system's capacity and performance to better handle the expected traffic during campaigns.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "scenario": "no_clear_cause",
+  "category": "unknown",
+  "metric": "error_rate",
+  "segment": {
+    "service": "checkout",
+    "region": "ap-south"
+  },
+  "change_start": "2026-03-25T02:15:00Z",
+  "cause_record_ids": [],
+  "expected_verdict": "insufficient",
+  "twist": "red_herring_early"
+}

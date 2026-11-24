@@ -1,0 +1,14 @@
+{
+  "scenario": "dependency_outage",
+  "category": "dependency",
+  "metric": "error_rate",
+  "segment": {
+    "service": "checkout"
+  },
+  "change_start": "2026-03-12T15:15:00Z",
+  "cause_record_ids": [
+    "R014"
+  ],
+  "expected_verdict": "sufficient",
+  "twist": "none"
+}

@@ -1,0 +1,18 @@
+{"id": "R001", "timestamp": "2026-03-24T02:07:11Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R002", "timestamp": "2026-03-24T03:56:22Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R003", "timestamp": "2026-03-24T04:07:04Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v2.16 to ap-south (routine release)"}
+{"id": "R004", "timestamp": "2026-03-24T06:16:30Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R005", "timestamp": "2026-03-24T14:57:08Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v1.28 to ap-south (routine release)"}
+{"id": "R006", "timestamp": "2026-03-24T15:18:04Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Customer reports a typo on the help page."}
+{"id": "R007", "timestamp": "2026-03-24T18:02:29Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R008", "timestamp": "2026-03-24T19:21:24Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R009", "timestamp": "2026-03-24T19:53:17Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO certificate check passed"}
+{"id": "R010", "timestamp": "2026-03-24T22:43:56Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v8.9 to ap-south"}
+{"id": "R011", "timestamp": "2026-03-25T05:53:57Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R012", "timestamp": "2026-03-25T06:14:09Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Customer reports a typo on the help page."}
+{"id": "R013", "timestamp": "2026-03-25T12:04:48Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R014", "timestamp": "2026-03-25T12:25:06Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R015", "timestamp": "2026-03-25T16:30:42Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R016", "timestamp": "2026-03-25T16:40:40Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R017", "timestamp": "2026-03-25T17:29:40Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO cache warmed in 1.8s"}
+{"id": "R018", "timestamp": "2026-03-25T20:04:46Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}

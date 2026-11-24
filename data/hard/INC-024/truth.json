@@ -1,0 +1,14 @@
+{
+  "scenario": "dependency_outage",
+  "category": "dependency",
+  "metric": "error_rate",
+  "segment": {
+    "service": "auth"
+  },
+  "change_start": "2026-03-10T09:30:00Z",
+  "cause_record_ids": [
+    "R008"
+  ],
+  "expected_verdict": "sufficient",
+  "twist": "none"
+}

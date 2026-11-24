@@ -1,0 +1,13 @@
+{"id": "R001", "timestamp": "2026-03-20T01:24:23Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R002", "timestamp": "2026-03-20T06:07:59Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v4.28 to eu-west (routine release)"}
+{"id": "R003", "timestamp": "2026-03-20T07:59:46Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v1.11 to ap-south (routine release)"}
+{"id": "R004", "timestamp": "2026-03-20T09:53:27Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v4.26 to ap-south (routine release)"}
+{"id": "R005", "timestamp": "2026-03-20T15:51:40Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R006", "timestamp": "2026-03-20T19:47:55Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v2.22 to eu-west (routine release)"}
+{"id": "R007", "timestamp": "2026-03-20T20:44:50Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO autoscaler: no change"}
+{"id": "R008", "timestamp": "2026-03-21T01:22:40Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R009", "timestamp": "2026-03-21T08:18:15Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v7.6 to ap-south"}
+{"id": "R010", "timestamp": "2026-03-21T10:20:30Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R011", "timestamp": "2026-03-21T17:41:41Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R012", "timestamp": "2026-03-21T19:09:24Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R013", "timestamp": "2026-03-21T23:14:22Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v2.3 to ap-south (routine release)"}

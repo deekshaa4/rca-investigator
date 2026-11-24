@@ -1,0 +1,16 @@
+{"id": "R001", "timestamp": "2026-03-15T02:28:02Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v1.13 to us-east (routine release)"}
+{"id": "R002", "timestamp": "2026-03-15T09:42:25Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R003", "timestamp": "2026-03-15T13:24:42Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Customer asks how to download an invoice."}
+{"id": "R004", "timestamp": "2026-03-15T15:17:11Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R005", "timestamp": "2026-03-15T17:07:43Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v3.11 to ap-south (routine release)"}
+{"id": "R006", "timestamp": "2026-03-15T17:21:36Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v2.12 to ap-south (routine release)"}
+{"id": "R007", "timestamp": "2026-03-15T20:24:26Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v4.24 to eu-west (routine release)"}
+{"id": "R008", "timestamp": "2026-03-16T02:58:14Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R009", "timestamp": "2026-03-16T05:09:52Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v3.18 to us-east (routine release)"}
+{"id": "R010", "timestamp": "2026-03-16T05:29:57Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v4.18 to us-east (routine release)"}
+{"id": "R011", "timestamp": "2026-03-16T09:28:41Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: ERROR upstream catalog-db timeout after 3 retries"}
+{"id": "R012", "timestamp": "2026-03-16T09:34:31Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR upstream catalog-db timeout after 3 retries"}
+{"id": "R013", "timestamp": "2026-03-16T09:38:50Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: ERROR upstream catalog-db timeout after 3 retries"}
+{"id": "R014", "timestamp": "2026-03-16T09:45:00Z", "source": "tickets", "service": "catalog", "region": null, "text": "catalog-db status page: investigating degraded performance"}
+{"id": "R015", "timestamp": "2026-03-16T10:15:42Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v3.2 to ap-south (routine release)"}
+{"id": "R016", "timestamp": "2026-03-16T15:55:08Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v4.13 to us-east (routine release)"}

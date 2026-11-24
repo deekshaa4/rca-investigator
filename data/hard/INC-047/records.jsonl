@@ -1,0 +1,18 @@
+{"id": "R001", "timestamp": "2026-03-21T03:47:40Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R002", "timestamp": "2026-03-21T08:51:16Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R003", "timestamp": "2026-03-21T12:16:17Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R004", "timestamp": "2026-03-21T16:53:44Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v1.23 to eu-west (routine release)"}
+{"id": "R005", "timestamp": "2026-03-21T19:52:07Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v3.11 to us-east (routine release)"}
+{"id": "R006", "timestamp": "2026-03-21T23:58:40Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v4.15 to us-east (routine release)"}
+{"id": "R007", "timestamp": "2026-03-22T04:38:55Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO nightly backup completed"}
+{"id": "R008", "timestamp": "2026-03-22T10:08:18Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R009", "timestamp": "2026-03-22T13:03:07Z", "source": "config_changes", "service": "checkout", "region": null, "text": "Changed checkout db.pool_size from 50 to 5 (all regions)"}
+{"id": "R010", "timestamp": "2026-03-22T13:10:43Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R011", "timestamp": "2026-03-22T13:20:00Z", "source": "alerts", "service": "checkout", "region": null, "text": "p95 latency above SLO on checkout"}
+{"id": "R012", "timestamp": "2026-03-22T13:25:02Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R013", "timestamp": "2026-03-22T13:26:18Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R014", "timestamp": "2026-03-22T17:39:44Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: INFO cache warmed in 1.8s"}
+{"id": "R015", "timestamp": "2026-03-22T17:59:08Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: INFO nightly backup completed"}
+{"id": "R016", "timestamp": "2026-03-22T18:54:00Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v2.1 to eu-west (routine release)"}
+{"id": "R017", "timestamp": "2026-03-22T18:54:48Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v2.22 to eu-west (routine release)"}
+{"id": "R018", "timestamp": "2026-03-22T20:39:51Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v1.25 to ap-south (routine release)"}

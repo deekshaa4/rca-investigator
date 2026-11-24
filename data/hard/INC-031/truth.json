@@ -1,0 +1,15 @@
+{
+  "scenario": "bad_deploy",
+  "category": "deployment",
+  "metric": "error_rate",
+  "segment": {
+    "service": "catalog",
+    "region": "us-east"
+  },
+  "change_start": "2026-03-03T09:50:00Z",
+  "cause_record_ids": [
+    "R013"
+  ],
+  "expected_verdict": "sufficient",
+  "twist": "red_herring_early"
+}

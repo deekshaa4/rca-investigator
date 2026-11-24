@@ -1,0 +1,22 @@
+{"id": "R001", "timestamp": "2026-03-06T00:27:22Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R002", "timestamp": "2026-03-06T01:21:15Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v4.15 to ap-south (routine release)"}
+{"id": "R003", "timestamp": "2026-03-06T03:05:41Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO autoscaler: no change"}
+{"id": "R004", "timestamp": "2026-03-06T11:04:00Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: INFO cache warmed in 1.8s"}
+{"id": "R005", "timestamp": "2026-03-06T18:41:22Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R006", "timestamp": "2026-03-06T20:57:43Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R007", "timestamp": "2026-03-06T21:05:47Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO nightly backup completed"}
+{"id": "R008", "timestamp": "2026-03-06T21:17:04Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R009", "timestamp": "2026-03-07T01:17:46Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R010", "timestamp": "2026-03-07T03:46:49Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v4.9 to ap-south (routine release)"}
+{"id": "R011", "timestamp": "2026-03-07T05:22:04Z", "source": "config_changes", "service": "catalog", "region": "us-east", "text": "Changed catalog feature flag new_ui_flow to 50% in us-east"}
+{"id": "R012", "timestamp": "2026-03-07T05:22:39Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v3.14 to us-east"}
+{"id": "R013", "timestamp": "2026-03-07T05:28:17Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.14)"}
+{"id": "R014", "timestamp": "2026-03-07T05:33:04Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.14)"}
+{"id": "R015", "timestamp": "2026-03-07T05:35:00Z", "source": "alerts", "service": "catalog", "region": "us-east", "text": "High error rate on catalog in us-east"}
+{"id": "R016", "timestamp": "2026-03-07T05:46:21Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.14)"}
+{"id": "R017", "timestamp": "2026-03-07T17:52:08Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v2.14 to eu-west (routine release)"}
+{"id": "R018", "timestamp": "2026-03-07T20:52:52Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R019", "timestamp": "2026-03-07T21:46:30Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v1.14 to ap-south (routine release)"}
+{"id": "R020", "timestamp": "2026-03-07T21:54:19Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R021", "timestamp": "2026-03-07T23:09:25Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v1.29 to us-east (routine release)"}
+{"id": "R022", "timestamp": "2026-03-07T23:58:36Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v2.27 to eu-west (routine release)"}

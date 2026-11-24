@@ -1,0 +1,7 @@
+{
+  "incident_id": "INC-024",
+  "question": "Why did the error rate go up on 10 March 2026?",
+  "metric": "error_rate",
+  "window_start": "2026-03-09T00:00:00Z",
+  "window_end": "2026-03-10T23:55:00Z"
+}

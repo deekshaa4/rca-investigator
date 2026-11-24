@@ -1,0 +1,150 @@
+{
+  "incident_id": "INC-030",
+  "question": "Why did the error rate go up on 20 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "checkout",
+      "region": "eu-west"
+    },
+    "change_start": "2026-03-20T02:40:00Z",
+    "baseline_value": 0.005187343749999999,
+    "current_value": 0.010842695312500001,
+    "relative_change": 1.0902,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The deployment of auth v4.12 to ap-south likely caused the increase in error rate.",
+      "category": "deployment",
+      "confidence": 0.3,
+      "why_chain": [
+        "auth v4.12 deployment to ap-south introduced a new version of the service.",
+        "The new version of auth v4.12 was deployed to ap-south 146 minutes before the error rate increase.",
+        "The error rate for service checkout in region eu-west increased from 0.52% to 1.08% after the deployment.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E5",
+        "E1"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate was due to a change in configuration settings.",
+      "reason": "No evidence of a configuration change that could have caused the error rate increase.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a change in traffic patterns.",
+      "reason": "The request volume and p95 latency for service checkout in region eu-west did not change significantly.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a failure of an external service.",
+      "reason": "No evidence of a failure of an external service that could have caused the error rate increase.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service checkout in region eu-west rose from 0.52% to 1.08% (+109%), with a change point at 2026-03-20T02:40:00Z.",
+      "timestamp": "2026-03-20T02:40:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service checkout in region eu-west: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.09).",
+      "timestamp": "2026-03-20T02:40:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service checkout in region eu-west stayed about the same (289 per 5 min before, 312 per 5 min after, +8%).",
+      "timestamp": "2026-03-20T02:40:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service checkout in region eu-west stayed about the same (219 ms before, 222 ms after, +1%).",
+      "timestamp": "2026-03-20T02:40:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed auth v4.12 to ap-south (routine release) (auth, ap-south; 146 min before the change; record R005)",
+      "timestamp": "2026-03-20T00:14:16Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v8.27 to ap-south (catalog, ap-south; 34 min after the change; record R006)",
+      "timestamp": "2026-03-20T03:13:42Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.4,
+    "reasons": [
+      "\u2717 The closest change event is 146 min before the change, too far to be convincing.",
+      "\u2717 It concerns a different service/region than the one that changed.",
+      "\u2717 No logs or alerts from the affected segment confirm the problem.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records from the hour before the change",
+      "Change records for the affected service/region",
+      "Error logs or traces from the affected segment after the change"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the auth v4.12 deployment to ap-south.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the error rate for service checkout in region eu-west for any further increases and investigate the cause.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the error rate for service checkout in region eu-west for any further increases and investigate the cause.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

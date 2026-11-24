@@ -1,0 +1,151 @@
+{
+  "incident_id": "INC-035",
+  "question": "Why did the error rate go up on 25 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "checkout",
+      "region": "ap-south"
+    },
+    "change_start": "2026-03-25T02:15:00Z",
+    "baseline_value": 0.0036751746031746034,
+    "current_value": 0.008216781609195404,
+    "relative_change": 1.2358,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New deployment caused the error rate to increase.",
+      "category": "deployment",
+      "confidence": 0.3,
+      "why_chain": [
+        "Checkout v8.9 was deployed to ap-south 211 minutes before the error rate increase.",
+        "The error rate for service checkout in region ap-south increased from 0.37% to 0.82%.",
+        "The deployment of checkout v8.9 is the most likely cause of the error rate increase."
+      ],
+      "evidence_ids": [
+        "E5"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The deployment may have introduced a bug.",
+      "category": "unknown",
+      "confidence": 0.3,
+      "why_chain": [
+        "Checkout v8.9 was deployed 211 minutes before the error rate increase.",
+        "The error rate increased, but the request volume and latency remained stable.",
+        "The deployment could have introduced a bug that was not caught in testing."
+      ],
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate was due to a sudden increase in user traffic.",
+      "reason": "The request volume and p95 latency remained stable.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a configuration change.",
+      "reason": "No configuration change was noted in the evidence.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service checkout in region ap-south rose from 0.37% to 0.82% (+124%), with a change point at 2026-03-25T02:15:00Z.",
+      "timestamp": "2026-03-25T02:15:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service checkout in region ap-south: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.11).",
+      "timestamp": "2026-03-25T02:15:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service checkout in region ap-south stayed about the same (175 per 5 min before, 187 per 5 min after, +7%).",
+      "timestamp": "2026-03-25T02:15:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service checkout in region ap-south stayed about the same (221 ms before, 221 ms after, -0%).",
+      "timestamp": "2026-03-25T02:15:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed checkout v8.9 to ap-south (checkout, ap-south; 211 min before the change; record R010)",
+      "timestamp": "2026-03-24T22:43:56Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.4,
+    "reasons": [
+      "\u2717 The closest change event is 211 min before the change, too far to be convincing.",
+      "\u2713 It concerns the affected service/region.",
+      "\u2717 No logs or alerts from the affected segment confirm the problem.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records from the hour before the change",
+      "Error logs or traces from the affected segment after the change"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Rollback the deployment of checkout v8.9 to ap-south.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Implement a thorough pre-deployment testing process for the checkout v8.9 release.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor error rates and request volumes closely after deployments to identify any anomalies.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

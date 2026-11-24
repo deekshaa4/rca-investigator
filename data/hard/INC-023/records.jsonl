@@ -1,0 +1,18 @@
+{"id": "R001", "timestamp": "2026-03-08T07:43:33Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v3.6 to us-east (routine release)"}
+{"id": "R002", "timestamp": "2026-03-08T10:45:14Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R003", "timestamp": "2026-03-08T12:16:58Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v4.26 to eu-west (routine release)"}
+{"id": "R004", "timestamp": "2026-03-08T15:29:31Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R005", "timestamp": "2026-03-08T16:37:43Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R006", "timestamp": "2026-03-08T18:18:39Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R007", "timestamp": "2026-03-08T18:27:41Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R008", "timestamp": "2026-03-08T18:33:50Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v1.17 to eu-west (routine release)"}
+{"id": "R009", "timestamp": "2026-03-08T19:55:35Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v2.10 to ap-south (routine release)"}
+{"id": "R010", "timestamp": "2026-03-08T21:40:32Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v3.21 to us-east (routine release)"}
+{"id": "R011", "timestamp": "2026-03-09T05:12:15Z", "source": "tickets", "service": null, "region": "ap-south", "text": "Marketing: flash sale campaign goes live in ap-south at 09:05 UTC"}
+{"id": "R012", "timestamp": "2026-03-09T09:17:00Z", "source": "alerts", "service": null, "region": "ap-south", "text": "Request volume 3x normal in ap-south"}
+{"id": "R013", "timestamp": "2026-03-09T09:25:00Z", "source": "logs", "service": null, "region": "ap-south", "text": "autoscaler: scaling out, 4 new instances requested"}
+{"id": "R014", "timestamp": "2026-03-09T12:06:37Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R015", "timestamp": "2026-03-09T12:06:58Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO autoscaler: no change"}
+{"id": "R016", "timestamp": "2026-03-09T13:54:59Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Customer asks how to download an invoice."}
+{"id": "R017", "timestamp": "2026-03-09T15:00:19Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v2.13 to us-east (routine release)"}
+{"id": "R018", "timestamp": "2026-03-09T18:09:34Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Question about API rate limits for a partner integration."}

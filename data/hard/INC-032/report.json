@@ -1,0 +1,197 @@
+{
+  "incident_id": "INC-032",
+  "question": "Why did the p95 latency go up on 05 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "service": "search"
+    },
+    "change_start": "2026-03-05T03:15:00Z",
+    "baseline_value": 140.20278302783385,
+    "current_value": 290.11224794538924,
+    "relative_change": 1.0692,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The increase in p95 latency is due to a reduction in the search db.pool_size, leading to connection pool exhaustion.",
+      "category": "config_change",
+      "confidence": 0.9,
+      "why_chain": [
+        "The config_change (E5) reduced the search db.pool_size from 50 to 5.",
+        "This reduction in pool size caused the connection pool to become exhausted.",
+        "The exhausted pool led to the WARN connection pool exhausted, waiting for a free connection (E6, E7, E8, E9).",
+        "This resulted in increased latency, as the system had to wait for connections to become available.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The increase in p95 latency is also due to the increase in request volume, which put additional strain on the system.",
+      "category": "traffic",
+      "confidence": 0.8,
+      "why_chain": [
+        "The request volume for service search increased by 9% (E3).",
+        "This increase in requests put additional strain on the system.",
+        "The reduced connection pool size (E5) exacerbated the strain, leading to connection pool exhaustion (E6, E7, E8, E9).",
+        "The connection pool exhaustion resulted in increased latency (E7, E8, E9).",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E3",
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in p95 latency is due to a bug in the search service code.",
+      "reason": "There is no evidence of a code change or error logs indicating a bug.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "The increase in p95 latency is due to a sudden spike in external traffic.",
+      "reason": "The error rate only increased by 53% (E4), not enough to explain the 107% increase in p95 latency.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for service search rose from 140 ms to 290 ms (+107%), with a change point at 2026-03-05T03:15:00Z.",
+      "timestamp": "2026-03-05T03:15:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in service search: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.02).",
+      "timestamp": "2026-03-05T03:15:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service search stayed about the same (2514 per 5 min before, 2741 per 5 min after, +9%).",
+      "timestamp": "2026-03-05T03:15:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for service search rose (0.40% before, 0.62% after, +53%).",
+      "timestamp": "2026-03-05T03:15:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "config_changes",
+      "summary": "Changed search db.pool_size from 50 to 5 (all regions) (search; 2 min before the change; record R011)",
+      "timestamp": "2026-03-05T03:13:04Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, eu-west; 3 min after the change; record R012)",
+      "timestamp": "2026-03-05T03:17:46Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "p95 latency above SLO on search (search; 15 min after the change; record R013)",
+      "timestamp": "2026-03-05T03:30:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, ap-south; 20 min after the change; record R014)",
+      "timestamp": "2026-03-05T03:34:59Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, us-east; 26 min after the change; record R015)",
+      "timestamp": "2026-03-05T03:41:16Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 1.0,
+    "reasons": [
+      "\u2713 A change event (config_changes) lines up in time (2 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Increase the search db.pool_size back to 50 to prevent connection pool exhaustion.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor request volume and adjust capacity if it exceeds current limits.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        2
+      ]
+    },
+    {
+      "action": "Review and optimize the search service's connection management to handle higher request volumes.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

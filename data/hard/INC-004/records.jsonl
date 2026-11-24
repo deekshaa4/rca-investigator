@@ -1,0 +1,24 @@
+{"id": "R001", "timestamp": "2026-03-06T01:41:01Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: INFO cache warmed in 1.8s"}
+{"id": "R002", "timestamp": "2026-03-06T01:49:33Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v2.20 to eu-west (routine release)"}
+{"id": "R003", "timestamp": "2026-03-06T03:24:14Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R004", "timestamp": "2026-03-06T03:59:54Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R005", "timestamp": "2026-03-06T05:38:58Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v2.1 to us-east (routine release)"}
+{"id": "R006", "timestamp": "2026-03-06T05:47:10Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R007", "timestamp": "2026-03-06T06:32:12Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v2.21 to ap-south (routine release)"}
+{"id": "R008", "timestamp": "2026-03-06T10:10:56Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R009", "timestamp": "2026-03-06T15:09:33Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO cache warmed in 1.8s"}
+{"id": "R010", "timestamp": "2026-03-06T17:32:28Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: INFO nightly backup completed"}
+{"id": "R011", "timestamp": "2026-03-06T18:17:11Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R012", "timestamp": "2026-03-06T18:59:02Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R013", "timestamp": "2026-03-07T05:25:31Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v4.13 to us-east"}
+{"id": "R014", "timestamp": "2026-03-07T05:32:10Z", "source": "alerts", "service": "search", "region": null, "text": "Upstream search-cluster returning HTTP 503 for search"}
+{"id": "R015", "timestamp": "2026-03-07T05:35:11Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: ERROR upstream search-cluster timeout after 3 retries"}
+{"id": "R016", "timestamp": "2026-03-07T05:39:37Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: ERROR upstream search-cluster timeout after 3 retries"}
+{"id": "R017", "timestamp": "2026-03-07T05:48:37Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: ERROR upstream search-cluster timeout after 3 retries"}
+{"id": "R018", "timestamp": "2026-03-07T06:00:00Z", "source": "tickets", "service": "search", "region": null, "text": "search-cluster status page: investigating degraded performance"}
+{"id": "R019", "timestamp": "2026-03-07T07:01:29Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: INFO certificate check passed"}
+{"id": "R020", "timestamp": "2026-03-07T08:01:20Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R021", "timestamp": "2026-03-07T12:55:26Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R022", "timestamp": "2026-03-07T13:03:34Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R023", "timestamp": "2026-03-07T20:33:35Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R024", "timestamp": "2026-03-07T23:33:39Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v2.22 to us-east (routine release)"}

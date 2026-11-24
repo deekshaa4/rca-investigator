@@ -1,0 +1,14 @@
+{
+  "scenario": "config_change",
+  "category": "config_change",
+  "metric": "latency_p95_ms",
+  "segment": {
+    "service": "checkout"
+  },
+  "change_start": "2026-03-02T10:50:00Z",
+  "cause_record_ids": [
+    "R014"
+  ],
+  "expected_verdict": "sufficient",
+  "twist": "red_herring_other"
+}

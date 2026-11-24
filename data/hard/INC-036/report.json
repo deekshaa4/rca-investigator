@@ -1,0 +1,177 @@
+{
+  "incident_id": "INC-036",
+  "question": "Why did the error rate go up on 11 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "catalog",
+      "region": "us-east"
+    },
+    "change_start": "2026-03-11T04:00:00Z",
+    "baseline_value": 0.003110386904761905,
+    "current_value": 0.01897958333333333,
+    "relative_change": 5.102,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "Increased error rate due to higher request volume.",
+      "category": "traffic",
+      "confidence": 0.3,
+      "why_chain": [
+        "The error rate increase coincided with a 12% increase in request volume.",
+        "The error rate spike is not explained by the unchanged request volume.",
+        "The increase in request volume could have overwhelmed the system, leading to more errors."
+      ],
+      "evidence_ids": [
+        "E2",
+        "E3"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The error rate increase was due to a configuration change.",
+      "reason": "No evidence supports a configuration change. The error rate and request volume remained stable.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The error rate increase was due to a dependency issue with an external service.",
+      "reason": "No evidence supports a dependency issue. The error rate and request volume remained stable.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The error rate increase was due to a data issue.",
+      "reason": "No evidence supports a data issue. The error rate and request volume remained stable.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The error rate increase was due to infrastructure issues.",
+      "reason": "No evidence supports infrastructure issues. The error rate and request volume remained stable.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service catalog in region us-east rose from 0.31% to 1.90% (+510%), with a change point at 2026-03-11T04:00:00Z.",
+      "timestamp": "2026-03-11T04:00:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service catalog in region us-east: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.05).",
+      "timestamp": "2026-03-11T04:00:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service catalog in region us-east stayed about the same (744 per 5 min before, 831 per 5 min after, +12%).",
+      "timestamp": "2026-03-11T04:00:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service catalog in region us-east stayed about the same (120 ms before, 120 ms after, -0%).",
+      "timestamp": "2026-03-11T04:00:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "High error rate on catalog in us-east (catalog, us-east; 10 min after the change; record R008)",
+      "timestamp": "2026-03-11T04:10:00Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.7) (catalog, us-east; 36 min after the change; record R009)",
+      "timestamp": "2026-03-11T04:36:27Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.7) (catalog, us-east; 37 min after the change; record R010)",
+      "timestamp": "2026-03-11T04:36:51Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.7) (catalog, us-east; 37 min after the change; record R011)",
+      "timestamp": "2026-03-11T04:37:22Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "checkout: INFO nightly backup completed (checkout, us-east; 60 min before the change; record R007)",
+      "timestamp": "2026-03-11T03:00:02Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.15,
+    "reasons": [
+      "\u2717 No deploy, config change, ticket or alert lines up with the change.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2717 A traffic cause is claimed, but request volume did not rise."
+    ],
+    "missing_data": [
+      "Deploy and config-change history for the affected segment"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the deployment of the new version of RequestHandler (v3.7).",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor request volume and adjust capacity if necessary.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Implement error handling and logging improvements in RequestHandler.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

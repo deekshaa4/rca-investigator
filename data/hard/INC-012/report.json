@@ -1,0 +1,166 @@
+{
+  "incident_id": "INC-012",
+  "question": "Why did the p95 latency go up on 16 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "service": "auth"
+    },
+    "change_start": "2026-03-16T14:35:00Z",
+    "baseline_value": 90.47415004516961,
+    "current_value": 268.4927715601771,
+    "relative_change": 1.9676,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The increase in p95 latency is due to a connection pool exhaustion issue in the auth service.",
+      "category": "infrastructure",
+      "confidence": 0.3,
+      "why_chain": [
+        "The p95 latency increased significantly (from 90 ms to 268 ms) after the change point.",
+        "The error rate for service auth also increased (from 0.38% to 0.60%).",
+        "Logs show warnings about connection pool exhaustion, indicating a problem with the database connections.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E1",
+        "E4",
+        "E6",
+        "E7",
+        "E8"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The increase in p95 latency is due to a sudden increase in request volume for the auth service.",
+      "category": "traffic",
+      "confidence": 0.3,
+      "why_chain": [
+        "The p95 latency increased significantly (from 90 ms to 268 ms) after the change point.",
+        "The request volume for service auth increased by 15% (from 1125 to 1299 per 5 min).",
+        "The error rate for service auth also increased (from 0.38% to 0.60%).",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E2",
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in p95 latency is due to a configuration change in the auth service.",
+      "reason": "The change in p95 latency is concentrated in service auth, and the other service/region segments stayed flat.",
+      "evidence_ids": [
+        "E2"
+      ]
+    },
+    {
+      "hypothesis": "The increase in p95 latency is due to a dependency issue with an external service.",
+      "reason": "There is no evidence of a failure or slowdown in any external service.",
+      "evidence_ids": []
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for service auth rose from 90 ms to 268 ms (+197%), with a change point at 2026-03-16T14:35:00Z.",
+      "timestamp": "2026-03-16T14:35:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in service auth: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.01).",
+      "timestamp": "2026-03-16T14:35:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service auth stayed about the same (1125 per 5 min before, 1299 per 5 min after, +15%).",
+      "timestamp": "2026-03-16T14:35:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for service auth rose (0.38% before, 0.60% after, +61%).",
+      "timestamp": "2026-03-16T14:35:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "p95 latency above SLO on auth (auth; 15 min after the change; record R014)",
+      "timestamp": "2026-03-16T14:50:00Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: WARN connection pool exhausted, waiting for a free connection (auth, ap-south; 5 min after the change; record R013)",
+      "timestamp": "2026-03-16T14:40:00Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: WARN connection pool exhausted, waiting for a free connection (auth, eu-west; 19 min after the change; record R015)",
+      "timestamp": "2026-03-16T14:54:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: WARN connection pool exhausted, waiting for a free connection (auth, us-east; 27 min after the change; record R016)",
+      "timestamp": "2026-03-16T15:01:39Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.25,
+    "reasons": [
+      "\u2717 No deploy, config change, ticket or alert lines up with the change.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike."
+    ],
+    "missing_data": [
+      "Deploy and config-change history for the affected segment"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Implement a connection pool optimization in the auth service to handle the increased request volume.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor request volume and latency closely and take corrective action if the increase in request volume is detected.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    },
+    {
+      "action": "Review and optimize the database connection pool settings to prevent future exhaustion.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

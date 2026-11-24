@@ -1,0 +1,171 @@
+{
+  "incident_id": "INC-008",
+  "question": "Why did the p95 latency go up on 19 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "region": "ap-south"
+    },
+    "change_start": "2026-03-19T03:30:00Z",
+    "baseline_value": 137.34741008763527,
+    "current_value": 284.1748295652071,
+    "relative_change": 1.069,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The flash sale campaign likely caused the spike in request volume and error rate.",
+      "category": "traffic",
+      "confidence": 0.9,
+      "why_chain": [
+        "The flash sale campaign went live at the change point, causing a sudden increase in request volume.",
+        "The increased request volume led to higher latency as the system struggled to handle the load.",
+        "The error rate rose due to the system being overwhelmed by the sudden surge in traffic."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The deployment of auth v4.9 may have introduced a latency issue.",
+      "category": "deployment",
+      "confidence": 0.7,
+      "why_chain": [
+        "The deployment of auth v4.9 occurred 251 minutes before the change point.",
+        "The system's performance degraded after the deployment, leading to increased latency.",
+        "The increased latency contributed to the overall system performance degradation."
+      ],
+      "evidence_ids": [
+        "E7",
+        "E1"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The deployment of catalog v1.1 caused the change.",
+      "reason": "The catalog v1.1 deployment was a routine release and occurred 163 minutes before the change point.",
+      "evidence_ids": [
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "The autoscaler scaling out caused the change.",
+      "reason": "The autoscaler scaling out occurred 20 minutes after the change point.",
+      "evidence_ids": [
+        "E8"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for region ap-south rose from 137 ms to 284 ms (+107%), with a change point at 2026-03-19T03:30:00Z.",
+      "timestamp": "2026-03-19T03:30:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in region ap-south: 4 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.01).",
+      "timestamp": "2026-03-19T03:30:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for region ap-south rose (1267 per 5 min before, 4623 per 5 min after, +265%).",
+      "timestamp": "2026-03-19T03:30:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for region ap-south rose (0.41% before, 0.81% after, +100%).",
+      "timestamp": "2026-03-19T03:30:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "Marketing: flash sale campaign goes live in ap-south at 03:30 UTC (ap-south; 127 min before the change; record R015)",
+      "timestamp": "2026-03-19T01:23:06Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Request volume 3x normal in ap-south (ap-south; 12 min after the change; record R016)",
+      "timestamp": "2026-03-19T03:42:00Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed auth v4.9 to ap-south (auth, ap-south; 251 min before the change; record R013)",
+      "timestamp": "2026-03-18T23:18:55Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "autoscaler: scaling out, 4 new instances requested (ap-south; 20 min after the change; record R017)",
+      "timestamp": "2026-03-19T03:50:00Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v1.1 to us-east (routine release) (catalog, us-east; 163 min before the change; record R014)",
+      "timestamp": "2026-03-19T00:47:21Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 1.0,
+    "reasons": [
+      "\u2713 A change event (tickets) lines up in time (127 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 2 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume rose, as a traffic cause requires.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Roll back the auth v4.9 deployment to revert the potential performance degradation.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Implement a traffic management system to handle sudden spikes in traffic during marketing campaigns.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Optimize the autoscaler to better handle sudden traffic spikes.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

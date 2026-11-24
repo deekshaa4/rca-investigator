@@ -11,7 +11,8 @@ Checks (weight):
 - symptoms (0.15):      records after the change (errors, alerts) agree with the numbers
 - metrics agree (0.10): related metrics fit the explanation (a traffic cause needs a
                         traffic rise; any other cause should not coincide with one)
-- distinct (0.10):      no competing change event lines up just as well
+- distinct (0.10):      no competing change event lines up just as well (if one does,
+                        the verdict is at most partial)
 - cited (0.15):         the main contributing factor actually rests on that event
 
 Verdict: score >= 0.7 sufficient, >= 0.45 partial, otherwise insufficient. Without a
@@ -22,6 +23,7 @@ no credible candidate cause, so the verdict is insufficient whatever the other c
 from __future__ import annotations
 
 import math
+import re
 from dataclasses import dataclass
 
 from .analyze import ChangeAnalysis
@@ -35,6 +37,7 @@ SUFFICIENT_AT = 0.7
 PARTIAL_AT = 0.45
 MIN_TIMING = 0.5  # below this there is no credible candidate cause
 
+UPSTREAM_WORDS = re.compile(r"upstream|dependency|provider|status page|\b50[234]\b", re.IGNORECASE)
 SOURCE_CATEGORY = {"deploys": "deployment", "config_changes": "config_change"}
 
 
@@ -58,11 +61,19 @@ def _timing(hit: RecordHit) -> float:
     return math.exp((m + CLOSE_MIN) / 60)  # fades over the hours before
 
 
+def _could_be_cause(rec: dict) -> bool:
+    """Alerts usually report symptoms ("high error rate"); only those naming an
+    upstream failure describe a possible cause."""
+    if rec["source"] != "alerts":
+        return True
+    return bool(UPSTREAM_WORDS.search(rec["text"]))
+
+
 def _candidates(hits: list[RecordHit], evidence: list[dict]) -> list[Candidate]:
     eid_by_record = {e.get("record_id"): e["id"] for e in evidence if e.get("record_id")}
     out = [
         Candidate(h, eid_by_record.get(h.record["id"]), _timing(h))
-        for h in hits if h.record["source"] in CHANGE_SOURCES
+        for h in hits if h.record["source"] in CHANGE_SOURCES and _could_be_cause(h.record)
     ]
     return [c for c in out if c.timing > 0]
 
@@ -166,6 +177,7 @@ def assess(analysis: ChangeAnalysis, hits: list[RecordHit], factors: list[dict],
               "spike.", "Request volume also rose, so a traffic explanation is still open.",
               "Traffic source breakdown (campaigns, bots, partners)")
 
+    rivals: list[Candidate] = []
     if cand is not None:
         rivals = [c for c in _candidates(hits, evidence)
                   if c is not cand and c.hit.record["id"] != cand.hit.record["id"]
@@ -183,6 +195,9 @@ def assess(analysis: ChangeAnalysis, hits: list[RecordHit], factors: list[dict],
         score = min(score, round(PARTIAL_AT - 0.05, 2))
     verdict = (Verdict.SUFFICIENT if score >= SUFFICIENT_AT
                else Verdict.PARTIAL if score >= PARTIAL_AT else Verdict.INSUFFICIENT)
+    if verdict == Verdict.SUFFICIENT and rivals:
+        verdict = Verdict.PARTIAL
+        reasons.append("✗ Two or more changes fit equally well, so the cause cannot be confirmed.")
     if verdict != Verdict.INSUFFICIENT and not factors:
         verdict = Verdict.INSUFFICIENT
         reasons.append("✗ No contributing factor could be stated.")

@@ -1,0 +1,15 @@
+{"id": "R001", "timestamp": "2026-03-14T04:04:44Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R002", "timestamp": "2026-03-14T06:01:53Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v4.8 to eu-west (routine release)"}
+{"id": "R003", "timestamp": "2026-03-14T10:28:31Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v4.7 to eu-west (routine release)"}
+{"id": "R004", "timestamp": "2026-03-14T15:21:33Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v2.9 to us-east (routine release)"}
+{"id": "R005", "timestamp": "2026-03-14T15:37:37Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v4.27 to eu-west (routine release)"}
+{"id": "R006", "timestamp": "2026-03-15T01:24:01Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v2.24 to eu-west (routine release)"}
+{"id": "R007", "timestamp": "2026-03-15T04:06:22Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v4.12 to ap-south"}
+{"id": "R008", "timestamp": "2026-03-15T05:44:31Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v2.0 to ap-south (routine release)"}
+{"id": "R009", "timestamp": "2026-03-15T07:20:16Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v2.25 to ap-south (routine release)"}
+{"id": "R010", "timestamp": "2026-03-15T10:18:15Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v3.27 to us-east (routine release)"}
+{"id": "R011", "timestamp": "2026-03-15T13:46:52Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO nightly backup completed"}
+{"id": "R012", "timestamp": "2026-03-15T15:18:20Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO autoscaler: no change"}
+{"id": "R013", "timestamp": "2026-03-15T16:51:22Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R014", "timestamp": "2026-03-15T18:07:54Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO nightly backup completed"}
+{"id": "R015", "timestamp": "2026-03-15T23:20:50Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO autoscaler: no change"}

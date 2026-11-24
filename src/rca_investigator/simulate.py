@@ -32,6 +32,7 @@ SERVICES = {
 REGIONS = {"eu-west": 1.0, "us-east": 1.3, "ap-south": 0.6}
 BASE_ERROR_RATE = 0.004
 
+TWISTS = ("red_herring_other", "red_herring_early", "missing_cause", "rival_change", "none")
 SCENARIOS = ("bad_deploy", "config_change", "traffic_spike", "dependency_outage", "no_clear_cause")
 METRIC_LABELS = {"error_rate": "error rate", "latency_p95_ms": "p95 latency"}
 
@@ -79,6 +80,8 @@ class _Builder:
                     "lat": np.ones(n),
                 }
         self._records: list[tuple[datetime, dict, bool]] = []
+        self.drop_causes = False  # "missing_cause" twist: the cause was never recorded
+        self.noise = 1.0
 
     def inject(self, t0, services, regions, load=1.0, err=1.0, lat=1.0):
         after = (self.times >= t0).astype(float)
@@ -89,6 +92,8 @@ class _Builder:
                 seg["lat"] = seg["lat"] * (1 + (lat - 1) * after)
 
     def record(self, ts, source, text, service=None, region=None, cause=False):
+        if cause and self.drop_causes:
+            return
         rec = {"source": source, "service": service, "region": region, "text": text}
         self._records.append((ts, rec, cause))
 
@@ -106,10 +111,10 @@ class _Builder:
         frames = []
         for (service, region), seg in self.segments.items():
             requests = self.rng.poisson(seg["load"])
-            rate = np.clip(seg["err"] * self.rng.lognormal(0, 0.15, len(requests)), 0, 1)
+            rate = np.clip(seg["err"] * self.rng.lognormal(0, 0.15 * self.noise, len(requests)), 0, 1)
             errors = self.rng.binomial(requests, rate)
             base_latency = SERVICES[service][1]
-            latency = base_latency * seg["lat"] * self.rng.lognormal(0, 0.06, len(requests))
+            latency = base_latency * seg["lat"] * self.rng.lognormal(0, 0.06 * self.noise, len(requests))
             frames.append(
                 pd.DataFrame(
                     {
@@ -156,13 +161,49 @@ def _add_routine_noise(b: _Builder, t0: datetime, start: datetime) -> None:
         added += 1
 
 
-def generate_incident(incident_id: str, scenario: str, seed: int) -> Incident:
+def _apply_twist(b: _Builder, twist: str, scenario: str, t0: datetime, service: str,
+                 region: str, segment: dict[str, str]) -> None:
+    """Add a misleading or competing change event."""
+    rng = b.rng
+    version = f"v{rng.integers(1, 9)}.{rng.integers(0, 30)}"
+    same_s = segment.get("service") or str(rng.choice(list(SERVICES)))
+    same_r = segment.get("region") or str(rng.choice(list(REGIONS)))
+    if twist == "red_herring_other":
+        # A change elsewhere at almost the same time: tempting, but the wrong place.
+        other_s = str(rng.choice([s for s in SERVICES if s != service]))
+        other_r = str(rng.choice([r for r in REGIONS if r != region]))
+        b.record(t0 - _minutes(rng.uniform(1, 5)), "deploys",
+                 f"Deployed {other_s} {version} to {other_r}", other_s, other_r)
+    elif twist == "red_herring_early":
+        # A change in the right place, but hours too early to explain a sudden shift.
+        b.record(t0 - _minutes(rng.uniform(150, 300)), "deploys",
+                 f"Deployed {same_s} {version} to {same_r}", same_s, same_r)
+    elif twist == "rival_change":
+        # A second change in the same place at the same time: the data cannot tell them apart.
+        if scenario == "config_change":
+            b.record(t0 - _minutes(rng.uniform(1, 3)), "deploys",
+                     f"Deployed {same_s} {version} to {same_r}", same_s, same_r)
+        else:
+            b.record(t0 - _minutes(rng.uniform(1, 3)), "config_changes",
+                     f"Changed {same_s} feature flag new_ui_flow to 50% in {same_r}",
+                     same_s, same_r)
+
+
+def generate_incident(incident_id: str, scenario: str, seed: int, twist: str = "none",
+                      noise: float = 1.0) -> Incident:
+    """One incident. `twist` makes it harder (see TWISTS); `noise` scales metric noise."""
     if scenario not in SCENARIOS:
         raise ValueError(f"unknown scenario {scenario!r}; choose from {SCENARIOS}")
+    if twist not in TWISTS:
+        raise ValueError(f"unknown twist {twist!r}; choose from {TWISTS}")
+    if scenario == "no_clear_cause" and twist in ("missing_cause", "rival_change"):
+        twist = "red_herring_other" if twist == "missing_cause" else "red_herring_early"
     rng = np.random.default_rng(seed)
     start = datetime(2026, 3, 1, tzinfo=timezone.utc) + timedelta(days=int(rng.integers(0, 25)))
     t0 = start + _minutes(STEP_MINUTES * int(rng.integers(26 * 12, 40 * 12)))
     b = _Builder(rng, start)
+    b.noise = noise
+    b.drop_causes = twist == "missing_cause"
     service = str(rng.choice(list(SERVICES)))
     region = str(rng.choice(list(REGIONS)))
     all_regions = list(REGIONS)
@@ -225,6 +266,12 @@ def generate_incident(incident_id: str, scenario: str, seed: int) -> Incident:
         segment = {"service": service, "region": region}
         b.inject(t0, [service], [region], err=rng.uniform(1.8, 2.5))
 
+    if twist != "none":
+        _apply_twist(b, twist, scenario, t0, service, region, segment)
+        if twist == "missing_cause":
+            verdict = "insufficient"
+        elif twist == "rival_change":
+            verdict = "partial"
     _add_routine_noise(b, t0, start)
     records, cause_ids = b.records()
     question = f"Why did the {METRIC_LABELS[metric]} go up on {t0:%d %B %Y}?"
@@ -236,16 +283,23 @@ def generate_incident(incident_id: str, scenario: str, seed: int) -> Incident:
         "change_start": _iso(t0),
         "cause_record_ids": cause_ids,
         "expected_verdict": verdict,
+        "twist": twist,
     }
     return Incident(incident_id, question, metric, b.metrics(), records, truth)
 
 
-def generate_dataset(n: int, seed: int = 42) -> list[Incident]:
-    """n incidents, cycling through the scenarios so each is equally represented."""
-    return [
-        generate_incident(f"INC-{i + 1:03d}", SCENARIOS[i % len(SCENARIOS)], seed * 1000 + i)
-        for i in range(n)
-    ]
+def generate_dataset(n: int, seed: int = 42, hard: bool = False) -> list[Incident]:
+    """n incidents, cycling through the scenarios so each is equally represented.
+
+    With hard=True every scenario also cycles through the twists, and metric noise is higher.
+    """
+    out = []
+    for i in range(n):
+        scenario = SCENARIOS[i % len(SCENARIOS)]
+        twist = TWISTS[(i // len(SCENARIOS)) % len(TWISTS)] if hard else "none"
+        out.append(generate_incident(f"INC-{i + 1:03d}", scenario, seed * 1000 + i, twist=twist,
+                                     noise=1.6 if hard else 1.0))
+    return out
 
 
 def save_incident(incident: Incident, out_dir: str | Path) -> Path:

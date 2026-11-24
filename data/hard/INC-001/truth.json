@@ -1,0 +1,15 @@
+{
+  "scenario": "bad_deploy",
+  "category": "deployment",
+  "metric": "error_rate",
+  "segment": {
+    "service": "search",
+    "region": "ap-south"
+  },
+  "change_start": "2026-03-26T06:20:00Z",
+  "cause_record_ids": [
+    "R011"
+  ],
+  "expected_verdict": "sufficient",
+  "twist": "red_herring_other"
+}

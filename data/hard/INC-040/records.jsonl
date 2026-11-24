@@ -1,0 +1,13 @@
+{"id": "R001", "timestamp": "2026-03-04T02:02:12Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R002", "timestamp": "2026-03-04T04:44:10Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v1.18 to ap-south (routine release)"}
+{"id": "R003", "timestamp": "2026-03-04T10:18:09Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R004", "timestamp": "2026-03-04T15:06:23Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R005", "timestamp": "2026-03-04T19:50:12Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v3.16 to ap-south (routine release)"}
+{"id": "R006", "timestamp": "2026-03-05T01:40:11Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v4.8 to us-east (routine release)"}
+{"id": "R007", "timestamp": "2026-03-05T03:46:26Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R008", "timestamp": "2026-03-05T05:57:58Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v8.10 to eu-west"}
+{"id": "R009", "timestamp": "2026-03-05T14:41:27Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R010", "timestamp": "2026-03-05T17:44:33Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R011", "timestamp": "2026-03-05T18:48:31Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO certificate check passed"}
+{"id": "R012", "timestamp": "2026-03-05T19:04:46Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R013", "timestamp": "2026-03-05T20:47:20Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}

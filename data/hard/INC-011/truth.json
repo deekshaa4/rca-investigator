@@ -1,0 +1,13 @@
+{
+  "scenario": "bad_deploy",
+  "category": "deployment",
+  "metric": "error_rate",
+  "segment": {
+    "service": "auth",
+    "region": "eu-west"
+  },
+  "change_start": "2026-03-04T08:50:00Z",
+  "cause_record_ids": [],
+  "expected_verdict": "insufficient",
+  "twist": "missing_cause"
+}

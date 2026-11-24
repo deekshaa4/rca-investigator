@@ -1,0 +1,179 @@
+{
+  "incident_id": "INC-001",
+  "question": "Why did the error rate go up on 26 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "search",
+      "region": "ap-south"
+    },
+    "change_start": "2026-03-26T06:20:00Z",
+    "baseline_value": 0.0033529395604395607,
+    "current_value": 0.029873349056603774,
+    "relative_change": 7.9096,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New deployment of search v2.20 caused the error rate to spike.",
+      "category": "deployment",
+      "confidence": 0.9,
+      "why_chain": [
+        "The deployment of search v2.20 introduced a new version of the service.",
+        "This new version was deployed 4 minutes before the error rate spike.",
+        "The error rate increased significantly after the deployment, indicating the deployment was the cause."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E1"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "NullPointerException in RequestHandler.serialize caused the error.",
+      "category": "unknown",
+      "confidence": 0.8,
+      "why_chain": [
+        "The deployment of search v2.20 introduced a new version of the service.",
+        "This new version caused a NullPointerException in RequestHandler.serialize.",
+        "This NullPointerException led to the error rate spike."
+      ],
+      "evidence_ids": [
+        "E7",
+        "E8",
+        "E5"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in request volume caused the error rate spike.",
+      "reason": "The request volume stayed about the same before and after the change.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The increase in p95 latency caused the error rate spike.",
+      "reason": "The p95 latency stayed about the same before and after the change.",
+      "evidence_ids": [
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of catalog v6.12 caused the error rate spike.",
+      "reason": "The deployment of catalog v6.12 happened 4 minutes before the change, not 4 minutes after.",
+      "evidence_ids": [
+        "E9"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service search in region ap-south rose from 0.34% to 2.99% (+791%), with a change point at 2026-03-26T06:20:00Z.",
+      "timestamp": "2026-03-26T06:20:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service search in region ap-south: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.17).",
+      "timestamp": "2026-03-26T06:20:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service search in region ap-south stayed about the same (506 per 5 min before, 603 per 5 min after, +19%).",
+      "timestamp": "2026-03-26T06:20:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service search in region ap-south stayed about the same (141 ms before, 140 ms after, -1%).",
+      "timestamp": "2026-03-26T06:20:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed search v2.20 to ap-south (search, ap-south; 4 min before the change; record R011)",
+      "timestamp": "2026-03-26T06:16:01Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "High error rate on search in ap-south (search, ap-south; 10 min after the change; record R014)",
+      "timestamp": "2026-03-26T06:30:00Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR NullPointerException in RequestHandler.serialize (v2.20) (search, ap-south; 2 min after the change; record R013)",
+      "timestamp": "2026-03-26T06:21:49Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR NullPointerException in RequestHandler.serialize (v2.20) (search, ap-south; 22 min after the change; record R015)",
+      "timestamp": "2026-03-26T06:42:02Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v6.12 to eu-west (catalog, eu-west; 4 min before the change; record R012)",
+      "timestamp": "2026-03-26T06:16:07Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 1.0,
+    "reasons": [
+      "\u2713 A change event (deploys) lines up in time (4 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 3 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Fix the NullPointerException in RequestHandler.serialize in the new search v2.20 version.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the error rate and request volume closely after any deployment to ap-south.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and test the new search v2.20 version in a staging environment before deploying to production.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

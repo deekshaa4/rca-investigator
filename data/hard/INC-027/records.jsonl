@@ -1,0 +1,19 @@
+{"id": "R001", "timestamp": "2026-03-19T00:14:02Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R002", "timestamp": "2026-03-19T02:43:07Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R003", "timestamp": "2026-03-19T06:50:09Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R004", "timestamp": "2026-03-19T07:20:18Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v1.26 to eu-west (routine release)"}
+{"id": "R005", "timestamp": "2026-03-19T08:48:30Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v4.26 to ap-south (routine release)"}
+{"id": "R006", "timestamp": "2026-03-19T09:36:49Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: INFO nightly backup completed"}
+{"id": "R007", "timestamp": "2026-03-19T23:55:58Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: INFO cache warmed in 1.8s"}
+{"id": "R008", "timestamp": "2026-03-20T04:02:36Z", "source": "config_changes", "service": "auth", "region": null, "text": "Changed auth db.pool_size from 50 to 5 (all regions)"}
+{"id": "R009", "timestamp": "2026-03-20T04:02:46Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v4.24 to eu-west"}
+{"id": "R010", "timestamp": "2026-03-20T04:20:00Z", "source": "alerts", "service": "auth", "region": null, "text": "p95 latency above SLO on auth"}
+{"id": "R011", "timestamp": "2026-03-20T04:25:50Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R012", "timestamp": "2026-03-20T04:28:28Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R013", "timestamp": "2026-03-20T04:29:18Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R014", "timestamp": "2026-03-20T10:27:36Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Customer reports a typo on the help page."}
+{"id": "R015", "timestamp": "2026-03-20T17:17:05Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v1.25 to eu-west (routine release)"}
+{"id": "R016", "timestamp": "2026-03-20T18:37:09Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v4.29 to eu-west (routine release)"}
+{"id": "R017", "timestamp": "2026-03-20T19:46:16Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO nightly backup completed"}
+{"id": "R018", "timestamp": "2026-03-20T21:27:55Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R019", "timestamp": "2026-03-20T21:59:32Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO cache warmed in 1.8s"}

@@ -1,0 +1,20 @@
+{"id": "R001", "timestamp": "2026-03-25T00:45:29Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: INFO certificate check passed"}
+{"id": "R002", "timestamp": "2026-03-25T07:04:12Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v2.2 to eu-west (routine release)"}
+{"id": "R003", "timestamp": "2026-03-25T13:00:29Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R004", "timestamp": "2026-03-25T13:03:47Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v4.28 to ap-south (routine release)"}
+{"id": "R005", "timestamp": "2026-03-25T16:44:15Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v4.19 to ap-south (routine release)"}
+{"id": "R006", "timestamp": "2026-03-25T19:57:44Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO autoscaler: no change"}
+{"id": "R007", "timestamp": "2026-03-25T23:25:47Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO cache warmed in 1.8s"}
+{"id": "R008", "timestamp": "2026-03-26T03:39:33Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R009", "timestamp": "2026-03-26T05:11:54Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R010", "timestamp": "2026-03-26T07:59:59Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: INFO cache warmed in 1.8s"}
+{"id": "R011", "timestamp": "2026-03-26T09:25:54Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: INFO certificate check passed"}
+{"id": "R012", "timestamp": "2026-03-26T11:32:38Z", "source": "config_changes", "service": "catalog", "region": "eu-west", "text": "Changed catalog feature flag new_ui_flow to 50% in eu-west"}
+{"id": "R013", "timestamp": "2026-03-26T11:37:24Z", "source": "alerts", "service": "catalog", "region": null, "text": "Upstream catalog-db returning HTTP 503 for catalog"}
+{"id": "R014", "timestamp": "2026-03-26T11:48:49Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: ERROR upstream catalog-db timeout after 3 retries"}
+{"id": "R015", "timestamp": "2026-03-26T11:49:19Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR upstream catalog-db timeout after 3 retries"}
+{"id": "R016", "timestamp": "2026-03-26T11:50:38Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: ERROR upstream catalog-db timeout after 3 retries"}
+{"id": "R017", "timestamp": "2026-03-26T12:05:00Z", "source": "tickets", "service": "catalog", "region": null, "text": "catalog-db status page: investigating degraded performance"}
+{"id": "R018", "timestamp": "2026-03-26T13:13:21Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v4.0 to ap-south (routine release)"}
+{"id": "R019", "timestamp": "2026-03-26T13:54:53Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R020", "timestamp": "2026-03-26T20:11:13Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v1.3 to us-east (routine release)"}

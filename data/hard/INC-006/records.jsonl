@@ -1,0 +1,25 @@
+{"id": "R001", "timestamp": "2026-03-19T03:14:49Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO cache warmed in 1.8s"}
+{"id": "R002", "timestamp": "2026-03-19T05:58:52Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R003", "timestamp": "2026-03-19T07:01:57Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO cache warmed in 1.8s"}
+{"id": "R004", "timestamp": "2026-03-19T09:04:40Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v2.2 to ap-south (routine release)"}
+{"id": "R005", "timestamp": "2026-03-19T09:32:20Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v4.6 to ap-south (routine release)"}
+{"id": "R006", "timestamp": "2026-03-19T09:58:23Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: INFO certificate check passed"}
+{"id": "R007", "timestamp": "2026-03-19T14:58:39Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO certificate check passed"}
+{"id": "R008", "timestamp": "2026-03-19T15:27:27Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R009", "timestamp": "2026-03-19T16:21:17Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: INFO nightly backup completed"}
+{"id": "R010", "timestamp": "2026-03-19T17:38:49Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO autoscaler: no change"}
+{"id": "R011", "timestamp": "2026-03-20T01:01:22Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R012", "timestamp": "2026-03-20T01:18:52Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v2.24 to eu-west"}
+{"id": "R013", "timestamp": "2026-03-20T01:55:42Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v1.13 to ap-south (routine release)"}
+{"id": "R014", "timestamp": "2026-03-20T03:07:02Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v3.10 to eu-west (routine release)"}
+{"id": "R015", "timestamp": "2026-03-20T04:43:56Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v4.0 to eu-west"}
+{"id": "R016", "timestamp": "2026-03-20T04:46:25Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v4.0)"}
+{"id": "R017", "timestamp": "2026-03-20T04:54:29Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v4.0)"}
+{"id": "R018", "timestamp": "2026-03-20T04:55:00Z", "source": "alerts", "service": "catalog", "region": "eu-west", "text": "High error rate on catalog in eu-west"}
+{"id": "R019", "timestamp": "2026-03-20T05:21:03Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v4.0)"}
+{"id": "R020", "timestamp": "2026-03-20T08:45:12Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v3.2 to ap-south (routine release)"}
+{"id": "R021", "timestamp": "2026-03-20T12:30:26Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v4.3 to ap-south (routine release)"}
+{"id": "R022", "timestamp": "2026-03-20T14:37:13Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO nightly backup completed"}
+{"id": "R023", "timestamp": "2026-03-20T15:46:30Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v1.5 to ap-south (routine release)"}
+{"id": "R024", "timestamp": "2026-03-20T16:20:07Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R025", "timestamp": "2026-03-20T23:31:35Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO cache warmed in 1.8s"}

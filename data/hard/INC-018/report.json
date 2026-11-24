@@ -1,0 +1,179 @@
+{
+  "incident_id": "INC-018",
+  "question": "Why did the p95 latency go up on 20 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "region": "eu-west"
+    },
+    "change_start": "2026-03-20T02:35:00Z",
+    "baseline_value": 136.74114447848416,
+    "current_value": 245.93914732232926,
+    "relative_change": 0.7986,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The auth feature flag change likely increased latency due to a configuration mismatch.",
+      "category": "config_change",
+      "confidence": 0.8,
+      "why_chain": [
+        "The auth feature flag was changed to 50% in eu-west, affecting the system's behavior.",
+        "This change could have introduced a configuration mismatch, leading to increased latency.",
+        "The increased latency is observed in the P95 latency metric, which is affected by the auth feature flag."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E1"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The flash sale campaign likely caused a spike in request volume, increasing latency.",
+      "category": "traffic",
+      "confidence": 0.7,
+      "why_chain": [
+        "The flash sale campaign went live in eu-west at 02:35 UTC, coinciding with the change point.",
+        "The increase in request volume is observed, indicating a sudden surge in traffic.",
+        "The increased latency is observed in the P95 latency metric, which is affected by the traffic spike."
+      ],
+      "evidence_ids": [
+        "E6",
+        "E1"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The deployment of auth v3.26 to us-east was the cause.",
+      "reason": "The deployment to us-east occurred 200 minutes before the change point, which is too early to be the cause.",
+      "evidence_ids": [
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "The error rate increase was due to the deployment to us-east.",
+      "reason": "The error rate increase occurred after the change point, and the deployment to us-east happened before the change.",
+      "evidence_ids": [
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "The data quality issues caused the increase in latency.",
+      "reason": "There is no evidence that the data quality issues were the cause of the increase in latency.",
+      "evidence_ids": []
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for region eu-west rose from 137 ms to 246 ms (+80%), with a change point at 2026-03-20T02:35:00Z.",
+      "timestamp": "2026-03-20T02:35:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in region eu-west: 4 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.01).",
+      "timestamp": "2026-03-20T02:35:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for region eu-west rose (2132 per 5 min before, 7230 per 5 min after, +239%).",
+      "timestamp": "2026-03-20T02:35:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for region eu-west rose (0.39% before, 0.80% after, +105%).",
+      "timestamp": "2026-03-20T02:35:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "config_changes",
+      "summary": "Changed auth feature flag new_ui_flow to 50% in eu-west (auth, eu-west; 2 min before the change; record R011)",
+      "timestamp": "2026-03-20T02:33:12Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "Marketing: flash sale campaign goes live in eu-west at 02:35 UTC (eu-west; 242 min before the change; record R008)",
+      "timestamp": "2026-03-19T22:32:50Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Request volume 3x normal in eu-west (eu-west; 12 min after the change; record R012)",
+      "timestamp": "2026-03-20T02:47:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "autoscaler: scaling out, 4 new instances requested (eu-west; 20 min after the change; record R013)",
+      "timestamp": "2026-03-20T02:55:00Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed auth v3.26 to us-east (routine release) (auth, us-east; 200 min before the change; record R010)",
+      "timestamp": "2026-03-19T23:15:25Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "partial",
+    "score": 0.8,
+    "reasons": [
+      "\u2713 A change event (config_changes) lines up in time (2 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 2 log/alert record(s) after the change agree with the numbers.",
+      "\u2717 Request volume also rose, so a traffic explanation is still open.",
+      "\u2717 1 other change event(s) fit about as well.",
+      "\u2713 The main factor rests on this event.",
+      "\u2717 Two or more changes fit equally well, so the cause cannot be confirmed."
+    ],
+    "missing_data": [
+      "Traffic source breakdown (campaigns, bots, partners)",
+      "Details to tell the competing changes apart (e.g. a rollback test)"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Review and revert the auth feature flag change to 50% in eu-west.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor request volume and latency closely during flash sale campaigns and adjust scaling as needed.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    },
+    {
+      "action": "Implement a traffic management system to handle sudden spikes in traffic during campaigns.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

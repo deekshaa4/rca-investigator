@@ -1,0 +1,22 @@
+{"id": "R001", "timestamp": "2026-03-03T01:14:27Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v4.8 to ap-south (routine release)"}
+{"id": "R002", "timestamp": "2026-03-03T04:25:55Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R003", "timestamp": "2026-03-03T09:01:13Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO certificate check passed"}
+{"id": "R004", "timestamp": "2026-03-03T11:20:41Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R005", "timestamp": "2026-03-03T13:27:16Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v1.28 to ap-south (routine release)"}
+{"id": "R006", "timestamp": "2026-03-03T17:52:09Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R007", "timestamp": "2026-03-03T18:19:33Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO nightly backup completed"}
+{"id": "R008", "timestamp": "2026-03-03T19:59:47Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v2.27 to us-east (routine release)"}
+{"id": "R009", "timestamp": "2026-03-04T04:45:52Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v8.0 to eu-west"}
+{"id": "R010", "timestamp": "2026-03-04T04:47:28Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v2.14 to us-east"}
+{"id": "R011", "timestamp": "2026-03-04T04:58:10Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.14)"}
+{"id": "R012", "timestamp": "2026-03-04T05:00:00Z", "source": "alerts", "service": "auth", "region": "us-east", "text": "High error rate on auth in us-east"}
+{"id": "R013", "timestamp": "2026-03-04T05:17:18Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.14)"}
+{"id": "R014", "timestamp": "2026-03-04T05:29:33Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.14)"}
+{"id": "R015", "timestamp": "2026-03-04T09:09:31Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO certificate check passed"}
+{"id": "R016", "timestamp": "2026-03-04T09:41:16Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO autoscaler: no change"}
+{"id": "R017", "timestamp": "2026-03-04T11:09:17Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R018", "timestamp": "2026-03-04T11:45:15Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO nightly backup completed"}
+{"id": "R019", "timestamp": "2026-03-04T15:46:05Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO cache warmed in 1.8s"}
+{"id": "R020", "timestamp": "2026-03-04T16:59:44Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R021", "timestamp": "2026-03-04T17:19:46Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v1.2 to eu-west (routine release)"}
+{"id": "R022", "timestamp": "2026-03-04T21:28:57Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Customer asks how to download an invoice."}

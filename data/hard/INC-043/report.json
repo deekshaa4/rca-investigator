@@ -1,0 +1,192 @@
+{
+  "incident_id": "INC-043",
+  "question": "Why did the p95 latency go up on 26 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "region": "eu-west"
+    },
+    "change_start": "2026-03-26T13:45:00Z",
+    "baseline_value": 137.04231249419553,
+    "current_value": 224.22901670297693,
+    "relative_change": 0.6362,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The deployment of the search v3.1 to eu-west increased request volume and led to higher p95 latency.",
+      "category": "deployment",
+      "confidence": 0.3,
+      "why_chain": [
+        "The deployment of search v3.1 to eu-west caused a surge in request volume.",
+        "The surge in request volume overwhelmed the autoscaler, leading to scaling out and increased latency.",
+        "The increased latency resulted in the observed p95 latency rise."
+      ],
+      "evidence_ids": [
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The change in the checkout feature flag led to a flash sale campaign, increasing request volume.",
+      "category": "config_change",
+      "confidence": 0.3,
+      "why_chain": [
+        "The change in the checkout feature flag triggered the flash sale campaign.",
+        "The flash sale campaign increased request volume, which in turn caused the p95 latency rise.",
+        "The increased request volume overwhelmed the system, leading to higher latency."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E7"
+      ]
+    },
+    {
+      "rank": 3,
+      "description": "The rise in request volume due to the flash sale campaign caused the autoscaler to scale out, leading to higher p95 latency.",
+      "category": "traffic",
+      "confidence": 0.3,
+      "why_chain": [
+        "The flash sale campaign increased request volume.",
+        "The increased request volume caused the autoscaler to scale out.",
+        "The scaling out led to higher p95 latency."
+      ],
+      "evidence_ids": [
+        "E6",
+        "E7",
+        "E9"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The autoscaler scaling out was due to a bug in the autoscaler itself.",
+      "reason": "There is no evidence that the autoscaler scaling out was due to a bug. The evidence points to the flash sale campaign as the cause.",
+      "evidence_ids": [
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "The increase in p95 latency was due to a configuration issue in the search service.",
+      "reason": "The deployment of search v3.1 was routine and did not indicate a configuration issue. The evidence points to the flash sale campaign as the cause.",
+      "evidence_ids": [
+        "E8"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for region eu-west rose from 137 ms to 224 ms (+64%), with a change point at 2026-03-26T13:45:00Z.",
+      "timestamp": "2026-03-26T13:45:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in region eu-west: 4 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.02).",
+      "timestamp": "2026-03-26T13:45:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for region eu-west rose (2118 per 5 min before, 7734 per 5 min after, +265%).",
+      "timestamp": "2026-03-26T13:45:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for region eu-west rose (0.48% before, 0.97% after, +102%).",
+      "timestamp": "2026-03-26T13:45:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "config_changes",
+      "summary": "Changed checkout feature flag new_ui_flow to 50% in eu-west (checkout, eu-west; 3 min before the change; record R016)",
+      "timestamp": "2026-03-26T13:42:09Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "Marketing: flash sale campaign goes live in eu-west at 13:45 UTC (eu-west; 220 min before the change; record R014)",
+      "timestamp": "2026-03-26T10:04:43Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Request volume 3x normal in eu-west (eu-west; 12 min after the change; record R017)",
+      "timestamp": "2026-03-26T13:57:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed search v3.1 to eu-west (routine release) (search, eu-west; 136 min before the change; record R015)",
+      "timestamp": "2026-03-26T11:28:34Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "autoscaler: scaling out, 4 new instances requested (eu-west; 20 min after the change; record R018)",
+      "timestamp": "2026-03-26T14:05:00Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.4,
+    "reasons": [
+      "\u2717 The closest change event is 136 min before the change, too far to be convincing.",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 2 log/alert record(s) after the change agree with the numbers.",
+      "\u2717 Request volume also rose, so a traffic explanation is still open.",
+      "\u2717 2 other change event(s) fit about as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records from the hour before the change",
+      "Traffic source breakdown (campaigns, bots, partners)",
+      "Details to tell the competing changes apart (e.g. a rollback test)"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the search v3.1 deployment to eu-west.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        3
+      ]
+    },
+    {
+      "action": "Monitor the autoscaler and ensure it is configured correctly to avoid scaling out during normal operations.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and optimize the autoscaler configuration to handle sudden spikes in request volume more gracefully.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

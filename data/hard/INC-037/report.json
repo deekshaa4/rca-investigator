@@ -1,0 +1,142 @@
+{
+  "incident_id": "INC-037",
+  "question": "Why did the p95 latency go up on 06 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "service": "search"
+    },
+    "change_start": "2026-03-06T07:35:00Z",
+    "baseline_value": 140.724954286884,
+    "current_value": 361.6766033660635,
+    "relative_change": 1.5701,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in latency was due to a new release or version.",
+      "reason": "No evidence supports a new release or version change.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "hypothesis": "The increase in latency was due to a configuration change.",
+      "reason": "No evidence supports a configuration change.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "hypothesis": "The increase in latency was due to a change in traffic.",
+      "reason": "Request volume and error rate did not change significantly.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in latency was due to a dependency issue.",
+      "reason": "No evidence supports a dependency issue.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "hypothesis": "The increase in latency was due to a data issue.",
+      "reason": "No evidence supports a data issue.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "hypothesis": "The increase in latency was due to an unknown issue.",
+      "reason": "No evidence supports an unknown issue.",
+      "evidence_ids": [
+        "E1"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for service search rose from 141 ms to 362 ms (+157%), with a change point at 2026-03-06T07:35:00Z.",
+      "timestamp": "2026-03-06T07:35:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in service search: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.01).",
+      "timestamp": "2026-03-06T07:35:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service search stayed about the same (2428 per 5 min before, 2952 per 5 min after, +22%).",
+      "timestamp": "2026-03-06T07:35:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for service search rose (0.41% before, 0.63% after, +56%).",
+      "timestamp": "2026-03-06T07:35:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "p95 latency above SLO on search (search; 15 min after the change; record R015)",
+      "timestamp": "2026-03-06T07:50:00Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, eu-west; 9 min after the change; record R014)",
+      "timestamp": "2026-03-06T07:44:01Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, ap-south; 16 min after the change; record R016)",
+      "timestamp": "2026-03-06T07:50:45Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, us-east; 20 min after the change; record R017)",
+      "timestamp": "2026-03-06T07:55:09Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: INFO cache warmed in 1.8s (search, us-east; 292 min before the change; record R012)",
+      "timestamp": "2026-03-06T02:43:30Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.25,
+    "reasons": [
+      "\u2717 No deploy, config change, ticket or alert lines up with the change.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike."
+    ],
+    "missing_data": [
+      "Deploy and config-change history for the affected segment"
+    ]
+  },
+  "actions": []
+}

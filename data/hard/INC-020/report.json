@@ -1,0 +1,153 @@
+{
+  "incident_id": "INC-020",
+  "question": "Why did the error rate go up on 21 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "search",
+      "region": "ap-south"
+    },
+    "change_start": "2026-03-21T11:55:00Z",
+    "baseline_value": 0.004824895591647332,
+    "current_value": 0.010693241379310344,
+    "relative_change": 1.2163,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New deployment caused the error rate to increase.",
+      "category": "deployment",
+      "confidence": 0.3,
+      "why_chain": [
+        "search v7.6 deployment introduced changes to the service search in region ap-south.",
+        "The error rate increased from 0.48% to 1.07% after the deployment.",
+        "The error rate increase is concentrated in service search in region ap-south, where the deployment occurred."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E1"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The deployment may have introduced a new issue that affected the error rate.",
+      "category": "unknown",
+      "confidence": 0.3,
+      "why_chain": [
+        "The deployment of search v7.6 did not affect the request volume or latency.",
+        "The error rate increase is not explained by changes in request volume or latency.",
+        "The error rate increase is specific to the service search in region ap-south, which is where the deployment occurred."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E1"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate is due to a sudden increase in user traffic.",
+      "reason": "The request volume did not change significantly, and the error rate increase is specific to the service search in region ap-south.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a problem with the upstream service.",
+      "reason": "The deployment of search v7.6 did not affect the latency, and the error rate increase is specific to the service search in region ap-south.",
+      "evidence_ids": [
+        "E4"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service search in region ap-south rose from 0.48% to 1.07% (+122%), with a change point at 2026-03-21T11:55:00Z.",
+      "timestamp": "2026-03-21T11:55:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service search in region ap-south: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.18).",
+      "timestamp": "2026-03-21T11:55:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service search in region ap-south stayed about the same (511 per 5 min before, 627 per 5 min after, +23%).",
+      "timestamp": "2026-03-21T11:55:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service search in region ap-south stayed about the same (140 ms before, 138 ms after, -2%).",
+      "timestamp": "2026-03-21T11:55:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed search v7.6 to ap-south (search, ap-south; 217 min before the change; record R009)",
+      "timestamp": "2026-03-21T08:18:15Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: WARN slow query 1.2s on report endpoint (single occurrence) (search, us-east; 94 min before the change; record R010)",
+      "timestamp": "2026-03-21T10:20:30Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.4,
+    "reasons": [
+      "\u2717 The closest change event is 217 min before the change, too far to be convincing.",
+      "\u2713 It concerns the affected service/region.",
+      "\u2717 No logs or alerts from the affected segment confirm the problem.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records from the hour before the change",
+      "Error logs or traces from the affected segment after the change"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the search v7.6 deployment to revert the changes.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the service search in region ap-south for any further issues and take appropriate action.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and test the deployment process to ensure it is robust and can handle changes without affecting other services.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

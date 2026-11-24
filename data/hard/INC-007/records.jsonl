@@ -1,0 +1,24 @@
+{"id": "R001", "timestamp": "2026-03-03T01:01:16Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R002", "timestamp": "2026-03-03T01:31:34Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R003", "timestamp": "2026-03-03T02:26:49Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v2.9 to eu-west (routine release)"}
+{"id": "R004", "timestamp": "2026-03-03T12:39:44Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v4.18 to ap-south (routine release)"}
+{"id": "R005", "timestamp": "2026-03-03T13:11:36Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v2.2 to us-east (routine release)"}
+{"id": "R006", "timestamp": "2026-03-03T13:56:08Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R007", "timestamp": "2026-03-03T14:55:33Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO autoscaler: no change"}
+{"id": "R008", "timestamp": "2026-03-03T15:18:16Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v1.3 to us-east (routine release)"}
+{"id": "R009", "timestamp": "2026-03-03T17:13:15Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v3.14 to us-east (routine release)"}
+{"id": "R010", "timestamp": "2026-03-03T17:52:55Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v3.7 to eu-west (routine release)"}
+{"id": "R011", "timestamp": "2026-03-03T21:32:46Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v4.1 to us-east (routine release)"}
+{"id": "R012", "timestamp": "2026-03-03T22:09:48Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R013", "timestamp": "2026-03-04T03:26:08Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R014", "timestamp": "2026-03-04T05:03:16Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: INFO autoscaler: no change"}
+{"id": "R015", "timestamp": "2026-03-04T06:36:06Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO certificate check passed"}
+{"id": "R016", "timestamp": "2026-03-04T07:26:24Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R017", "timestamp": "2026-03-04T08:18:20Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v7.19 to ap-south"}
+{"id": "R018", "timestamp": "2026-03-04T09:25:49Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO cache warmed in 1.8s"}
+{"id": "R019", "timestamp": "2026-03-04T11:57:25Z", "source": "config_changes", "service": "auth", "region": null, "text": "Changed auth db.pool_size from 50 to 5 (all regions)"}
+{"id": "R020", "timestamp": "2026-03-04T12:12:47Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R021", "timestamp": "2026-03-04T12:15:00Z", "source": "alerts", "service": "auth", "region": null, "text": "p95 latency above SLO on auth"}
+{"id": "R022", "timestamp": "2026-03-04T12:19:16Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R023", "timestamp": "2026-03-04T12:24:19Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R024", "timestamp": "2026-03-04T14:18:01Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v4.21 to eu-west (routine release)"}

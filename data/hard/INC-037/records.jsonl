@@ -1,0 +1,23 @@
+{"id": "R001", "timestamp": "2026-03-05T02:26:12Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v1.4 to ap-south (routine release)"}
+{"id": "R002", "timestamp": "2026-03-05T03:02:28Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v4.5 to us-east (routine release)"}
+{"id": "R003", "timestamp": "2026-03-05T04:44:31Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R004", "timestamp": "2026-03-05T04:57:13Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R005", "timestamp": "2026-03-05T11:31:27Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Customer asks how to download an invoice."}
+{"id": "R006", "timestamp": "2026-03-05T13:44:06Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R007", "timestamp": "2026-03-05T14:30:45Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v4.25 to ap-south (routine release)"}
+{"id": "R008", "timestamp": "2026-03-05T23:40:12Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v2.7 to eu-west (routine release)"}
+{"id": "R009", "timestamp": "2026-03-06T00:17:41Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v3.26 to us-east (routine release)"}
+{"id": "R010", "timestamp": "2026-03-06T00:46:55Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R011", "timestamp": "2026-03-06T01:32:17Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R012", "timestamp": "2026-03-06T02:43:30Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: INFO cache warmed in 1.8s"}
+{"id": "R013", "timestamp": "2026-03-06T04:28:30Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R014", "timestamp": "2026-03-06T07:44:01Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R015", "timestamp": "2026-03-06T07:50:00Z", "source": "alerts", "service": "search", "region": null, "text": "p95 latency above SLO on search"}
+{"id": "R016", "timestamp": "2026-03-06T07:50:45Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R017", "timestamp": "2026-03-06T07:55:09Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R018", "timestamp": "2026-03-06T08:39:31Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v3.22 to eu-west (routine release)"}
+{"id": "R019", "timestamp": "2026-03-06T13:39:09Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO certificate check passed"}
+{"id": "R020", "timestamp": "2026-03-06T14:57:55Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO autoscaler: no change"}
+{"id": "R021", "timestamp": "2026-03-06T15:02:49Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R022", "timestamp": "2026-03-06T16:22:19Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R023", "timestamp": "2026-03-06T22:01:46Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer reports a typo on the help page."}

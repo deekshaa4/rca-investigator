@@ -1,0 +1,20 @@
+{"id": "R001", "timestamp": "2026-03-15T08:22:52Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R002", "timestamp": "2026-03-15T13:47:34Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: INFO certificate check passed"}
+{"id": "R003", "timestamp": "2026-03-15T15:07:50Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO nightly backup completed"}
+{"id": "R004", "timestamp": "2026-03-15T15:10:55Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: INFO cache warmed in 1.8s"}
+{"id": "R005", "timestamp": "2026-03-15T18:25:01Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R006", "timestamp": "2026-03-15T20:37:35Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v3.24 to ap-south (routine release)"}
+{"id": "R007", "timestamp": "2026-03-15T21:25:49Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Customer asks how to download an invoice."}
+{"id": "R008", "timestamp": "2026-03-15T22:44:34Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: INFO autoscaler: no change"}
+{"id": "R009", "timestamp": "2026-03-16T00:33:07Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R010", "timestamp": "2026-03-16T01:09:27Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R011", "timestamp": "2026-03-16T01:24:32Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R012", "timestamp": "2026-03-16T07:08:08Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v4.0 to eu-west (routine release)"}
+{"id": "R013", "timestamp": "2026-03-16T14:40:00Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R014", "timestamp": "2026-03-16T14:50:00Z", "source": "alerts", "service": "auth", "region": null, "text": "p95 latency above SLO on auth"}
+{"id": "R015", "timestamp": "2026-03-16T14:54:00Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R016", "timestamp": "2026-03-16T15:01:39Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R017", "timestamp": "2026-03-16T16:41:48Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R018", "timestamp": "2026-03-16T17:15:44Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R019", "timestamp": "2026-03-16T23:00:47Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R020", "timestamp": "2026-03-16T23:56:22Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v1.15 to us-east (routine release)"}

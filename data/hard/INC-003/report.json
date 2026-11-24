@@ -1,0 +1,156 @@
+{
+  "incident_id": "INC-003",
+  "question": "Why did the p95 latency go up on 21 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "region": "ap-south"
+    },
+    "change_start": "2026-03-21T10:25:00Z",
+    "baseline_value": 136.60049021240266,
+    "current_value": 242.74776456703367,
+    "relative_change": 0.7771,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The flash sale campaign went live, causing a sudden increase in request volume and error rate.",
+      "category": "traffic",
+      "confidence": 0.9,
+      "why_chain": [
+        "The flash sale campaign triggered a spike in user activity in ap-south.",
+        "This spike led to a higher request volume and error rate.",
+        "The increased load caused the p95 latency to rise."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The deployment of search v1.26 caused the change.",
+      "reason": "The deployment was in eu-west, not ap-south.",
+      "evidence_ids": [
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "The typo on the help page caused the change.",
+      "reason": "The help page typo occurred 244 minutes before the change.",
+      "evidence_ids": [
+        "E8"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for region ap-south rose from 137 ms to 243 ms (+78%), with a change point at 2026-03-21T10:25:00Z.",
+      "timestamp": "2026-03-21T10:25:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in region ap-south: 4 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.01).",
+      "timestamp": "2026-03-21T10:25:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for region ap-south rose (1233 per 5 min before, 4638 per 5 min after, +276%).",
+      "timestamp": "2026-03-21T10:25:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for region ap-south rose (0.35% before, 0.75% after, +114%).",
+      "timestamp": "2026-03-21T10:25:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "Marketing: flash sale campaign goes live in ap-south at 10:25 UTC (ap-south; 191 min before the change; record R014)",
+      "timestamp": "2026-03-21T07:13:56Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Request volume 3x normal in ap-south (ap-south; 12 min after the change; record R017)",
+      "timestamp": "2026-03-21T10:37:00Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "autoscaler: scaling out, 4 new instances requested (ap-south; 20 min after the change; record R018)",
+      "timestamp": "2026-03-21T10:45:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "Customer reports a typo on the help page. (auth, ap-south; 244 min before the change; record R012)",
+      "timestamp": "2026-03-21T06:21:28Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed search v1.26 to eu-west (search, eu-west; 4 min before the change; record R016)",
+      "timestamp": "2026-03-21T10:20:39Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 1.0,
+    "reasons": [
+      "\u2713 A change event (tickets) lines up in time (191 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 2 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume rose, as a traffic cause requires.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Implement a more aggressive autoscaler to handle sudden spikes in traffic.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor request volume and error rate closely during marketing campaigns to identify and address sudden spikes in traffic.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Optimize the autoscaler configuration to better handle sudden traffic spikes.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

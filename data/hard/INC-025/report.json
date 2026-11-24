@@ -1,0 +1,162 @@
+{
+  "incident_id": "INC-025",
+  "question": "Why did the error rate go up on 09 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "auth",
+      "region": "eu-west"
+    },
+    "change_start": "2026-03-09T15:15:00Z",
+    "baseline_value": 0.002780849256900212,
+    "current_value": 0.006803809523809523,
+    "relative_change": 1.4467,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New feature request introduced unexpected load.",
+      "category": "unknown",
+      "confidence": 0.3,
+      "why_chain": [
+        "Feature request R013 for dark mode was submitted 287 minutes before the error rate spike.",
+        "The feature request likely caused a temporary increase in load on the service.",
+        "This increase in load led to the observed error rate spike."
+      ],
+      "evidence_ids": [
+        "E5"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "Service auth in region eu-west experienced a configuration change.",
+      "category": "config_change",
+      "confidence": 0.3,
+      "why_chain": [
+        "Service auth in region eu-west saw a change in error rate and request volume.",
+        "The change in error rate coincided with the introduction of the feature request.",
+        "The configuration change could have introduced a bug or unexpected behavior."
+      ],
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3"
+      ]
+    },
+    {
+      "rank": 3,
+      "description": "Service auth in region eu-west saw a spike in p95 latency.",
+      "category": "unknown",
+      "confidence": 0.3,
+      "why_chain": [
+        "Service auth in region eu-west had a spike in p95 latency.",
+        "The spike in latency could be due to the feature request or configuration change.",
+        "The spike in latency could also indicate a problem with the service itself."
+      ],
+      "evidence_ids": [
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate was due to a sudden increase in traffic.",
+      "reason": "Request volume stayed about the same, contradicting this hypothesis.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a configuration change elsewhere in the system.",
+      "reason": "The error rate spike was specific to service auth in region eu-west, not a system-wide issue.",
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service auth in region eu-west rose from 0.28% to 0.68% (+145%), with a change point at 2026-03-09T15:15:00Z.",
+      "timestamp": "2026-03-09T15:15:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service auth in region eu-west: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.26).",
+      "timestamp": "2026-03-09T15:15:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service auth in region eu-west stayed about the same (391 per 5 min before, 439 per 5 min after, +12%).",
+      "timestamp": "2026-03-09T15:15:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service auth in region eu-west stayed about the same (90 ms before, 91 ms after, +0%).",
+      "timestamp": "2026-03-09T15:15:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "Feature request: dark mode for the account page. (catalog, eu-west; 287 min before the change; record R013)",
+      "timestamp": "2026-03-09T10:27:42Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.35,
+    "reasons": [
+      "\u2717 The closest change event is 287 min before the change, too far to be convincing.",
+      "\u2717 It concerns a different service/region than the one that changed.",
+      "\u2717 No logs or alerts from the affected segment confirm the problem.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records from the hour before the change",
+      "Change records for the affected service/region",
+      "Error logs or traces from the affected segment after the change"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Investigate the feature request R013 for any potential issues.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and test the configuration changes made to service auth in region eu-west.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        2
+      ]
+    },
+    {
+      "action": "Monitor the service auth in region eu-west for any further issues.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

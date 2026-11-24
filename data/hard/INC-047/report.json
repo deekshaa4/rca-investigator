@@ -1,0 +1,184 @@
+{
+  "incident_id": "INC-047",
+  "question": "Why did the p95 latency go up on 22 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "service": "checkout"
+    },
+    "change_start": "2026-03-22T13:05:00Z",
+    "baseline_value": 220.8958155754397,
+    "current_value": 692.7599349017055,
+    "relative_change": 2.1361,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The change in db.pool_size caused the connection pool to be exhausted, leading to increased latency.",
+      "category": "config_change",
+      "confidence": 0.9,
+      "why_chain": [
+        "The db.pool_size was changed from 50 to 5, reducing the number of available connections.",
+        "With fewer connections, the pool became exhausted more quickly under normal load.",
+        "This exhaustion led to the warning messages seen in the logs."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The increase in request volume did not cause the latency to increase, as the error rate did not change.",
+      "category": "traffic",
+      "confidence": 0.8,
+      "why_chain": [
+        "The request volume remained stable, with a 20% increase in requests.",
+        "The error rate also increased by 49%, indicating a different issue.",
+        "The warning messages in the logs suggest a connection pool issue."
+      ],
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "rank": 3,
+      "description": "The error rate increase is not a direct cause of the latency increase, but it could be related to the connection pool exhaustion.",
+      "category": "unknown",
+      "confidence": 0.7,
+      "why_chain": [
+        "The error rate increased by 49%, but the latency increased by 214%.",
+        "The connection pool exhaustion is the more immediate cause of the latency increase.",
+        "The error rate increase could be due to other factors, such as a different issue with the service."
+      ],
+      "evidence_ids": [
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in latency was due to a sudden spike in traffic.",
+      "reason": "The request volume did not change significantly, and the error rate did not increase.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The increase in latency was due to a new deployment or version.",
+      "reason": "There is no evidence of a new release or version being deployed on 22 March 2026.",
+      "evidence_ids": []
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for service checkout rose from 221 ms to 693 ms (+214%), with a change point at 2026-03-22T13:05:00Z.",
+      "timestamp": "2026-03-22T13:05:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in service checkout: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.02).",
+      "timestamp": "2026-03-22T13:05:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service checkout stayed about the same (833 per 5 min before, 997 per 5 min after, +20%).",
+      "timestamp": "2026-03-22T13:05:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for service checkout rose (0.33% before, 0.49% after, +49%).",
+      "timestamp": "2026-03-22T13:05:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "config_changes",
+      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 2 min before the change; record R009)",
+      "timestamp": "2026-03-22T13:03:07Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R011)",
+      "timestamp": "2026-03-22T13:20:00Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, eu-west; 6 min after the change; record R010)",
+      "timestamp": "2026-03-22T13:10:43Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 20 min after the change; record R012)",
+      "timestamp": "2026-03-22T13:25:02Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 21 min after the change; record R013)",
+      "timestamp": "2026-03-22T13:26:18Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 1.0,
+    "reasons": [
+      "\u2713 A change event (config_changes) lines up in time (2 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Review and adjust the db.pool_size configuration to ensure it can handle the current load without exhausting the connection pool.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Implement a connection pool monitoring system to detect exhaustion early and prevent latency spikes.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the error rate and latency closely to identify any future issues with the connection pool.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

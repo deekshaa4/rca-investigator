@@ -1,0 +1,158 @@
+{
+  "incident_id": "INC-011",
+  "question": "Why did the error rate go up on 04 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "auth",
+      "region": "eu-west"
+    },
+    "change_start": "2026-03-04T08:50:00Z",
+    "baseline_value": 0.005099187817258883,
+    "current_value": 0.032307197802197804,
+    "relative_change": 5.3358,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The error rate increase is localized to the auth service in eu-west region.",
+      "category": "traffic",
+      "confidence": 0.3,
+      "why_chain": [
+        "The error rate increase is concentrated in the auth service in the eu-west region.",
+        "The request volume and latency did not change significantly.",
+        "This suggests the issue is not due to a sudden increase in traffic or network latency.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E2",
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The error rate increase is due to a sudden increase in traffic.",
+      "reason": "The request volume and latency did not change significantly.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The error rate increase is due to a configuration change.",
+      "reason": "The error rate increase is localized to the auth service in the eu-west region.",
+      "evidence_ids": [
+        "E2"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service auth in region eu-west rose from 0.51% to 3.23% (+534%), with a change point at 2026-03-04T08:50:00Z.",
+      "timestamp": "2026-03-04T08:50:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service auth in region eu-west: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.10).",
+      "timestamp": "2026-03-04T08:50:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service auth in region eu-west stayed about the same (373 per 5 min before, 460 per 5 min after, +23%).",
+      "timestamp": "2026-03-04T08:50:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service auth in region eu-west stayed about the same (90 ms before, 91 ms after, +2%).",
+      "timestamp": "2026-03-04T08:50:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "High error rate on auth in eu-west (auth, eu-west; 10 min after the change; record R013)",
+      "timestamp": "2026-03-04T09:00:00Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: ERROR NullPointerException in RequestHandler.serialize (v5.21) (auth, eu-west; 16 min after the change; record R014)",
+      "timestamp": "2026-03-04T09:05:38Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: ERROR NullPointerException in RequestHandler.serialize (v5.21) (auth, eu-west; 20 min after the change; record R015)",
+      "timestamp": "2026-03-04T09:10:15Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: ERROR NullPointerException in RequestHandler.serialize (v5.21) (auth, eu-west; 27 min after the change; record R016)",
+      "timestamp": "2026-03-04T09:16:40Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "checkout: INFO autoscaler: no change (checkout, eu-west; 110 min before the change; record R012)",
+      "timestamp": "2026-03-04T06:59:56Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.15,
+    "reasons": [
+      "\u2717 No deploy, config change, ticket or alert lines up with the change.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2717 A traffic cause is claimed, but request volume did not rise."
+    ],
+    "missing_data": [
+      "Deploy and config-change history for the affected segment"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the deployment of version 5.21 of the RequestHandler.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the RequestHandler version 5.21 closely for any further issues.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and update the error handling in the RequestHandler version 5.21.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

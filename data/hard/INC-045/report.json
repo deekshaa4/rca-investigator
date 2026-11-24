@@ -1,0 +1,171 @@
+{
+  "incident_id": "INC-045",
+  "question": "Why did the error rate go up on 13 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "search",
+      "region": "eu-west"
+    },
+    "change_start": "2026-03-13T15:15:00Z",
+    "baseline_value": 0.004806687898089172,
+    "current_value": 0.009202761904761905,
+    "relative_change": 0.9146,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New deployment of search v5.23 to eu-west caused the error rate to increase.",
+      "category": "deployment",
+      "confidence": 0.3,
+      "why_chain": [
+        "search v5.23 deployment introduced a new error condition.",
+        "The error condition propagated to the error rate metric.",
+        "The error rate metric increased from 0.48% to 0.92%.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E5"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The increase in error rate is not due to a sudden increase in request volume or latency.",
+      "category": "unknown",
+      "confidence": 0.3,
+      "why_chain": [
+        "Request volume and latency remained stable before and after the change.",
+        "The error rate increase is not correlated with changes in request volume or latency.",
+        "The error rate increase is a standalone issue.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate is due to a sudden increase in user traffic.",
+      "reason": "Request volume and latency remained stable before and after the change.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a configuration change.",
+      "reason": "The deployment record R009 indicates a new deployment, not a configuration change.",
+      "evidence_ids": [
+        "E5"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a dependency issue with an external service.",
+      "reason": "No evidence suggests the error rate increase is due to a failure or slowdown of an external service.",
+      "evidence_ids": [
+        "E6"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service search in region eu-west rose from 0.48% to 0.92% (+91%), with a change point at 2026-03-13T15:15:00Z.",
+      "timestamp": "2026-03-13T15:15:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service search in region eu-west: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.23).",
+      "timestamp": "2026-03-13T15:15:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service search in region eu-west stayed about the same (880 per 5 min before, 989 per 5 min after, +12%).",
+      "timestamp": "2026-03-13T15:15:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service search in region eu-west stayed about the same (141 ms before, 140 ms after, -1%).",
+      "timestamp": "2026-03-13T15:15:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed search v5.23 to eu-west (search, eu-west; 226 min before the change; record R009)",
+      "timestamp": "2026-03-13T11:29:11Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed search v2.15 to us-east (routine release) (search, us-east; 94 min before the change; record R010)",
+      "timestamp": "2026-03-13T13:41:20Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: INFO nightly backup completed (catalog, us-east; 336 min before the change; record R008)",
+      "timestamp": "2026-03-13T09:39:26Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.4,
+    "reasons": [
+      "\u2717 The closest change event is 226 min before the change, too far to be convincing.",
+      "\u2713 It concerns the affected service/region.",
+      "\u2717 No logs or alerts from the affected segment confirm the problem.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records from the hour before the change",
+      "Error logs or traces from the affected segment after the change"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the search v5.23 deployment to eu-west.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the error rate and request volume for any further anomalies.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review the new search v5.23 release notes for any known issues.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "incident_id": "INC-042",
+  "question": "Why did the p95 latency go up on 13 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "service": "checkout"
+    },
+    "change_start": "2026-03-13T11:50:00Z",
+    "baseline_value": 221.62205656937493,
+    "current_value": 698.1327933770243,
+    "relative_change": 2.1501,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "Deployed checkout v3.17 to ap-south (1 min before the change, found by the engines).",
+      "category": "deployment",
+      "confidence": 1.0,
+      "why_chain": [],
+      "evidence_ids": [
+        "E5"
+      ]
+    }
+  ],
+  "ruled_out": [],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for service checkout rose from 222 ms to 698 ms (+215%), with a change point at 2026-03-13T11:50:00Z.",
+      "timestamp": "2026-03-13T11:50:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in service checkout: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.02).",
+      "timestamp": "2026-03-13T11:50:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service checkout stayed about the same (822 per 5 min before, 1008 per 5 min after, +23%).",
+      "timestamp": "2026-03-13T11:50:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for service checkout rose (0.45% before, 0.65% after, +45%).",
+      "timestamp": "2026-03-13T11:50:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed checkout v3.17 to ap-south (checkout, ap-south; 1 min before the change; record R015)",
+      "timestamp": "2026-03-13T11:48:49Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "config_changes",
+      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 1 min before the change; record R014)",
+      "timestamp": "2026-03-13T11:48:39Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R017)",
+      "timestamp": "2026-03-13T12:05:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 8 min after the change; record R016)",
+      "timestamp": "2026-03-13T11:58:25Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 18 min after the change; record R018)",
+      "timestamp": "2026-03-13T12:08:13Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "partial",
+    "score": 0.9,
+    "reasons": [
+      "\u2713 A change event (deploys) lines up in time (1 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 3 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2717 1 other change event(s) fit about as well.",
+      "\u2713 The main factor rests on this event.",
+      "\u2717 Two or more changes fit equally well, so the cause cannot be confirmed."
+    ],
+    "missing_data": [
+      "Details to tell the competing changes apart (e.g. a rollback test)"
+    ]
+  },
+  "actions": []
+}

@@ -1,0 +1,159 @@
+{
+  "incident_id": "INC-015",
+  "question": "Why did the error rate go up on 15 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "search",
+      "region": "us-east"
+    },
+    "change_start": "2026-03-15T04:10:00Z",
+    "baseline_value": 0.0048414497041420115,
+    "current_value": 0.011192436974789917,
+    "relative_change": 1.3118,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The deployment of catalog v4.12 to ap-south likely caused the increase in error rate.",
+      "category": "deployment",
+      "confidence": 0.3,
+      "why_chain": [
+        "The deployment of catalog v4.12 to ap-south occurred 4 minutes before the error rate change.",
+        "The error rate for service search in region us-east increased from 0.48% to 1.12% after the deployment.",
+        "The error rate change is concentrated in service search in region us-east, where the deployment occurred."
+      ],
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E5"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The deployment of catalog v2.24 to eu-west may have contributed to the error rate increase, but its timing is not clear.",
+      "category": "unknown",
+      "confidence": 0.3,
+      "why_chain": [
+        "The deployment of catalog v2.24 to eu-west occurred 166 minutes before the error rate change.",
+        "The error rate change is concentrated in service search in region us-east, where the deployment of catalog v4.12 occurred.",
+        "The error rate change is not explained by the deployment of catalog v2.24."
+      ],
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E6"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate is due to a sudden increase in user traffic.",
+      "reason": "The request volume and p95 latency did not change significantly.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a configuration change.",
+      "reason": "No configuration change is explicitly mentioned in the evidence.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service search in region us-east rose from 0.48% to 1.12% (+131%), with a change point at 2026-03-15T04:10:00Z.",
+      "timestamp": "2026-03-15T04:10:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service search in region us-east: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.11).",
+      "timestamp": "2026-03-15T04:10:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service search in region us-east stayed about the same (1114 per 5 min before, 1250 per 5 min after, +12%).",
+      "timestamp": "2026-03-15T04:10:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service search in region us-east stayed about the same (141 ms before, 140 ms after, -1%).",
+      "timestamp": "2026-03-15T04:10:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v4.12 to ap-south (catalog, ap-south; 4 min before the change; record R007)",
+      "timestamp": "2026-03-15T04:06:22Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v2.24 to eu-west (routine release) (catalog, eu-west; 166 min before the change; record R006)",
+      "timestamp": "2026-03-15T01:24:01Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.4,
+    "reasons": [
+      "\u2713 A change event (deploys) lines up in time (4 min before the change).",
+      "\u2717 It concerns a different service/region than the one that changed.",
+      "\u2717 No logs or alerts from the affected segment confirm the problem.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records for the affected service/region",
+      "Error logs or traces from the affected segment after the change"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the deployment of catalog v4.12 to ap-south.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the error rate and request volume for service search in region us-east closely.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and test the catalog v4.12 release in a staging environment before production deployment.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

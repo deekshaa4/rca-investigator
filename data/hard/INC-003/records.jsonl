@@ -1,0 +1,21 @@
+{"id": "R001", "timestamp": "2026-03-20T04:57:41Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO cache warmed in 1.8s"}
+{"id": "R002", "timestamp": "2026-03-20T06:17:42Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R003", "timestamp": "2026-03-20T07:48:55Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v4.0 to eu-west (routine release)"}
+{"id": "R004", "timestamp": "2026-03-20T08:56:48Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R005", "timestamp": "2026-03-20T09:12:25Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v3.16 to eu-west (routine release)"}
+{"id": "R006", "timestamp": "2026-03-20T12:16:48Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R007", "timestamp": "2026-03-20T14:14:32Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v1.27 to eu-west (routine release)"}
+{"id": "R008", "timestamp": "2026-03-20T22:51:10Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R009", "timestamp": "2026-03-20T23:55:49Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R010", "timestamp": "2026-03-21T00:43:17Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v1.29 to us-east (routine release)"}
+{"id": "R011", "timestamp": "2026-03-21T03:21:02Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R012", "timestamp": "2026-03-21T06:21:28Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R013", "timestamp": "2026-03-21T06:22:28Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: INFO cache warmed in 1.8s"}
+{"id": "R014", "timestamp": "2026-03-21T07:13:56Z", "source": "tickets", "service": null, "region": "ap-south", "text": "Marketing: flash sale campaign goes live in ap-south at 10:25 UTC"}
+{"id": "R015", "timestamp": "2026-03-21T07:26:50Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R016", "timestamp": "2026-03-21T10:20:39Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v1.26 to eu-west"}
+{"id": "R017", "timestamp": "2026-03-21T10:37:00Z", "source": "alerts", "service": null, "region": "ap-south", "text": "Request volume 3x normal in ap-south"}
+{"id": "R018", "timestamp": "2026-03-21T10:45:00Z", "source": "logs", "service": null, "region": "ap-south", "text": "autoscaler: scaling out, 4 new instances requested"}
+{"id": "R019", "timestamp": "2026-03-21T12:07:26Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v2.28 to eu-west (routine release)"}
+{"id": "R020", "timestamp": "2026-03-21T13:29:13Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v1.28 to eu-west (routine release)"}
+{"id": "R021", "timestamp": "2026-03-21T18:42:25Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: WARN slow query 1.2s on report endpoint (single occurrence)"}

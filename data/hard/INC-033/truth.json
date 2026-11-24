@@ -1,0 +1,14 @@
+{
+  "scenario": "traffic_spike",
+  "category": "traffic",
+  "metric": "latency_p95_ms",
+  "segment": {
+    "region": "us-east"
+  },
+  "change_start": "2026-03-12T15:10:00Z",
+  "cause_record_ids": [
+    "R015"
+  ],
+  "expected_verdict": "sufficient",
+  "twist": "red_herring_early"
+}

@@ -1,0 +1,21 @@
+{"id": "R001", "timestamp": "2026-03-25T00:19:10Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: INFO certificate check passed"}
+{"id": "R002", "timestamp": "2026-03-25T00:41:44Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: INFO cache warmed in 1.8s"}
+{"id": "R003", "timestamp": "2026-03-25T04:16:48Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v4.28 to eu-west (routine release)"}
+{"id": "R004", "timestamp": "2026-03-25T08:59:12Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R005", "timestamp": "2026-03-25T09:50:20Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R006", "timestamp": "2026-03-25T15:31:31Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v3.12 to ap-south (routine release)"}
+{"id": "R007", "timestamp": "2026-03-25T19:53:56Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R008", "timestamp": "2026-03-26T03:57:28Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v2.24 to eu-west (routine release)"}
+{"id": "R009", "timestamp": "2026-03-26T04:08:59Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v1.3 to eu-west (routine release)"}
+{"id": "R010", "timestamp": "2026-03-26T06:08:04Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v3.17 to ap-south"}
+{"id": "R011", "timestamp": "2026-03-26T06:20:00Z", "source": "alerts", "service": "checkout", "region": "ap-south", "text": "High error rate on checkout in ap-south"}
+{"id": "R012", "timestamp": "2026-03-26T06:20:29Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: ERROR NullPointerException in RequestHandler.serialize (v3.17)"}
+{"id": "R013", "timestamp": "2026-03-26T06:37:37Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: ERROR NullPointerException in RequestHandler.serialize (v3.17)"}
+{"id": "R014", "timestamp": "2026-03-26T06:46:22Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: ERROR NullPointerException in RequestHandler.serialize (v3.17)"}
+{"id": "R015", "timestamp": "2026-03-26T07:23:28Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v1.1 to us-east (routine release)"}
+{"id": "R016", "timestamp": "2026-03-26T08:11:20Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R017", "timestamp": "2026-03-26T09:07:50Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v2.22 to us-east (routine release)"}
+{"id": "R018", "timestamp": "2026-03-26T12:42:42Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: INFO nightly backup completed"}
+{"id": "R019", "timestamp": "2026-03-26T17:29:52Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: INFO nightly backup completed"}
+{"id": "R020", "timestamp": "2026-03-26T20:47:02Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R021", "timestamp": "2026-03-26T20:58:57Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: INFO certificate check passed"}

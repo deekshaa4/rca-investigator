@@ -1,0 +1,176 @@
+{
+  "incident_id": "INC-029",
+  "question": "Why did the error rate go up on 10 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "auth"
+    },
+    "change_start": "2026-03-10T13:15:00Z",
+    "baseline_value": 0.00392379878514507,
+    "current_value": 0.0584475432171303,
+    "relative_change": 13.8957,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "Upstream identity-db service is experiencing degraded performance, causing auth service errors.",
+      "category": "dependency",
+      "confidence": 0.9,
+      "why_chain": [
+        "The error rate in auth service increased due to upstream identity-db service returning HTTP 503 errors.",
+        "The identity-db service is the upstream dependency of the auth service, and its degraded performance is causing the auth service to fail.",
+        "The identity-db service is experiencing timeout issues, leading to retries and eventually failing to respond within the auth service's timeout.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The auth service is under higher load due to increased request volume.",
+      "category": "traffic",
+      "confidence": 0.7,
+      "why_chain": [
+        "The error rate in auth service increased despite the request volume staying about the same.",
+        "The auth service is experiencing higher error rates despite the same request volume, indicating increased load.",
+        "The increased load on the auth service is causing it to fail more often, leading to higher error rates.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E3"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate is due to a configuration change in the auth service.",
+      "reason": "The error rate increase is concentrated in the auth service, and the change point is specific to the auth service.",
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a data quality issue in the auth service.",
+      "reason": "There is no evidence of unusual input data causing the error rate increase.",
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service auth rose from 0.39% to 5.84% (+1390%), with a change point at 2026-03-10T13:15:00Z.",
+      "timestamp": "2026-03-10T13:15:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service auth: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.33).",
+      "timestamp": "2026-03-10T13:15:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service auth stayed about the same (1114 per 5 min before, 1326 per 5 min after, +19%).",
+      "timestamp": "2026-03-10T13:15:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service auth rose (90 ms before, 163 ms after, +81%).",
+      "timestamp": "2026-03-10T13:15:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Upstream identity-db returning HTTP 503 for auth (auth; 1 min after the change; record R016)",
+      "timestamp": "2026-03-10T13:16:23Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, us-east; 12 min after the change; record R017)",
+      "timestamp": "2026-03-10T13:27:29Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, ap-south; 18 min after the change; record R018)",
+      "timestamp": "2026-03-10T13:33:12Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "identity-db status page: investigating degraded performance (auth; 30 min after the change; record R020)",
+      "timestamp": "2026-03-10T13:45:00Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, eu-west; 22 min after the change; record R019)",
+      "timestamp": "2026-03-10T13:36:59Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 0.93,
+    "reasons": [
+      "\u2713 A change event (alerts) lines up in time (1 min after the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Investigate and address the degraded performance of the identity-db service.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the identity-db service and implement retries or fallback mechanisms to handle transient failures.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Optimize the auth service to handle higher request volumes.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

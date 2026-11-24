@@ -1,0 +1,179 @@
+{
+  "incident_id": "INC-016",
+  "question": "Why did the error rate go up on 07 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "auth",
+      "region": "ap-south"
+    },
+    "change_start": "2026-03-07T07:10:00Z",
+    "baseline_value": 0.004888449197860962,
+    "current_value": 0.04433905940594059,
+    "relative_change": 8.0702,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New version deployment caused the error rate spike.",
+      "category": "deployment",
+      "confidence": 0.9,
+      "why_chain": [
+        "The deployment of auth v2.27 to ap-south led to the error rate increase.",
+        "The error rate for service auth in region ap-south rose from 0.49% to 4.43%.",
+        "The deployment occurred 2 minutes before the change point."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E1"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "Feature flag change may have contributed to the error rate increase.",
+      "category": "config_change",
+      "confidence": 0.8,
+      "why_chain": [
+        "The change of auth feature flag new_ui_flow to 50% in ap-south may have introduced instability.",
+        "The error rate increase coincided with the change of the feature flag.",
+        "The feature flag change occurred 3 minutes before the change point."
+      ],
+      "evidence_ids": [
+        "E6",
+        "E1"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "Increased request volume caused the error rate increase.",
+      "reason": "The request volume for service auth in region ap-south stayed about the same.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "Latency increase caused the error rate increase.",
+      "reason": "The p95 latency for service auth in region ap-south stayed about the same.",
+      "evidence_ids": [
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "External dependency failure caused the error rate increase.",
+      "reason": "No evidence found that points to an external dependency failure.",
+      "evidence_ids": []
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service auth in region ap-south rose from 0.49% to 4.43% (+807%), with a change point at 2026-03-07T07:10:00Z.",
+      "timestamp": "2026-03-07T07:10:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service auth in region ap-south: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.10).",
+      "timestamp": "2026-03-07T07:10:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service auth in region ap-south stayed about the same (223 per 5 min before, 271 per 5 min after, +21%).",
+      "timestamp": "2026-03-07T07:10:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service auth in region ap-south stayed about the same (91 ms before, 89 ms after, -1%).",
+      "timestamp": "2026-03-07T07:10:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed auth v2.27 to ap-south (auth, ap-south; 2 min before the change; record R014)",
+      "timestamp": "2026-03-07T07:08:28Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "config_changes",
+      "summary": "Changed auth feature flag new_ui_flow to 50% in ap-south (auth, ap-south; 3 min before the change; record R013)",
+      "timestamp": "2026-03-07T07:07:18Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "High error rate on auth in ap-south (auth, ap-south; 10 min after the change; record R015)",
+      "timestamp": "2026-03-07T07:20:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.27) (auth, ap-south; 19 min after the change; record R016)",
+      "timestamp": "2026-03-07T07:28:47Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.27) (auth, ap-south; 28 min after the change; record R017)",
+      "timestamp": "2026-03-07T07:37:42Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "partial",
+    "score": 0.9,
+    "reasons": [
+      "\u2713 A change event (deploys) lines up in time (2 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 3 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2717 1 other change event(s) fit about as well.",
+      "\u2713 The main factor rests on this event.",
+      "\u2717 Two or more changes fit equally well, so the cause cannot be confirmed."
+    ],
+    "missing_data": [
+      "Details to tell the competing changes apart (e.g. a rollback test)"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the auth v2.27 deployment to ap-south.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and potentially revert the auth feature flag change to 50%.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        2
+      ]
+    },
+    {
+      "action": "Monitor the system for any new deployments or config changes in the next 24 hours.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

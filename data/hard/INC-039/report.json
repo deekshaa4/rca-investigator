@@ -1,0 +1,171 @@
+{
+  "incident_id": "INC-039",
+  "question": "Why did the error rate go up on 16 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "catalog"
+    },
+    "change_start": "2026-03-16T09:15:00Z",
+    "baseline_value": 0.003604347710673167,
+    "current_value": 0.041239601088923765,
+    "relative_change": 10.4416,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New deployment caused increased error rate and latency.",
+      "category": "deployment",
+      "confidence": 0.3,
+      "why_chain": [
+        "Checkout v4.18 was deployed to us-east, which likely introduced the error.",
+        "The deployment occurred 225 minutes before the error rate spike, suggesting it was the cause.",
+        "The error rate and latency increased after the deployment, indicating the deployment was the root cause."
+      ],
+      "evidence_ids": [
+        "E9",
+        "E1"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "Increased traffic caused the error.",
+      "reason": "Request volume increased by 24%, but the error rate increased by 1044%, indicating a more significant issue.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "Configuration change caused the error.",
+      "reason": "No evidence directly links a configuration change to the error.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "Data quality issues caused the error.",
+      "reason": "No evidence suggests the error was caused by bad input data.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "Infrastructure issues caused the error.",
+      "reason": "No evidence suggests the error was caused by server, network, or capacity issues.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "Unknown issue caused the error.",
+      "reason": "No other plausible explanations are supported by the evidence.",
+      "evidence_ids": []
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service catalog rose from 0.36% to 4.12% (+1044%), with a change point at 2026-03-16T09:15:00Z.",
+      "timestamp": "2026-03-16T09:15:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service catalog: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.13).",
+      "timestamp": "2026-03-16T09:15:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service catalog stayed about the same (1617 per 5 min before, 2010 per 5 min after, +24%).",
+      "timestamp": "2026-03-16T09:15:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service catalog rose (121 ms before, 217 ms after, +80%).",
+      "timestamp": "2026-03-16T09:15:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, ap-south; 14 min after the change; record R011)",
+      "timestamp": "2026-03-16T09:28:41Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, us-east; 20 min after the change; record R012)",
+      "timestamp": "2026-03-16T09:34:31Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "catalog-db status page: investigating degraded performance (catalog; 30 min after the change; record R014)",
+      "timestamp": "2026-03-16T09:45:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, eu-west; 24 min after the change; record R013)",
+      "timestamp": "2026-03-16T09:38:50Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed checkout v4.18 to us-east (routine release) (checkout, us-east; 225 min before the change; record R010)",
+      "timestamp": "2026-03-16T05:29:57Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.4,
+    "reasons": [
+      "\u2717 The closest change event is 225 min before the change, too far to be convincing.",
+      "\u2717 It concerns a different service/region than the one that changed.",
+      "\u2713 3 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records from the hour before the change",
+      "Change records for the affected service/region"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Rollback the checkout v4.18 deployment to us-east.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor catalog-db for any further issues and ensure it is performing optimally.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and optimize the service catalog's error handling and retry mechanisms.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

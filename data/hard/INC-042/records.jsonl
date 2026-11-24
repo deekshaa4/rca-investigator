@@ -1,0 +1,23 @@
+{"id": "R001", "timestamp": "2026-03-12T01:03:52Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO autoscaler: no change"}
+{"id": "R002", "timestamp": "2026-03-12T01:12:31Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R003", "timestamp": "2026-03-12T01:53:42Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v2.0 to us-east (routine release)"}
+{"id": "R004", "timestamp": "2026-03-12T04:34:35Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v4.7 to us-east (routine release)"}
+{"id": "R005", "timestamp": "2026-03-12T06:19:34Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R006", "timestamp": "2026-03-12T08:15:35Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R007", "timestamp": "2026-03-12T12:59:17Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v4.9 to ap-south (routine release)"}
+{"id": "R008", "timestamp": "2026-03-12T16:01:09Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v2.15 to eu-west (routine release)"}
+{"id": "R009", "timestamp": "2026-03-12T19:08:48Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v4.0 to eu-west (routine release)"}
+{"id": "R010", "timestamp": "2026-03-12T21:44:22Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R011", "timestamp": "2026-03-12T21:50:40Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO autoscaler: no change"}
+{"id": "R012", "timestamp": "2026-03-12T22:56:32Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO nightly backup completed"}
+{"id": "R013", "timestamp": "2026-03-13T09:01:39Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R014", "timestamp": "2026-03-13T11:48:39Z", "source": "config_changes", "service": "checkout", "region": null, "text": "Changed checkout db.pool_size from 50 to 5 (all regions)"}
+{"id": "R015", "timestamp": "2026-03-13T11:48:49Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v3.17 to ap-south"}
+{"id": "R016", "timestamp": "2026-03-13T11:58:25Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R017", "timestamp": "2026-03-13T12:05:00Z", "source": "alerts", "service": "checkout", "region": null, "text": "p95 latency above SLO on checkout"}
+{"id": "R018", "timestamp": "2026-03-13T12:08:13Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R019", "timestamp": "2026-03-13T12:11:15Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: WARN connection pool exhausted, waiting for a free connection"}
+{"id": "R020", "timestamp": "2026-03-13T12:56:59Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R021", "timestamp": "2026-03-13T19:09:32Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO cache warmed in 1.8s"}
+{"id": "R022", "timestamp": "2026-03-13T20:32:17Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R023", "timestamp": "2026-03-13T21:33:08Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v4.10 to ap-south (routine release)"}

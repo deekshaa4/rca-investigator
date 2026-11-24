@@ -1,0 +1,17 @@
+{"id": "R001", "timestamp": "2026-03-09T05:01:41Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: INFO nightly backup completed"}
+{"id": "R002", "timestamp": "2026-03-09T07:15:53Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v3.4 to eu-west (routine release)"}
+{"id": "R003", "timestamp": "2026-03-09T11:55:41Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: INFO nightly backup completed"}
+{"id": "R004", "timestamp": "2026-03-09T18:55:54Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v3.29 to eu-west (routine release)"}
+{"id": "R005", "timestamp": "2026-03-09T19:43:14Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: INFO autoscaler: no change"}
+{"id": "R006", "timestamp": "2026-03-09T22:47:02Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO certificate check passed"}
+{"id": "R007", "timestamp": "2026-03-09T22:47:55Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO cache warmed in 1.8s"}
+{"id": "R008", "timestamp": "2026-03-10T09:31:49Z", "source": "alerts", "service": "auth", "region": null, "text": "Upstream identity-db returning HTTP 503 for auth"}
+{"id": "R009", "timestamp": "2026-03-10T09:35:09Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: ERROR upstream identity-db timeout after 3 retries"}
+{"id": "R010", "timestamp": "2026-03-10T09:46:38Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: ERROR upstream identity-db timeout after 3 retries"}
+{"id": "R011", "timestamp": "2026-03-10T09:46:43Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: ERROR upstream identity-db timeout after 3 retries"}
+{"id": "R012", "timestamp": "2026-03-10T10:00:00Z", "source": "tickets", "service": "auth", "region": null, "text": "identity-db status page: investigating degraded performance"}
+{"id": "R013", "timestamp": "2026-03-10T12:47:29Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Customer asks how to download an invoice."}
+{"id": "R014", "timestamp": "2026-03-10T12:51:06Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Customer reports a typo on the help page."}
+{"id": "R015", "timestamp": "2026-03-10T13:12:49Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v2.8 to ap-south (routine release)"}
+{"id": "R016", "timestamp": "2026-03-10T17:48:32Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v4.1 to ap-south (routine release)"}
+{"id": "R017", "timestamp": "2026-03-10T17:57:49Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO certificate check passed"}

@@ -1,0 +1,24 @@
+{"id": "R001", "timestamp": "2026-03-25T00:56:44Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R002", "timestamp": "2026-03-25T01:05:36Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: INFO nightly backup completed"}
+{"id": "R003", "timestamp": "2026-03-25T04:11:09Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R004", "timestamp": "2026-03-25T06:28:20Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R005", "timestamp": "2026-03-25T06:48:46Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R006", "timestamp": "2026-03-25T08:09:52Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R007", "timestamp": "2026-03-25T11:27:12Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO certificate check passed"}
+{"id": "R008", "timestamp": "2026-03-25T17:37:12Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R009", "timestamp": "2026-03-25T20:21:30Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: INFO nightly backup completed"}
+{"id": "R010", "timestamp": "2026-03-25T23:48:09Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v4.19 to eu-west (routine release)"}
+{"id": "R011", "timestamp": "2026-03-26T06:16:01Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v2.20 to ap-south"}
+{"id": "R012", "timestamp": "2026-03-26T06:16:07Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v6.12 to eu-west"}
+{"id": "R013", "timestamp": "2026-03-26T06:21:49Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: ERROR NullPointerException in RequestHandler.serialize (v2.20)"}
+{"id": "R014", "timestamp": "2026-03-26T06:30:00Z", "source": "alerts", "service": "search", "region": "ap-south", "text": "High error rate on search in ap-south"}
+{"id": "R015", "timestamp": "2026-03-26T06:42:02Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: ERROR NullPointerException in RequestHandler.serialize (v2.20)"}
+{"id": "R016", "timestamp": "2026-03-26T06:59:29Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: ERROR NullPointerException in RequestHandler.serialize (v2.20)"}
+{"id": "R017", "timestamp": "2026-03-26T08:33:12Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v4.8 to eu-west (routine release)"}
+{"id": "R018", "timestamp": "2026-03-26T13:23:53Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v2.0 to eu-west (routine release)"}
+{"id": "R019", "timestamp": "2026-03-26T14:55:25Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: INFO autoscaler: no change"}
+{"id": "R020", "timestamp": "2026-03-26T15:21:27Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v1.17 to ap-south (routine release)"}
+{"id": "R021", "timestamp": "2026-03-26T17:11:01Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R022", "timestamp": "2026-03-26T19:32:05Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R023", "timestamp": "2026-03-26T21:28:47Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v4.16 to ap-south (routine release)"}
+{"id": "R024", "timestamp": "2026-03-26T22:05:41Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v3.29 to us-east (routine release)"}

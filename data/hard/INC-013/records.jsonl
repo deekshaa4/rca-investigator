@@ -1,0 +1,15 @@
+{"id": "R001", "timestamp": "2026-03-15T05:47:44Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Customer reports a typo on the help page."}
+{"id": "R002", "timestamp": "2026-03-15T15:36:02Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R003", "timestamp": "2026-03-15T17:48:36Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v2.23 to ap-south (routine release)"}
+{"id": "R004", "timestamp": "2026-03-15T19:03:55Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v4.3 to ap-south (routine release)"}
+{"id": "R005", "timestamp": "2026-03-15T20:30:19Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R006", "timestamp": "2026-03-15T21:48:03Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: INFO cache warmed in 1.8s"}
+{"id": "R007", "timestamp": "2026-03-15T22:02:49Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R008", "timestamp": "2026-03-16T02:33:27Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v3.20 to us-east (routine release)"}
+{"id": "R009", "timestamp": "2026-03-16T04:52:00Z", "source": "alerts", "service": null, "region": "us-east", "text": "Request volume 3x normal in us-east"}
+{"id": "R010", "timestamp": "2026-03-16T05:00:00Z", "source": "logs", "service": null, "region": "us-east", "text": "autoscaler: scaling out, 4 new instances requested"}
+{"id": "R011", "timestamp": "2026-03-16T14:29:54Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Customer reports a typo on the help page."}
+{"id": "R012", "timestamp": "2026-03-16T15:01:15Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R013", "timestamp": "2026-03-16T19:45:24Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: INFO certificate check passed"}
+{"id": "R014", "timestamp": "2026-03-16T21:01:38Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO certificate check passed"}
+{"id": "R015", "timestamp": "2026-03-16T22:35:56Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: INFO nightly backup completed"}

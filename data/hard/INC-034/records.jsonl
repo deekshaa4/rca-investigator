@@ -1,0 +1,19 @@
+{"id": "R001", "timestamp": "2026-03-15T02:26:43Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v3.27 to us-east (routine release)"}
+{"id": "R002", "timestamp": "2026-03-15T03:24:36Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R003", "timestamp": "2026-03-15T10:52:51Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: INFO autoscaler: no change"}
+{"id": "R004", "timestamp": "2026-03-15T13:55:35Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO certificate check passed"}
+{"id": "R005", "timestamp": "2026-03-15T17:20:27Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v4.8 to us-east (routine release)"}
+{"id": "R006", "timestamp": "2026-03-15T18:54:07Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v1.29 to eu-west (routine release)"}
+{"id": "R007", "timestamp": "2026-03-15T22:41:46Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R008", "timestamp": "2026-03-16T02:26:40Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: INFO nightly backup completed"}
+{"id": "R009", "timestamp": "2026-03-16T05:54:08Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v3.22 to ap-south (routine release)"}
+{"id": "R010", "timestamp": "2026-03-16T06:11:33Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v1.6 to eu-west"}
+{"id": "R011", "timestamp": "2026-03-16T08:04:48Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R012", "timestamp": "2026-03-16T10:08:12Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v1.25 to eu-west (routine release)"}
+{"id": "R013", "timestamp": "2026-03-16T11:08:18Z", "source": "alerts", "service": "search", "region": null, "text": "Upstream search-cluster returning HTTP 503 for search"}
+{"id": "R014", "timestamp": "2026-03-16T11:09:36Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: ERROR upstream search-cluster timeout after 3 retries"}
+{"id": "R015", "timestamp": "2026-03-16T11:19:17Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: ERROR upstream search-cluster timeout after 3 retries"}
+{"id": "R016", "timestamp": "2026-03-16T11:27:54Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: ERROR upstream search-cluster timeout after 3 retries"}
+{"id": "R017", "timestamp": "2026-03-16T11:35:00Z", "source": "tickets", "service": "search", "region": null, "text": "search-cluster status page: investigating degraded performance"}
+{"id": "R018", "timestamp": "2026-03-16T18:25:57Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v4.8 to ap-south (routine release)"}
+{"id": "R019", "timestamp": "2026-03-16T22:03:55Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO nightly backup completed"}

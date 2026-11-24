@@ -1,0 +1,165 @@
+{
+  "incident_id": "INC-022",
+  "question": "Why did the p95 latency go up on 04 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "service": "checkout"
+    },
+    "change_start": "2026-03-04T04:55:00Z",
+    "baseline_value": 220.48571040673036,
+    "current_value": 638.3106276662209,
+    "relative_change": 1.895,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The increase in p95 latency is due to a sudden reduction in the database pool size, leading to connection exhaustion.",
+      "category": "config_change",
+      "confidence": 0.9,
+      "why_chain": [
+        "The database pool size was reduced from 50 to 5, causing the connection pool to be exhausted.",
+        "This reduction in pool size led to a higher number of connection pool exhaustion warnings in the logs.",
+        "The connection pool exhaustion caused a significant increase in p95 latency for service checkout."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in p95 latency is due to a sudden increase in request volume.",
+      "reason": "The request volume for service checkout remained about the same before and after the change.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The increase in p95 latency is due to a sudden increase in error rate.",
+      "reason": "The error rate for service checkout did not increase significantly, only by 51%.",
+      "evidence_ids": [
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in p95 latency is due to a sudden increase in traffic.",
+      "reason": "The request volume for service checkout did not increase significantly.",
+      "evidence_ids": [
+        "E3"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for service checkout rose from 220 ms to 638 ms (+190%), with a change point at 2026-03-04T04:55:00Z.",
+      "timestamp": "2026-03-04T04:55:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in service checkout: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.01).",
+      "timestamp": "2026-03-04T04:55:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service checkout stayed about the same (819 per 5 min before, 940 per 5 min after, +15%).",
+      "timestamp": "2026-03-04T04:55:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for service checkout rose (0.46% before, 0.70% after, +51%).",
+      "timestamp": "2026-03-04T04:55:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "config_changes",
+      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 1 min before the change; record R009)",
+      "timestamp": "2026-03-04T04:53:45Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 2 min after the change; record R010)",
+      "timestamp": "2026-03-04T04:57:32Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, eu-west; 3 min after the change; record R011)",
+      "timestamp": "2026-03-04T04:57:51Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R013)",
+      "timestamp": "2026-03-04T05:10:00Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 7 min after the change; record R012)",
+      "timestamp": "2026-03-04T05:02:23Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 1.0,
+    "reasons": [
+      "\u2713 A change event (config_changes) lines up in time (1 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Increase the database pool size to a more appropriate value, such as 20 or 30.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Implement a connection pool monitoring system to detect and alert on exhaustion before it causes latency issues.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and optimize the database queries to reduce the number of connections needed.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

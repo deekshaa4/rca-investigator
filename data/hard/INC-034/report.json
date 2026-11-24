@@ -1,0 +1,232 @@
+{
+  "incident_id": "INC-034",
+  "question": "Why did the error rate go up on 16 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "search"
+    },
+    "change_start": "2026-03-16T11:05:00Z",
+    "baseline_value": 0.004149780194701122,
+    "current_value": 0.04349045146258029,
+    "relative_change": 9.4802,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "Upstream search-cluster is the root cause of the error rate increase.",
+      "category": "dependency",
+      "confidence": 0.9,
+      "why_chain": [
+        "The error rate in service search increased after the upstream search-cluster started returning HTTP 503.",
+        "The upstream search-cluster timeout errors were observed after the change point, indicating a problem with the upstream service.",
+        "The error rate in service search did not change in other regions, suggesting the issue is specific to the upstream search-cluster."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The increase in request volume is not the cause of the error rate increase.",
+      "category": "unknown",
+      "confidence": 0.8,
+      "why_chain": [
+        "The request volume for service search did not change significantly, with a 24% increase in requests.",
+        "The error rate increase occurred after the change point, which is when the upstream search-cluster started returning HTTP 503.",
+        "If the increase in request volume was the cause, we would expect to see a similar increase in error rate, but it did not happen."
+      ],
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "rank": 3,
+      "description": "The increase in p95 latency is not the cause of the error rate increase.",
+      "category": "unknown",
+      "confidence": 0.8,
+      "why_chain": [
+        "The p95 latency increased by 82%, but the error rate increased by 948%. The latency increase is a symptom, not a cause.",
+        "The error rate increase occurred after the change point, which is when the upstream search-cluster started returning HTTP 503.",
+        "If the increase in p95 latency was the cause, we would expect to see a similar increase in error rate, but it did not happen."
+      ],
+      "evidence_ids": [
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate is due to a configuration change.",
+      "reason": "There is no evidence of a configuration change that would cause the error rate to increase.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a deployment of a new release or version.",
+      "reason": "There is no evidence of a deployment that would cause the error rate to increase.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a change in the data.",
+      "reason": "There is no evidence of any change in the data that would cause the error rate to increase.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a change in the infrastructure.",
+      "reason": "There is no evidence of any change in the infrastructure that would cause the error rate to increase.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service search rose from 0.41% to 4.35% (+948%), with a change point at 2026-03-16T11:05:00Z.",
+      "timestamp": "2026-03-16T11:05:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service search: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.08).",
+      "timestamp": "2026-03-16T11:05:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service search stayed about the same (2454 per 5 min before, 3034 per 5 min after, +24%).",
+      "timestamp": "2026-03-16T11:05:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service search rose (140 ms before, 255 ms after, +82%).",
+      "timestamp": "2026-03-16T11:05:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Upstream search-cluster returning HTTP 503 for search (search; 3 min after the change; record R013)",
+      "timestamp": "2026-03-16T11:08:18Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, ap-south; 5 min after the change; record R014)",
+      "timestamp": "2026-03-16T11:09:36Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, eu-west; 14 min after the change; record R015)",
+      "timestamp": "2026-03-16T11:19:17Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "search-cluster status page: investigating degraded performance (search; 30 min after the change; record R017)",
+      "timestamp": "2026-03-16T11:35:00Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, us-east; 23 min after the change; record R016)",
+      "timestamp": "2026-03-16T11:27:54Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 0.93,
+    "reasons": [
+      "\u2713 A change event (alerts) lines up in time (3 min after the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Investigate and fix the upstream search-cluster issue.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the upstream search-cluster status and performance closely.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and optimize the request handling in service search.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

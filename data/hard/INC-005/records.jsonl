@@ -1,0 +1,16 @@
+{"id": "R001", "timestamp": "2026-03-19T06:55:42Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO nightly backup completed"}
+{"id": "R002", "timestamp": "2026-03-19T08:18:44Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v4.1 to us-east (routine release)"}
+{"id": "R003", "timestamp": "2026-03-19T13:47:27Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v2.8 to us-east (routine release)"}
+{"id": "R004", "timestamp": "2026-03-19T14:57:40Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v1.7 to eu-west (routine release)"}
+{"id": "R005", "timestamp": "2026-03-19T21:55:46Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO cache warmed in 1.8s"}
+{"id": "R006", "timestamp": "2026-03-19T22:33:56Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO certificate check passed"}
+{"id": "R007", "timestamp": "2026-03-19T23:31:23Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO nightly backup completed"}
+{"id": "R008", "timestamp": "2026-03-20T01:33:38Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R009", "timestamp": "2026-03-20T02:31:51Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Customer reports a typo on the help page."}
+{"id": "R010", "timestamp": "2026-03-20T02:34:02Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v2.4 to eu-west (routine release)"}
+{"id": "R011", "timestamp": "2026-03-20T03:55:15Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R012", "timestamp": "2026-03-20T04:57:15Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v3.20 to ap-south (routine release)"}
+{"id": "R013", "timestamp": "2026-03-20T08:03:55Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R014", "timestamp": "2026-03-20T09:33:42Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v4.20 to us-east"}
+{"id": "R015", "timestamp": "2026-03-20T11:23:25Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R016", "timestamp": "2026-03-20T18:08:29Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v3.18 to eu-west (routine release)"}

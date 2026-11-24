@@ -1,0 +1,13 @@
+{"id": "R001", "timestamp": "2026-03-12T00:18:16Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v2.11 to eu-west (routine release)"}
+{"id": "R002", "timestamp": "2026-03-12T07:10:15Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R003", "timestamp": "2026-03-12T15:55:24Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v1.20 to us-east (routine release)"}
+{"id": "R004", "timestamp": "2026-03-12T20:26:47Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R005", "timestamp": "2026-03-13T02:35:58Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R006", "timestamp": "2026-03-13T03:18:32Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Customer reports a typo on the help page."}
+{"id": "R007", "timestamp": "2026-03-13T08:04:30Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Customer asks how to download an invoice."}
+{"id": "R008", "timestamp": "2026-03-13T09:39:26Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO nightly backup completed"}
+{"id": "R009", "timestamp": "2026-03-13T11:29:11Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v5.23 to eu-west"}
+{"id": "R010", "timestamp": "2026-03-13T13:41:20Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v2.15 to us-east (routine release)"}
+{"id": "R011", "timestamp": "2026-03-13T16:25:36Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO certificate check passed"}
+{"id": "R012", "timestamp": "2026-03-13T17:02:46Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: INFO nightly backup completed"}
+{"id": "R013", "timestamp": "2026-03-13T20:11:41Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO cache warmed in 1.8s"}

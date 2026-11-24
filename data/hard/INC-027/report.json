@@ -1,0 +1,183 @@
+{
+  "incident_id": "INC-027",
+  "question": "Why did the p95 latency go up on 20 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "service": "auth"
+    },
+    "change_start": "2026-03-20T04:05:00Z",
+    "baseline_value": 90.68740495291114,
+    "current_value": 292.98666669083536,
+    "relative_change": 2.2307,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The connection pool size change likely caused the connection exhaustion warnings.",
+      "category": "config_change",
+      "confidence": 0.9,
+      "why_chain": [
+        "The auth db.pool_size was changed from 50 to 5.",
+        "This reduction in pool size likely caused the connection pool to exhaust more quickly.",
+        "The connection pool exhaustion led to the WARN messages in the logs."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The increase in request volume did not cause the latency spike.",
+      "category": "traffic",
+      "confidence": 0.8,
+      "why_chain": [
+        "The request volume for service auth stayed about the same.",
+        "The error rate increased, not the request volume.",
+        "The latency spike was more pronounced than the increase in requests."
+      ],
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in latency was due to a sudden surge in traffic.",
+      "reason": "The request volume did not change significantly.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The latency increase was caused by a new deployment.",
+      "reason": "No alerts or error logs were present before the change.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The latency increase was due to a dependency issue with an external service.",
+      "reason": "No external service failures or slowdowns were reported.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E4"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for service auth rose from 91 ms to 293 ms (+223%), with a change point at 2026-03-20T04:05:00Z.",
+      "timestamp": "2026-03-20T04:05:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in service auth: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.01).",
+      "timestamp": "2026-03-20T04:05:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service auth stayed about the same (1105 per 5 min before, 1235 per 5 min after, +12%).",
+      "timestamp": "2026-03-20T04:05:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for service auth rose (0.41% before, 0.56% after, +39%).",
+      "timestamp": "2026-03-20T04:05:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "config_changes",
+      "summary": "Changed auth db.pool_size from 50 to 5 (all regions) (auth; 2 min before the change; record R008)",
+      "timestamp": "2026-03-20T04:02:36Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "p95 latency above SLO on auth (auth; 15 min after the change; record R010)",
+      "timestamp": "2026-03-20T04:20:00Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: WARN connection pool exhausted, waiting for a free connection (auth, eu-west; 21 min after the change; record R011)",
+      "timestamp": "2026-03-20T04:25:50Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: WARN connection pool exhausted, waiting for a free connection (auth, ap-south; 24 min after the change; record R012)",
+      "timestamp": "2026-03-20T04:28:28Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "logs",
+      "summary": "auth: WARN connection pool exhausted, waiting for a free connection (auth, us-east; 24 min after the change; record R013)",
+      "timestamp": "2026-03-20T04:29:18Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 1.0,
+    "reasons": [
+      "\u2713 A change event (config_changes) lines up in time (2 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Roll back the config change to restore the db.pool_size to 50.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the connection pool size and request volume closely in the future.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and optimize the connection pool configuration for the auth service.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

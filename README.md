@@ -48,6 +48,7 @@ pip install -e ".[dev]"
 ollama pull qwen2.5:3b     # small open model, about 2 GB
 rca check                  # confirms the model is reachable
 rca simulate --n 20        # generates 20 incidents with known causes in data/generated/
+rca simulate --n 50 --hard --out data/hard   # harder incidents with red herrings
 rca analyze data/generated # finds what changed in each incident and scores it
 rca search data/generated  # finds the records that explain each change and scores it
 rca investigate data/generated/INC-001 --save   # full investigation report with the local model
@@ -66,6 +67,15 @@ To measure whether the investigator finds the *right* cause, it needs incidents 
 | `traffic_spike` | A campaign triples traffic in one region | sufficient |
 | `dependency_outage` | An upstream dependency fails | sufficient |
 | `no_clear_cause` | Errors rise with no record explaining why | **insufficient** |
+
+With `--hard`, each scenario also gets one of these twists, and the metrics are noisier:
+
+| Twist | What is added | Expected verdict |
+|---|---|---|
+| `red_herring_other` | a deploy elsewhere at almost the same time | unchanged |
+| `red_herring_early` | a deploy in the right place, but hours too early | unchanged |
+| `missing_cause` | the real cause was never recorded | **insufficient** |
+| `rival_change` | a second change in the same place at the same time | **partial** |
 
 Each incident folder holds `incident.json` (the question), `metrics.csv`, `records.jsonl` and `truth.json` (the real cause, hidden from the investigator and used only for scoring).
 
@@ -118,18 +128,18 @@ Example reports from `qwen2.5:3b`: [bad deploy](examples/reports/bad_deploy.md),
 
 Score ≥ 0.7 is **sufficient**, ≥ 0.45 **partial**, otherwise **insufficient**. Without an event that is both close in time and in the affected segment there is no credible cause, so the verdict is insufficient. Every failed check adds the data that would help to the report.
 
-## Results (v0.1)
+## Results
 
-`rca batch` on 20 generated incidents with `qwen2.5:3b` on a MacBook Air (M1, 8 GB), about 34 seconds per incident:
+`rca batch` with `qwen2.5:3b` on a MacBook Air (M1, 8 GB), about 31 seconds per incident.
 
-| Measure | Score |
-|---|---|
-| Sufficiency verdict correct (incl. 4 "insufficient" cases) | 20/20 |
-| Affected service/region correct | 20/20 |
-| Top cause category correct | 16/16 |
-| Top cause cites the true cause record | 16/16 |
+| Measure | 20 standard incidents | 50 hard incidents |
+|---|---|---|
+| Sufficiency verdict correct | 20/20 | 48/50 |
+| Affected service/region correct | 20/20 | 50/50 |
+| Top cause category correct | 16/16 | 74% |
+| Top cause cites the true cause record | 15/16 | 81% |
 
-These incidents are deliberately clean. Week 2 adds harder ones (noise, red herrings, overlapping changes, missing records) and a stricter evidence-sufficiency check, so expect these numbers to drop before they improve. The model still lists 2.2 factors on average where one is usually enough.
+On the hard set the rules-based verdict holds up well, but the small model is sometimes misled by red herrings (for example, blaming a deploy from hours earlier). In the `rival_change` cases the data genuinely cannot separate the two changes, so the verdict is correctly *partial* even when the model picks the other change. Improving the model's choice of cause is the next step.
 
 ## Project structure
 

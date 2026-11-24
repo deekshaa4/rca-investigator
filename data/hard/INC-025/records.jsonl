@@ -1,0 +1,16 @@
+{"id": "R001", "timestamp": "2026-03-08T00:53:13Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R002", "timestamp": "2026-03-08T02:39:56Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v2.14 to ap-south (routine release)"}
+{"id": "R003", "timestamp": "2026-03-08T03:08:59Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO certificate check passed"}
+{"id": "R004", "timestamp": "2026-03-08T04:38:45Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v2.21 to ap-south (routine release)"}
+{"id": "R005", "timestamp": "2026-03-08T04:52:04Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R006", "timestamp": "2026-03-08T05:46:16Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer reports a typo on the help page."}
+{"id": "R007", "timestamp": "2026-03-08T07:32:15Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: INFO autoscaler: no change"}
+{"id": "R008", "timestamp": "2026-03-08T09:15:33Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v2.9 to us-east (routine release)"}
+{"id": "R009", "timestamp": "2026-03-08T13:44:56Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: INFO autoscaler: no change"}
+{"id": "R010", "timestamp": "2026-03-08T23:27:35Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO cache warmed in 1.8s"}
+{"id": "R011", "timestamp": "2026-03-09T05:28:14Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v2.17 to us-east (routine release)"}
+{"id": "R012", "timestamp": "2026-03-09T05:35:51Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v4.8 to eu-west (routine release)"}
+{"id": "R013", "timestamp": "2026-03-09T10:27:42Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R014", "timestamp": "2026-03-09T16:21:11Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R015", "timestamp": "2026-03-09T22:58:24Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R016", "timestamp": "2026-03-09T23:08:11Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO cache warmed in 1.8s"}

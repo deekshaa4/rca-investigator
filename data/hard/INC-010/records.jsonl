@@ -1,0 +1,14 @@
+{"id": "R001", "timestamp": "2026-03-25T03:37:22Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R002", "timestamp": "2026-03-25T06:05:48Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R003", "timestamp": "2026-03-25T07:26:19Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: INFO nightly backup completed"}
+{"id": "R004", "timestamp": "2026-03-25T10:00:44Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v3.1 to ap-south (routine release)"}
+{"id": "R005", "timestamp": "2026-03-25T14:50:12Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R006", "timestamp": "2026-03-25T17:06:58Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v1.6 to us-east (routine release)"}
+{"id": "R007", "timestamp": "2026-03-25T18:37:16Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R008", "timestamp": "2026-03-25T19:15:52Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v2.11 to eu-west (routine release)"}
+{"id": "R009", "timestamp": "2026-03-25T19:40:43Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO certificate check passed"}
+{"id": "R010", "timestamp": "2026-03-25T19:42:57Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R011", "timestamp": "2026-03-25T23:33:11Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO certificate check passed"}
+{"id": "R012", "timestamp": "2026-03-26T04:39:08Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v2.24 to ap-south (routine release)"}
+{"id": "R013", "timestamp": "2026-03-26T06:12:15Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v1.24 to eu-west"}
+{"id": "R014", "timestamp": "2026-03-26T23:08:06Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO cache warmed in 1.8s"}

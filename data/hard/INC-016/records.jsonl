@@ -1,0 +1,24 @@
+{"id": "R001", "timestamp": "2026-03-06T02:15:41Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO autoscaler: no change"}
+{"id": "R002", "timestamp": "2026-03-06T04:22:32Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R003", "timestamp": "2026-03-06T05:39:53Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: INFO certificate check passed"}
+{"id": "R004", "timestamp": "2026-03-06T11:07:11Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO certificate check passed"}
+{"id": "R005", "timestamp": "2026-03-06T15:15:51Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v1.3 to us-east (routine release)"}
+{"id": "R006", "timestamp": "2026-03-06T16:15:25Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R007", "timestamp": "2026-03-06T18:54:07Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v3.3 to eu-west (routine release)"}
+{"id": "R008", "timestamp": "2026-03-06T20:00:15Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO certificate check passed"}
+{"id": "R009", "timestamp": "2026-03-06T20:28:36Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R010", "timestamp": "2026-03-06T23:24:42Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v2.25 to ap-south (routine release)"}
+{"id": "R011", "timestamp": "2026-03-07T03:18:48Z", "source": "tickets", "service": "catalog", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R012", "timestamp": "2026-03-07T05:45:54Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R013", "timestamp": "2026-03-07T07:07:18Z", "source": "config_changes", "service": "auth", "region": "ap-south", "text": "Changed auth feature flag new_ui_flow to 50% in ap-south"}
+{"id": "R014", "timestamp": "2026-03-07T07:08:28Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v2.27 to ap-south"}
+{"id": "R015", "timestamp": "2026-03-07T07:20:00Z", "source": "alerts", "service": "auth", "region": "ap-south", "text": "High error rate on auth in ap-south"}
+{"id": "R016", "timestamp": "2026-03-07T07:28:47Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.27)"}
+{"id": "R017", "timestamp": "2026-03-07T07:37:42Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.27)"}
+{"id": "R018", "timestamp": "2026-03-07T07:47:30Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.27)"}
+{"id": "R019", "timestamp": "2026-03-07T11:34:25Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R020", "timestamp": "2026-03-07T14:30:39Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO nightly backup completed"}
+{"id": "R021", "timestamp": "2026-03-07T14:40:25Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R022", "timestamp": "2026-03-07T20:59:46Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v3.7 to us-east (routine release)"}
+{"id": "R023", "timestamp": "2026-03-07T22:55:31Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO nightly backup completed"}
+{"id": "R024", "timestamp": "2026-03-07T23:35:50Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer reports a typo on the help page."}

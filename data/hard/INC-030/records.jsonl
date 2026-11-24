@@ -1,0 +1,14 @@
+{"id": "R001", "timestamp": "2026-03-19T02:10:54Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R002", "timestamp": "2026-03-19T06:29:36Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v4.0 to ap-south (routine release)"}
+{"id": "R003", "timestamp": "2026-03-19T09:42:46Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R004", "timestamp": "2026-03-19T13:39:52Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO autoscaler: no change"}
+{"id": "R005", "timestamp": "2026-03-20T00:14:16Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v4.12 to ap-south (routine release)"}
+{"id": "R006", "timestamp": "2026-03-20T03:13:42Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v8.27 to ap-south"}
+{"id": "R007", "timestamp": "2026-03-20T06:10:32Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v3.11 to ap-south (routine release)"}
+{"id": "R008", "timestamp": "2026-03-20T11:04:47Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R009", "timestamp": "2026-03-20T13:47:28Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v3.21 to us-east (routine release)"}
+{"id": "R010", "timestamp": "2026-03-20T14:08:31Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R011", "timestamp": "2026-03-20T15:04:54Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R012", "timestamp": "2026-03-20T15:10:38Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO cache warmed in 1.8s"}
+{"id": "R013", "timestamp": "2026-03-20T17:35:24Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO nightly backup completed"}
+{"id": "R014", "timestamp": "2026-03-20T19:02:01Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v2.23 to us-east (routine release)"}

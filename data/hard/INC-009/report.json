@@ -1,0 +1,202 @@
+{
+  "incident_id": "INC-009",
+  "question": "Why did the error rate go up on 21 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "catalog"
+    },
+    "change_start": "2026-03-21T15:30:00Z",
+    "baseline_value": 0.004151435857252357,
+    "current_value": 0.05465676206307215,
+    "relative_change": 12.1657,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New deployment of catalog v3.27 introduced issues with upstream catalog-db.",
+      "category": "deployment",
+      "confidence": 0.9,
+      "why_chain": [
+        "Deployed catalog v3.27 to eu-west (record R014).",
+        "The error rate for service catalog increased (record E1).",
+        "Upstream catalog-db returned HTTP 503 (record E5).",
+        "Upstream catalog-db timed out after retries (records E6, E7)."
+      ],
+      "evidence_ids": [
+        "E1",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "Increased load on catalog-db due to deployment.",
+      "category": "traffic",
+      "confidence": 0.8,
+      "why_chain": [
+        "The error rate for service catalog increased (record E1).",
+        "Request volume for service catalog increased (record E3).",
+        "Upstream catalog-db timed out after retries (records E6, E7)."
+      ],
+      "evidence_ids": [
+        "E1",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate was due to a config_change.",
+      "reason": "No evidence supports a config_change.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a data issue.",
+      "reason": "No evidence supports a data issue.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a dependency issue with an external service.",
+      "reason": "The issue is with the upstream catalog-db, not an external service.",
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate was due to infrastructure issues.",
+      "reason": "No evidence supports infrastructure issues.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a known bug.",
+      "reason": "No evidence supports a known bug.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a sudden spike in users.",
+      "reason": "Request volume for service catalog did not increase significantly (record E3).",
+      "evidence_ids": [
+        "E3"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service catalog rose from 0.42% to 5.47% (+1217%), with a change point at 2026-03-21T15:30:00Z.",
+      "timestamp": "2026-03-21T15:30:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service catalog: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.06).",
+      "timestamp": "2026-03-21T15:30:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service catalog stayed about the same (1704 per 5 min before, 1901 per 5 min after, +12%).",
+      "timestamp": "2026-03-21T15:30:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service catalog rose (120 ms before, 216 ms after, +80%).",
+      "timestamp": "2026-03-21T15:30:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Upstream catalog-db returning HTTP 503 for catalog (catalog; 2 min after the change; record R017)",
+      "timestamp": "2026-03-21T15:31:47Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, eu-west; 7 min after the change; record R018)",
+      "timestamp": "2026-03-21T15:36:34Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, us-east; 17 min after the change; record R019)",
+      "timestamp": "2026-03-21T15:46:40Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v3.27 to eu-west (catalog, eu-west; 224 min before the change; record R014)",
+      "timestamp": "2026-03-21T11:45:46Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "catalog-db status page: investigating degraded performance (catalog; 30 min after the change; record R021)",
+      "timestamp": "2026-03-21T16:00:00Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 0.93,
+    "reasons": [
+      "\u2713 A change event (alerts) lines up in time (2 min after the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 3 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Roll back the catalog v3.27 deployment to eu-west.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor catalog-db performance and availability closely.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Optimize the catalog-db to handle the increased load.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

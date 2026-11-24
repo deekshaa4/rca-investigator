@@ -1,0 +1,23 @@
+{"id": "R001", "timestamp": "2026-03-18T01:46:56Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO certificate check passed"}
+{"id": "R002", "timestamp": "2026-03-18T02:05:35Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v3.2 to us-east (routine release)"}
+{"id": "R003", "timestamp": "2026-03-18T02:22:39Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v4.19 to eu-west (routine release)"}
+{"id": "R004", "timestamp": "2026-03-18T06:12:03Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R005", "timestamp": "2026-03-18T06:37:55Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R006", "timestamp": "2026-03-18T09:36:38Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R007", "timestamp": "2026-03-18T10:35:23Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v2.11 to us-east (routine release)"}
+{"id": "R008", "timestamp": "2026-03-18T12:10:25Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v2.11 to us-east (routine release)"}
+{"id": "R009", "timestamp": "2026-03-18T14:13:19Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: INFO certificate check passed"}
+{"id": "R010", "timestamp": "2026-03-18T14:51:14Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R011", "timestamp": "2026-03-18T16:07:57Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO nightly backup completed"}
+{"id": "R012", "timestamp": "2026-03-18T20:40:17Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R013", "timestamp": "2026-03-18T23:18:55Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v4.9 to ap-south"}
+{"id": "R014", "timestamp": "2026-03-19T00:47:21Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v1.1 to us-east (routine release)"}
+{"id": "R015", "timestamp": "2026-03-19T01:23:06Z", "source": "tickets", "service": null, "region": "ap-south", "text": "Marketing: flash sale campaign goes live in ap-south at 03:30 UTC"}
+{"id": "R016", "timestamp": "2026-03-19T03:42:00Z", "source": "alerts", "service": null, "region": "ap-south", "text": "Request volume 3x normal in ap-south"}
+{"id": "R017", "timestamp": "2026-03-19T03:50:00Z", "source": "logs", "service": null, "region": "ap-south", "text": "autoscaler: scaling out, 4 new instances requested"}
+{"id": "R018", "timestamp": "2026-03-19T04:36:07Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R019", "timestamp": "2026-03-19T08:05:34Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO autoscaler: no change"}
+{"id": "R020", "timestamp": "2026-03-19T09:41:49Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v3.3 to ap-south (routine release)"}
+{"id": "R021", "timestamp": "2026-03-19T10:49:29Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R022", "timestamp": "2026-03-19T16:40:42Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R023", "timestamp": "2026-03-19T16:54:19Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}

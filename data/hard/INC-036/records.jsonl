@@ -1,0 +1,19 @@
+{"id": "R001", "timestamp": "2026-03-10T05:34:35Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v2.25 to eu-west (routine release)"}
+{"id": "R002", "timestamp": "2026-03-10T18:31:12Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO autoscaler: no change"}
+{"id": "R003", "timestamp": "2026-03-10T21:27:18Z", "source": "logs", "service": "auth", "region": "ap-south", "text": "auth: INFO certificate check passed"}
+{"id": "R004", "timestamp": "2026-03-10T21:31:22Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO autoscaler: no change"}
+{"id": "R005", "timestamp": "2026-03-10T23:12:35Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Customer reports a typo on the help page."}
+{"id": "R006", "timestamp": "2026-03-11T00:34:58Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v4.11 to eu-west (routine release)"}
+{"id": "R007", "timestamp": "2026-03-11T03:00:02Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: INFO nightly backup completed"}
+{"id": "R008", "timestamp": "2026-03-11T04:10:00Z", "source": "alerts", "service": "catalog", "region": "us-east", "text": "High error rate on catalog in us-east"}
+{"id": "R009", "timestamp": "2026-03-11T04:36:27Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.7)"}
+{"id": "R010", "timestamp": "2026-03-11T04:36:51Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.7)"}
+{"id": "R011", "timestamp": "2026-03-11T04:37:22Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: ERROR NullPointerException in RequestHandler.serialize (v3.7)"}
+{"id": "R012", "timestamp": "2026-03-11T06:46:24Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: INFO autoscaler: no change"}
+{"id": "R013", "timestamp": "2026-03-11T13:59:32Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R014", "timestamp": "2026-03-11T14:42:06Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v1.22 to us-east (routine release)"}
+{"id": "R015", "timestamp": "2026-03-11T19:25:48Z", "source": "deploys", "service": "auth", "region": "eu-west", "text": "Deployed auth v1.11 to eu-west (routine release)"}
+{"id": "R016", "timestamp": "2026-03-11T20:14:01Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v1.27 to us-east (routine release)"}
+{"id": "R017", "timestamp": "2026-03-11T20:34:47Z", "source": "logs", "service": "checkout", "region": "us-east", "text": "checkout: INFO nightly backup completed"}
+{"id": "R018", "timestamp": "2026-03-11T20:52:19Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer asks how to download an invoice."}
+{"id": "R019", "timestamp": "2026-03-11T23:42:30Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Customer asks how to download an invoice."}

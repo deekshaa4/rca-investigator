@@ -1,0 +1,19 @@
+{"id": "R001", "timestamp": "2026-03-25T00:30:45Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R002", "timestamp": "2026-03-25T04:09:19Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO certificate check passed"}
+{"id": "R003", "timestamp": "2026-03-25T08:37:05Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO certificate check passed"}
+{"id": "R004", "timestamp": "2026-03-25T10:32:26Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R005", "timestamp": "2026-03-25T19:42:17Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO autoscaler: no change"}
+{"id": "R006", "timestamp": "2026-03-25T20:04:12Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO certificate check passed"}
+{"id": "R007", "timestamp": "2026-03-25T22:39:28Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R008", "timestamp": "2026-03-26T01:29:35Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v1.28 to eu-west (routine release)"}
+{"id": "R009", "timestamp": "2026-03-26T02:29:31Z", "source": "deploys", "service": "auth", "region": "ap-south", "text": "Deployed auth v2.23 to ap-south (routine release)"}
+{"id": "R010", "timestamp": "2026-03-26T04:56:21Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v2.3 to eu-west (routine release)"}
+{"id": "R011", "timestamp": "2026-03-26T05:07:04Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R012", "timestamp": "2026-03-26T06:22:00Z", "source": "alerts", "service": null, "region": "ap-south", "text": "Request volume 3x normal in ap-south"}
+{"id": "R013", "timestamp": "2026-03-26T06:30:00Z", "source": "logs", "service": null, "region": "ap-south", "text": "autoscaler: scaling out, 4 new instances requested"}
+{"id": "R014", "timestamp": "2026-03-26T11:03:41Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R015", "timestamp": "2026-03-26T12:30:21Z", "source": "tickets", "service": "search", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R016", "timestamp": "2026-03-26T17:18:30Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v3.28 to us-east (routine release)"}
+{"id": "R017", "timestamp": "2026-03-26T17:52:22Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R018", "timestamp": "2026-03-26T19:47:24Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v1.4 to eu-west (routine release)"}
+{"id": "R019", "timestamp": "2026-03-26T21:49:01Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: INFO autoscaler: no change"}

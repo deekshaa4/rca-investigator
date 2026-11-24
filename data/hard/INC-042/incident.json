@@ -1,0 +1,7 @@
+{
+  "incident_id": "INC-042",
+  "question": "Why did the p95 latency go up on 13 March 2026?",
+  "metric": "latency_p95_ms",
+  "window_start": "2026-03-12T00:00:00Z",
+  "window_end": "2026-03-13T23:55:00Z"
+}

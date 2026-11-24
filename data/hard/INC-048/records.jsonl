@@ -1,0 +1,16 @@
+{"id": "R001", "timestamp": "2026-03-24T04:14:36Z", "source": "tickets", "service": "auth", "region": "ap-south", "text": "Customer asks how to download an invoice."}
+{"id": "R002", "timestamp": "2026-03-24T04:35:49Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Customer asks how to download an invoice."}
+{"id": "R003", "timestamp": "2026-03-24T09:47:34Z", "source": "tickets", "service": "checkout", "region": "ap-south", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R004", "timestamp": "2026-03-24T11:14:23Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v3.25 to eu-west (routine release)"}
+{"id": "R005", "timestamp": "2026-03-24T13:11:38Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v1.7 to eu-west (routine release)"}
+{"id": "R006", "timestamp": "2026-03-24T16:09:16Z", "source": "logs", "service": "auth", "region": "us-east", "text": "auth: INFO autoscaler: no change"}
+{"id": "R007", "timestamp": "2026-03-24T19:00:47Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO cache warmed in 1.8s"}
+{"id": "R008", "timestamp": "2026-03-24T20:41:50Z", "source": "logs", "service": "catalog", "region": "eu-west", "text": "catalog: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R009", "timestamp": "2026-03-24T21:01:57Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R010", "timestamp": "2026-03-24T22:26:37Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: INFO cache warmed in 1.8s"}
+{"id": "R011", "timestamp": "2026-03-25T05:28:13Z", "source": "tickets", "service": null, "region": "eu-west", "text": "Marketing: flash sale campaign goes live in eu-west at 08:10 UTC"}
+{"id": "R012", "timestamp": "2026-03-25T08:22:00Z", "source": "alerts", "service": null, "region": "eu-west", "text": "Request volume 3x normal in eu-west"}
+{"id": "R013", "timestamp": "2026-03-25T08:30:00Z", "source": "logs", "service": null, "region": "eu-west", "text": "autoscaler: scaling out, 4 new instances requested"}
+{"id": "R014", "timestamp": "2026-03-25T10:58:50Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO autoscaler: no change"}
+{"id": "R015", "timestamp": "2026-03-25T17:10:38Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v4.25 to eu-west (routine release)"}
+{"id": "R016", "timestamp": "2026-03-25T21:30:13Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: INFO nightly backup completed"}

@@ -1,0 +1,17 @@
+{"id": "R001", "timestamp": "2026-03-01T02:53:43Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v3.12 to us-east (routine release)"}
+{"id": "R002", "timestamp": "2026-03-01T03:05:18Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: INFO certificate check passed"}
+{"id": "R003", "timestamp": "2026-03-01T03:11:12Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Feature request: dark mode for the account page."}
+{"id": "R004", "timestamp": "2026-03-01T03:32:35Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Question about API rate limits for a partner integration."}
+{"id": "R005", "timestamp": "2026-03-01T04:38:15Z", "source": "logs", "service": "catalog", "region": "us-east", "text": "catalog: INFO certificate check passed"}
+{"id": "R006", "timestamp": "2026-03-01T07:15:42Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO autoscaler: no change"}
+{"id": "R007", "timestamp": "2026-03-01T08:22:57Z", "source": "tickets", "service": "auth", "region": "us-east", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R008", "timestamp": "2026-03-01T08:35:20Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v2.10 to us-east (routine release)"}
+{"id": "R009", "timestamp": "2026-03-01T12:05:28Z", "source": "logs", "service": "catalog", "region": "ap-south", "text": "catalog: INFO cache warmed in 1.8s"}
+{"id": "R010", "timestamp": "2026-03-01T13:03:45Z", "source": "tickets", "service": "catalog", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R011", "timestamp": "2026-03-01T18:51:23Z", "source": "tickets", "service": "checkout", "region": "eu-west", "text": "Feature request: dark mode for the account page."}
+{"id": "R012", "timestamp": "2026-03-02T01:29:46Z", "source": "deploys", "service": "auth", "region": "us-east", "text": "Deployed auth v1.16 to us-east (routine release)"}
+{"id": "R013", "timestamp": "2026-03-02T14:20:47Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: ERROR upstream search-cluster timeout after 3 retries"}
+{"id": "R014", "timestamp": "2026-03-02T14:22:40Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: ERROR upstream search-cluster timeout after 3 retries"}
+{"id": "R015", "timestamp": "2026-03-02T14:29:56Z", "source": "logs", "service": "search", "region": "us-east", "text": "search: ERROR upstream search-cluster timeout after 3 retries"}
+{"id": "R016", "timestamp": "2026-03-02T14:35:00Z", "source": "tickets", "service": "search", "region": null, "text": "search-cluster status page: investigating degraded performance"}
+{"id": "R017", "timestamp": "2026-03-02T19:44:40Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Customer reports a typo on the help page."}

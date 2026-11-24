@@ -1,0 +1,42 @@
+# INC-041: Why did the error rate go up on 07 March 2026?
+
+## What changed
+error_rate for service catalog, region us-east went from 0.00374 to 0.02044 (+446%) starting 2026-03-07T05:25:00Z. [E1, E2]
+
+## Verdict: partial (score 0.90)
+- ✓ A change event (deploys) lines up in time (2 min before the change).
+- ✓ It concerns the affected service/region.
+- ✓ 3 log/alert record(s) after the change agree with the numbers.
+- ✓ Request volume stayed steady, ruling out a traffic spike.
+- ✗ 1 other change event(s) fit about as well.
+- ✓ The main factor rests on this event.
+- ✗ Two or more changes fit equally well, so the cause cannot be confirmed.
+- Data that would help: Details to tell the competing changes apart (e.g. a rollback test)
+
+## Why it happened
+1. **New UI flow feature flag change introduced a bug in the catalog v3.14 release.** (config_change, confidence 90%) [E5, E6, E7, E8, E9]
+   - Why: The new UI flow feature flag was changed to 50% in record R011, which occurred 3 minutes before the error rate spike.
+   - Why: The catalog v3.14 release (record R012) was deployed 2 minutes before the error rate spike.
+   - Why: The NullPointerException in RequestHandler.serialize (record R013 and R014) occurred 3 and 8 minutes after the catalog v3.14 release.
+   - Why: The error rate increased from 0.37% to 2.04% (record E1), indicating a new issue introduced by the catalog v3.14 release.
+   - Why: evidence_ids
+
+## Ruled out
+- The increase in request volume caused the error rate to spike.: The request volume stayed about the same (record E3), and the p95 latency also stayed about the same (record E4). [E3, E4]
+- The deployment of catalog v3.14 caused the error rate to spike.: The error rate spike occurred after the catalog v3.14 deployment (record E5), but the error rate increase was not immediately after the deployment. [E5]
+
+## Actions
+- (corrective, high) Fix the NullPointerException in RequestHandler.serialize in the catalog v3.14 release.
+- (preventive, high) Monitor the error rate and request volume closely after any catalog release to catch issues early.
+- (preventive, medium) Roll back the new UI flow feature flag change to 50% if the error rate does not improve.
+
+## Evidence
+- **E1** (metric, metrics:error_rate) Error rate for service catalog in region us-east rose from 0.37% to 2.04% (+446%), with a change point at 2026-03-07T05:25:00Z.
+- **E2** (metric, metrics:error_rate) The change is concentrated in service catalog in region us-east: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.12).
+- **E3** (metric, metrics:requests) At the same time, request volume for service catalog in region us-east stayed about the same (735 per 5 min before, 852 per 5 min after, +16%).
+- **E4** (metric, metrics:latency_p95_ms) At the same time, p95 latency for service catalog in region us-east stayed about the same (121 ms before, 120 ms after, -1%).
+- **E5** (record, deploys) Deployed catalog v3.14 to us-east (catalog, us-east; 2 min before the change; record R012)
+- **E6** (record, config_changes) Changed catalog feature flag new_ui_flow to 50% in us-east (catalog, us-east; 3 min before the change; record R011)
+- **E7** (record, alerts) High error rate on catalog in us-east (catalog, us-east; 10 min after the change; record R015)
+- **E8** (record, logs) catalog: ERROR NullPointerException in RequestHandler.serialize (v3.14) (catalog, us-east; 3 min after the change; record R013)
+- **E9** (record, logs) catalog: ERROR NullPointerException in RequestHandler.serialize (v3.14) (catalog, us-east; 8 min after the change; record R014)

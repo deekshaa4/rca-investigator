@@ -1,0 +1,186 @@
+{
+  "incident_id": "INC-004",
+  "question": "Why did the error rate go up on 07 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "search"
+    },
+    "change_start": "2026-03-07T05:30:00Z",
+    "baseline_value": 0.003516479284967015,
+    "current_value": 0.03743969677107779,
+    "relative_change": 9.6469,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "Upstream search-cluster is experiencing degraded performance, causing service search to fail with HTTP 503 and timeouts.",
+      "category": "dependency",
+      "confidence": 0.9,
+      "why_chain": [
+        "The upstream search-cluster is returning HTTP 503, indicating it is down or overloaded.",
+        "The search-cluster is failing to respond within the retries, causing service search to time out.",
+        "The search-cluster is experiencing degraded performance, leading to the error rate increase in service search."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The error rate increase is concentrated in service search, suggesting a specific issue with this service.",
+      "category": "unknown",
+      "confidence": 0.8,
+      "why_chain": [
+        "The error rate increase is not uniform across all service/region segments.",
+        "The error rate increase is specifically in service search, indicating a localized issue.",
+        "The localized issue in service search is likely related to the upstream search-cluster."
+      ],
+      "evidence_ids": [
+        "E2"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate is due to a sudden surge in user traffic.",
+      "reason": "The request volume for service search did not change significantly, and the error rate increase is concentrated in service search.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a configuration change in service search.",
+      "reason": "There is no evidence of a configuration change that would cause the error rate to increase.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a change in infrastructure, such as network or server capacity.",
+      "reason": "There is no evidence of a change in infrastructure that would cause the error rate to increase.",
+      "evidence_ids": [
+        "E1"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to bad or unusual input data.",
+      "reason": "There is no evidence of bad or unusual input data that would cause the error rate to increase.",
+      "evidence_ids": [
+        "E1"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service search rose from 0.35% to 3.74% (+965%), with a change point at 2026-03-07T05:30:00Z.",
+      "timestamp": "2026-03-07T05:30:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service search: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.12).",
+      "timestamp": "2026-03-07T05:30:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service search stayed about the same (2454 per 5 min before, 2862 per 5 min after, +17%).",
+      "timestamp": "2026-03-07T05:30:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service search rose (141 ms before, 253 ms after, +80%).",
+      "timestamp": "2026-03-07T05:30:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Upstream search-cluster returning HTTP 503 for search (search; 2 min after the change; record R014)",
+      "timestamp": "2026-03-07T05:32:10Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, us-east; 5 min after the change; record R015)",
+      "timestamp": "2026-03-07T05:35:11Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, ap-south; 10 min after the change; record R016)",
+      "timestamp": "2026-03-07T05:39:37Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, eu-west; 19 min after the change; record R017)",
+      "timestamp": "2026-03-07T05:48:37Z"
+    },
+    {
+      "id": "E9",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "search-cluster status page: investigating degraded performance (search; 30 min after the change; record R018)",
+      "timestamp": "2026-03-07T06:00:00Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 0.93,
+    "reasons": [
+      "\u2713 A change event (alerts) lines up in time (2 min after the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 4 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Investigate and fix the upstream search-cluster issue.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the upstream search-cluster and take preemptive actions if it shows signs of degradation.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and optimize the retry logic for service search.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

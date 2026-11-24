@@ -1,0 +1,114 @@
+{
+  "incident_id": "INC-014",
+  "question": "Why did the error rate go up on 02 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "search"
+    },
+    "change_start": "2026-03-02T14:05:00Z",
+    "baseline_value": 0.0036058653124763254,
+    "current_value": 0.036580205613145435,
+    "relative_change": 9.1446,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate is due to a configuration change.",
+      "reason": "The error rate increase is specific to service search and not affecting other services, indicating a targeted issue rather than a broad configuration change.",
+      "evidence_ids": [
+        "E1",
+        "E2"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a sudden increase in user traffic.",
+      "reason": "The request volume for service search did not change significantly, with a 17% increase in requests per 5 minutes.",
+      "evidence_ids": [
+        "E3"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate is due to a sudden increase in data quality.",
+      "reason": "There is no evidence of unusual input data causing the error rate increase.",
+      "evidence_ids": [
+        "E8"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service search rose from 0.36% to 3.66% (+914%), with a change point at 2026-03-02T14:05:00Z.",
+      "timestamp": "2026-03-02T14:05:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service search: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.14).",
+      "timestamp": "2026-03-02T14:05:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service search stayed about the same (2520 per 5 min before, 2942 per 5 min after, +17%).",
+      "timestamp": "2026-03-02T14:05:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service search rose (140 ms before, 252 ms after, +79%).",
+      "timestamp": "2026-03-02T14:05:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, ap-south; 16 min after the change; record R013)",
+      "timestamp": "2026-03-02T14:20:47Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, eu-west; 18 min after the change; record R014)",
+      "timestamp": "2026-03-02T14:22:40Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "search-cluster status page: investigating degraded performance (search; 30 min after the change; record R016)",
+      "timestamp": "2026-03-02T14:35:00Z"
+    },
+    {
+      "id": "E8",
+      "kind": "record",
+      "source": "logs",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, us-east; 25 min after the change; record R015)",
+      "timestamp": "2026-03-02T14:29:56Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.25,
+    "reasons": [
+      "\u2717 No deploy, config change, ticket or alert lines up with the change.",
+      "\u2713 3 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike."
+    ],
+    "missing_data": [
+      "Deploy and config-change history for the affected segment"
+    ]
+  },
+  "actions": []
+}

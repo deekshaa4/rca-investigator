@@ -1,0 +1,14 @@
+{
+  "scenario": "config_change",
+  "category": "config_change",
+  "metric": "latency_p95_ms",
+  "segment": {
+    "service": "auth"
+  },
+  "change_start": "2026-03-04T12:00:00Z",
+  "cause_record_ids": [
+    "R019"
+  ],
+  "expected_verdict": "sufficient",
+  "twist": "red_herring_early"
+}

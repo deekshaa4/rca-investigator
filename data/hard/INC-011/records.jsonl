@@ -1,0 +1,20 @@
+{"id": "R001", "timestamp": "2026-03-03T02:39:27Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO nightly backup completed"}
+{"id": "R002", "timestamp": "2026-03-03T07:14:33Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v2.10 to eu-west (routine release)"}
+{"id": "R003", "timestamp": "2026-03-03T10:10:21Z", "source": "tickets", "service": "checkout", "region": "us-east", "text": "Customer reports a typo on the help page."}
+{"id": "R004", "timestamp": "2026-03-03T10:16:59Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R005", "timestamp": "2026-03-03T13:03:00Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v4.3 to us-east (routine release)"}
+{"id": "R006", "timestamp": "2026-03-03T13:24:24Z", "source": "deploys", "service": "checkout", "region": "ap-south", "text": "Deployed checkout v4.0 to ap-south (routine release)"}
+{"id": "R007", "timestamp": "2026-03-03T13:26:04Z", "source": "deploys", "service": "catalog", "region": "ap-south", "text": "Deployed catalog v3.10 to ap-south (routine release)"}
+{"id": "R008", "timestamp": "2026-03-03T15:11:59Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v2.29 to eu-west (routine release)"}
+{"id": "R009", "timestamp": "2026-03-03T15:35:41Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R010", "timestamp": "2026-03-03T20:38:22Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: INFO nightly backup completed"}
+{"id": "R011", "timestamp": "2026-03-04T05:21:44Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R012", "timestamp": "2026-03-04T06:59:56Z", "source": "logs", "service": "checkout", "region": "eu-west", "text": "checkout: INFO autoscaler: no change"}
+{"id": "R013", "timestamp": "2026-03-04T09:00:00Z", "source": "alerts", "service": "auth", "region": "eu-west", "text": "High error rate on auth in eu-west"}
+{"id": "R014", "timestamp": "2026-03-04T09:05:38Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: ERROR NullPointerException in RequestHandler.serialize (v5.21)"}
+{"id": "R015", "timestamp": "2026-03-04T09:10:15Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: ERROR NullPointerException in RequestHandler.serialize (v5.21)"}
+{"id": "R016", "timestamp": "2026-03-04T09:16:40Z", "source": "logs", "service": "auth", "region": "eu-west", "text": "auth: ERROR NullPointerException in RequestHandler.serialize (v5.21)"}
+{"id": "R017", "timestamp": "2026-03-04T10:14:07Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: INFO autoscaler: no change"}
+{"id": "R018", "timestamp": "2026-03-04T15:18:22Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v3.28 to us-east (routine release)"}
+{"id": "R019", "timestamp": "2026-03-04T16:30:44Z", "source": "deploys", "service": "catalog", "region": "us-east", "text": "Deployed catalog v3.27 to us-east (routine release)"}
+{"id": "R020", "timestamp": "2026-03-04T21:42:02Z", "source": "deploys", "service": "search", "region": "us-east", "text": "Deployed search v2.15 to us-east (routine release)"}

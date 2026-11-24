@@ -1,0 +1,158 @@
+{
+  "incident_id": "INC-048",
+  "question": "Why did the p95 latency go up on 25 March 2026?",
+  "what_changed": {
+    "metric": "latency_p95_ms",
+    "segment": {
+      "region": "eu-west"
+    },
+    "change_start": "2026-03-25T08:10:00Z",
+    "baseline_value": 136.6691037043899,
+    "current_value": 219.3073193931524,
+    "relative_change": 0.6047,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "The increase in request volume and error rate are likely due to the flash sale campaign going live.",
+      "category": "traffic",
+      "confidence": 0.9,
+      "why_chain": [
+        "The flash sale campaign went live at the same time as the change point.",
+        "Increased request volume led to higher p95 latency.",
+        "Error rate increased due to the higher load on the system."
+      ],
+      "evidence_ids": [
+        "E5",
+        "E6",
+        "E7"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in latency was due to a configuration change.",
+      "reason": "No evidence supports a configuration change as the cause.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in latency was due to a dependency issue with an external service.",
+      "reason": "No evidence supports a dependency issue with an external service.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in latency was due to a data quality issue.",
+      "reason": "No evidence supports a data quality issue.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "P95 latency for region eu-west rose from 137 ms to 219 ms (+60%), with a change point at 2026-03-25T08:10:00Z.",
+      "timestamp": "2026-03-25T08:10:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "The change is concentrated in region eu-west: 4 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.02).",
+      "timestamp": "2026-03-25T08:10:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for region eu-west rose (2048 per 5 min before, 9799 per 5 min after, +379%).",
+      "timestamp": "2026-03-25T08:10:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "At the same time, error rate for region eu-west rose (0.37% before, 0.74% after, +102%).",
+      "timestamp": "2026-03-25T08:10:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "tickets",
+      "summary": "Marketing: flash sale campaign goes live in eu-west at 08:10 UTC (eu-west; 162 min before the change; record R011)",
+      "timestamp": "2026-03-25T05:28:13Z"
+    },
+    {
+      "id": "E6",
+      "kind": "record",
+      "source": "alerts",
+      "summary": "Request volume 3x normal in eu-west (eu-west; 12 min after the change; record R012)",
+      "timestamp": "2026-03-25T08:22:00Z"
+    },
+    {
+      "id": "E7",
+      "kind": "record",
+      "source": "logs",
+      "summary": "autoscaler: scaling out, 4 new instances requested (eu-west; 20 min after the change; record R013)",
+      "timestamp": "2026-03-25T08:30:00Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 1.0,
+    "reasons": [
+      "\u2713 A change event (tickets) lines up in time (162 min before the change).",
+      "\u2713 It concerns the affected service/region.",
+      "\u2713 2 log/alert record(s) after the change agree with the numbers.",
+      "\u2713 Request volume rose, as a traffic cause requires.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": []
+  },
+  "actions": [
+    {
+      "action": "Implement a traffic management system to handle sudden spikes in traffic during campaigns.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and optimize the autoscaler configuration to avoid unnecessary scaling out.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor and adjust the autoscaler to avoid scaling out during sudden traffic spikes.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ]
+}

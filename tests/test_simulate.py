@@ -77,3 +77,15 @@ def test_simulate_command(tmp_path, capsys):
     assert main(["simulate", "--n", "5", "--out", str(tmp_path)]) == 0
     assert len(list(tmp_path.iterdir())) == 5
     assert "Wrote 5 incidents" in capsys.readouterr().out
+
+
+def test_hard_dataset_has_every_twist_and_right_verdicts():
+    incidents = generate_dataset(25, seed=6, hard=True)
+    twists = {i.truth["twist"] for i in incidents}
+    assert {"red_herring_other", "red_herring_early", "missing_cause", "rival_change"} <= twists
+    for inc in incidents:
+        t = inc.truth
+        if t["twist"] == "missing_cause":
+            assert t["cause_record_ids"] == [] and t["expected_verdict"] == "insufficient"
+        if t["twist"] == "rival_change":
+            assert t["expected_verdict"] == "partial"

@@ -1,0 +1,13 @@
+{"id": "R001", "timestamp": "2026-03-21T05:06:03Z", "source": "deploys", "service": "catalog", "region": "eu-west", "text": "Deployed catalog v1.5 to eu-west (routine release)"}
+{"id": "R002", "timestamp": "2026-03-21T08:38:11Z", "source": "deploys", "service": "checkout", "region": "us-east", "text": "Deployed checkout v1.20 to us-east (routine release)"}
+{"id": "R003", "timestamp": "2026-03-21T19:03:22Z", "source": "tickets", "service": "auth", "region": "eu-west", "text": "Question about API rate limits for a partner integration."}
+{"id": "R004", "timestamp": "2026-03-22T00:05:51Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v3.6 to eu-west (routine release)"}
+{"id": "R005", "timestamp": "2026-03-22T00:46:39Z", "source": "deploys", "service": "search", "region": "ap-south", "text": "Deployed search v3.8 to ap-south (routine release)"}
+{"id": "R006", "timestamp": "2026-03-22T01:03:12Z", "source": "deploys", "service": "checkout", "region": "eu-west", "text": "Deployed checkout v1.12 to eu-west (routine release)"}
+{"id": "R007", "timestamp": "2026-03-22T01:17:52Z", "source": "tickets", "service": "search", "region": "us-east", "text": "Request to add a new admin user to the dashboard."}
+{"id": "R008", "timestamp": "2026-03-22T01:37:42Z", "source": "logs", "service": "search", "region": "ap-south", "text": "search: WARN slow query 1.2s on report endpoint (single occurrence)"}
+{"id": "R009", "timestamp": "2026-03-22T02:19:57Z", "source": "tickets", "service": "search", "region": "ap-south", "text": "Feature request: dark mode for the account page."}
+{"id": "R010", "timestamp": "2026-03-22T12:54:35Z", "source": "logs", "service": "checkout", "region": "ap-south", "text": "checkout: INFO autoscaler: no change"}
+{"id": "R011", "timestamp": "2026-03-22T15:34:36Z", "source": "tickets", "service": "catalog", "region": "us-east", "text": "Question about API rate limits for a partner integration."}
+{"id": "R012", "timestamp": "2026-03-22T18:55:47Z", "source": "logs", "service": "search", "region": "eu-west", "text": "search: INFO autoscaler: no change"}
+{"id": "R013", "timestamp": "2026-03-22T19:18:57Z", "source": "deploys", "service": "search", "region": "eu-west", "text": "Deployed search v4.18 to eu-west (routine release)"}

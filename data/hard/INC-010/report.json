@@ -1,0 +1,150 @@
+{
+  "incident_id": "INC-010",
+  "question": "Why did the error rate go up on 26 March 2026?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {
+      "service": "catalog",
+      "region": "eu-west"
+    },
+    "change_start": "2026-03-26T10:45:00Z",
+    "baseline_value": 0.003265443645083933,
+    "current_value": 0.0073814465408805026,
+    "relative_change": 1.2605,
+    "evidence_ids": [
+      "E1",
+      "E2"
+    ]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "New deployment caused the error rate to increase.",
+      "category": "deployment",
+      "confidence": 0.3,
+      "why_chain": [
+        "The deployment of catalog v1.24 to eu-west led to a change in error rate.",
+        "The deployment occurred 273 minutes before the change in error rate.",
+        "The error rate increased from 0.33% to 0.74% after the deployment.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E5"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The deployment may have introduced a bug.",
+      "category": "unknown",
+      "confidence": 0.3,
+      "why_chain": [
+        "The deployment of catalog v1.24 coincided with the increase in error rate.",
+        "The error rate increased after the deployment, but the request volume and latency remained stable.",
+        "There is no clear evidence of a bug in the deployment itself.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "The increase in error rate was due to a sudden increase in user traffic.",
+      "reason": "The request volume and latency remained stable, indicating no sudden increase in user traffic.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The increase in error rate was due to a configuration change.",
+      "reason": "The deployment of catalog v1.24 was the only change in the system, and the error rate increased after the deployment.",
+      "evidence_ids": [
+        "E5"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "Error rate for service catalog in region eu-west rose from 0.33% to 0.74% (+126%), with a change point at 2026-03-26T10:45:00Z.",
+      "timestamp": "2026-03-26T10:45:00Z"
+    },
+    {
+      "id": "E2",
+      "kind": "metric",
+      "source": "metrics:error_rate",
+      "summary": "The change is concentrated in service catalog in region eu-west: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.01).",
+      "timestamp": "2026-03-26T10:45:00Z"
+    },
+    {
+      "id": "E3",
+      "kind": "metric",
+      "source": "metrics:requests",
+      "summary": "At the same time, request volume for service catalog in region eu-west stayed about the same (563 per 5 min before, 697 per 5 min after, +24%).",
+      "timestamp": "2026-03-26T10:45:00Z"
+    },
+    {
+      "id": "E4",
+      "kind": "metric",
+      "source": "metrics:latency_p95_ms",
+      "summary": "At the same time, p95 latency for service catalog in region eu-west stayed about the same (120 ms before, 119 ms after, -0%).",
+      "timestamp": "2026-03-26T10:45:00Z"
+    },
+    {
+      "id": "E5",
+      "kind": "record",
+      "source": "deploys",
+      "summary": "Deployed catalog v1.24 to eu-west (catalog, eu-west; 273 min before the change; record R013)",
+      "timestamp": "2026-03-26T06:12:15Z"
+    }
+  ],
+  "sufficiency": {
+    "verdict": "insufficient",
+    "score": 0.4,
+    "reasons": [
+      "\u2717 The closest change event is 273 min before the change, too far to be convincing.",
+      "\u2713 It concerns the affected service/region.",
+      "\u2717 No logs or alerts from the affected segment confirm the problem.",
+      "\u2713 Request volume stayed steady, ruling out a traffic spike.",
+      "\u2713 No competing change event fits as well.",
+      "\u2713 The main factor rests on this event."
+    ],
+    "missing_data": [
+      "Change records from the hour before the change",
+      "Error logs or traces from the affected segment after the change"
+    ]
+  },
+  "actions": [
+    {
+      "action": "Roll back the deployment of catalog v1.24 to eu-west.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Implement automated monitoring for error rates and request volumes to detect anomalies early.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and test the deployment of catalog v1.24 in a staging environment before production.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ]
+}

@@ -50,7 +50,7 @@ def cmd_simulate(args: argparse.Namespace) -> int:
 
     from .simulate import generate_dataset, save_incident
 
-    incidents = generate_dataset(args.n, seed=args.seed)
+    incidents = generate_dataset(args.n, seed=args.seed, hard=args.hard)
     for incident in incidents:
         save_incident(incident, args.out)
     counts = Counter(i.truth["scenario"] for i in incidents)
@@ -227,6 +227,8 @@ def main(argv: list[str] | None = None) -> int:
     simulate.add_argument("--n", type=int, default=20, help="number of incidents")
     simulate.add_argument("--seed", type=int, default=42)
     simulate.add_argument("--out", default="data/generated")
+    simulate.add_argument("--hard", action="store_true",
+                          help="add red herrings, competing changes, missing records, more noise")
     simulate.set_defaults(func=cmd_simulate)
 
     analyze = sub.add_parser(

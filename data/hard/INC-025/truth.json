@@ -1,0 +1,13 @@
+{
+  "scenario": "no_clear_cause",
+  "category": "unknown",
+  "metric": "error_rate",
+  "segment": {
+    "service": "auth",
+    "region": "eu-west"
+  },
+  "change_start": "2026-03-09T15:15:00Z",
+  "cause_record_ids": [],
+  "expected_verdict": "insufficient",
+  "twist": "none"
+}

@@ -1,0 +1,13 @@
+{
+  "scenario": "no_clear_cause",
+  "category": "unknown",
+  "metric": "error_rate",
+  "segment": {
+    "service": "catalog",
+    "region": "us-east"
+  },
+  "change_start": "2026-03-05T06:00:00Z",
+  "cause_record_ids": [],
+  "expected_verdict": "insufficient",
+  "twist": "red_herring_other"
+}
