@@ -169,6 +169,47 @@ def cmd_investigate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_batch(args: argparse.Namespace) -> int:
+    """Investigate every incident in a folder, save the reports and score them."""
+    import json
+    from pathlib import Path
+
+    import pandas as pd
+
+    from .evaluate import score_report, summarise
+    from .investigate import investigate, save_report, to_markdown
+    from .simulate import load_incident
+
+    folders = sorted(p for p in Path(args.path).iterdir() if (p / "incident.json").exists())
+    client = None if args.no_llm else OllamaClient(model=args.model)
+    rows = []
+    for folder in folders:
+        meta, metrics, records = load_incident(folder)
+        start = time.perf_counter()
+        try:
+            report = investigate(meta["incident_id"], meta["question"], meta["metric"],
+                                 metrics, records, client)
+        except LLMError as exc:
+            print(f"  {meta['incident_id']}: failed ({exc})")
+            continue
+        save_report(report, folder / "report.json")
+        (folder / "report.md").write_text(to_markdown(report))
+        truth = json.loads((folder / "truth.json").read_text())
+        row = score_report(report, truth)
+        row["seconds"] = round(time.perf_counter() - start)
+        rows.append(row)
+        print(f"  {row['incident']} {row['scenario']:<18} verdict {row['verdict']:<12} "
+              f"top {row['top_category']:<14} {row['seconds']}s", flush=True)
+    if not rows:
+        return 1
+    table = pd.DataFrame(rows)
+    table.to_csv(Path(args.path) / "scores.csv", index=False)
+    print()
+    for name, value in summarise(rows).items():
+        print(f"{name:<40} {value:.0%}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rca", description="Evidence-first root cause analysis")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -205,6 +246,12 @@ def main(argv: list[str] | None = None) -> int:
     inv.add_argument("--no-llm", action="store_true", help="engines only, no language model")
     inv.add_argument("--save", action="store_true", help="save report.json and report.md")
     inv.set_defaults(func=cmd_investigate)
+
+    batch = sub.add_parser("batch", help="investigate and score every incident in a folder")
+    batch.add_argument("path")
+    batch.add_argument("--model", default=DEFAULT_MODEL)
+    batch.add_argument("--no-llm", action="store_true")
+    batch.set_defaults(func=cmd_batch)
 
     args = parser.parse_args(argv)
     return args.func(args)

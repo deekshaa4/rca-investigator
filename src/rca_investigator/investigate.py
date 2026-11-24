@@ -42,6 +42,13 @@ Rules:
 - A cause must come before, or at the same time as, the change it explains.
   Alerts and error logs after the change are symptoms, not causes.
 - If no evidence explains the change, return an empty list of contributing factors.
+- Usually there is ONE main cause. Add a second or third factor only if separate
+  evidence clearly supports it.
+- Categories: deployment = a new release or version; config_change = a changed setting;
+  traffic = more users or requests than usual (e.g. a campaign); dependency = an upstream
+  or external service the system calls (API, database, provider) failed or slowed;
+  infrastructure = our own servers, network or capacity; data = bad or unusual input data;
+  unknown = none of these.
 - Be concise and specific."""
 
 

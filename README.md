@@ -4,7 +4,7 @@
 
 Most AI assistants tell you *what* went wrong. RCA Investigator works like an investigator: it finds **what changed**, works out **why it happened**, shows **the evidence** behind every finding, says honestly whether that evidence is **enough to be sure**, and recommends **how to prevent it** from happening again.
 
-> Status: early development (Day 5 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
+> Status: early development (Day 6 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
 
 ## What it does
 
@@ -51,6 +51,7 @@ rca simulate --n 20        # generates 20 incidents with known causes in data/ge
 rca analyze data/generated # finds what changed in each incident and scores it
 rca search data/generated  # finds the records that explain each change and scores it
 rca investigate data/generated/INC-001 --save   # full investigation report with the local model
+rca batch data/generated   # investigates and scores every incident (about 30 s each)
 pytest                     # runs the tests
 ```
 
@@ -101,6 +102,19 @@ Current results on the 16 explainable incidents: **true cause ranked first in 16
 
 Example reports from `qwen2.5:3b`: [bad deploy](examples/reports/bad_deploy.md), [traffic spike](examples/reports/traffic_spike.md).
 
+## Results so far
+
+First end-to-end run of `rca batch` on 20 generated incidents with `qwen2.5:3b` on a MacBook Air (M1, 8 GB), about 27 seconds per incident:
+
+| Measure | Score |
+|---|---|
+| Sufficiency verdict correct (incl. 4 "insufficient" cases) | 20/20 |
+| Affected service/region correct | 20/20 |
+| Top cause cites the true cause record | 15/16 |
+| Top cause category correct | 13/16 |
+
+The category misses were "dependency" outages labelled "infrastructure"; adding category definitions to the prompt fixed all three in a re-check. A full evaluation with harder incidents follows in week 2.
+
 ## Project structure
 
 ```
@@ -111,6 +125,7 @@ src/rca_investigator/
   analyze.py    numerical engine: change point, size of change, affected segment
   records.py    text engine: ranked records with reasons, event timeline
   investigate.py  evidence pack, model prompt, guardrails, Markdown report
+  evaluate.py   scores reports against the known truth
   cli.py        command-line interface (`rca ...`)
 schemas/        JSON Schema of the report
 examples/       example report
