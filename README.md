@@ -4,7 +4,7 @@
 
 Most AI assistants tell you *what* went wrong. RCA Investigator works like an investigator: it finds **what changed**, works out **why it happened**, shows **the evidence** behind every finding, says honestly whether that evidence is **enough to be sure**, and recommends **how to prevent it** from happening again.
 
-> Status: early development (Day 2 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
+> Status: early development (Day 3 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
 
 ## What it does
 
@@ -48,6 +48,7 @@ pip install -e ".[dev]"
 ollama pull qwen2.5:3b     # small open model, about 2 GB
 rca check                  # confirms the model is reachable
 rca simulate --n 20        # generates 20 incidents with known causes in data/generated/
+rca analyze data/generated # finds what changed in each incident and scores it
 pytest                     # runs the tests
 ```
 
@@ -65,6 +66,17 @@ To measure whether the investigator finds the *right* cause, it needs incidents 
 
 Each incident folder holds `incident.json` (the question), `metrics.csv`, `records.jsonl` and `truth.json` (the real cause, hidden from the investigator and used only for scoring).
 
+## Finding what changed
+
+The numerical engine (`analyze.py`) uses simple, explainable statistics rather than a language model:
+
+1. In every service/region segment it finds the most likely change point (the split that best separates the series into two levels).
+2. It keeps segments whose change is significant (t statistic and before/after ratio) and happened at about the same time as the strongest one.
+3. The pattern of affected segments says where the problem lives: one service, one region, or one service in one region.
+4. It compares related metrics at the same moment, e.g. whether traffic also rose, which supports or rules out explanations.
+
+Current results on 20 generated incidents: **right segment 100%**, **change time within 15 minutes 95%**.
+
 ## Project structure
 
 ```
@@ -72,6 +84,7 @@ src/rca_investigator/
   schema.py     the RCA report format (with evidence-citation checks)
   llm.py        client for a local model served by Ollama
   simulate.py   synthetic incidents with known, injected root causes
+  analyze.py    numerical engine: change point, size of change, affected segment
   cli.py        command-line interface (`rca ...`)
 schemas/        JSON Schema of the report
 examples/       example report

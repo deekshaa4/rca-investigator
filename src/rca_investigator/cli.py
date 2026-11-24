@@ -60,6 +60,52 @@ def cmd_simulate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_analyze(args: argparse.Namespace) -> int:
+    """Run the numerical engine on one incident, or score it on a folder of incidents."""
+    import json
+    from pathlib import Path
+
+    import pandas as pd
+
+    from .analyze import analyze_change
+    from .simulate import load_incident
+
+    path = Path(args.path)
+    if (path / "incident.json").exists():
+        meta, metrics, _ = load_incident(path)
+        result = analyze_change(metrics, meta["metric"])
+        print(meta["question"])
+        for finding in result.findings:
+            print(f"  - {finding['summary']}")
+        return 0
+
+    folders = sorted(p for p in path.iterdir() if (p / "incident.json").exists())
+    if not folders:
+        print(f"No incidents found in {path}")
+        return 1
+    rows = []
+    for folder in folders:
+        meta, metrics, _ = load_incident(folder)
+        truth = json.loads((folder / "truth.json").read_text())
+        result = analyze_change(metrics, meta["metric"])
+        gap = (
+            abs(pd.Timestamp(result.change_start) - pd.Timestamp(truth["change_start"]))
+            if result.detected else None
+        )
+        rows.append({
+            "incident": meta["incident_id"],
+            "scenario": truth["scenario"],
+            "segment_ok": result.segment == truth["segment"],
+            "minutes_off": None if gap is None else int(gap.total_seconds() // 60),
+        })
+    table = pd.DataFrame(rows)
+    print(table.to_string(index=False))
+    seg = table["segment_ok"].mean()
+    on_time = (table["minutes_off"].fillna(1e9) <= 15).mean()
+    print(f"\nRight segment: {seg:.0%}   Change time within 15 min: {on_time:.0%}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rca", description="Evidence-first root cause analysis")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -78,6 +124,12 @@ def main(argv: list[str] | None = None) -> int:
     simulate.add_argument("--seed", type=int, default=42)
     simulate.add_argument("--out", default="data/generated")
     simulate.set_defaults(func=cmd_simulate)
+
+    analyze = sub.add_parser(
+        "analyze", help="find what changed (one incident folder, or score a folder of incidents)"
+    )
+    analyze.add_argument("path")
+    analyze.set_defaults(func=cmd_analyze)
 
     args = parser.parse_args(argv)
     return args.func(args)
