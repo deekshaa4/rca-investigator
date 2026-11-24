@@ -4,7 +4,7 @@
 
 Most AI assistants tell you *what* went wrong. RCA Investigator works like an investigator: it finds **what changed**, works out **why it happened**, shows **the evidence** behind every finding, says honestly whether that evidence is **enough to be sure**, and recommends **how to prevent it** from happening again.
 
-> Status: early development (Day 6 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
+> Status: **v0.1**, a working end-to-end investigator (week 1 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
 
 ## What it does
 
@@ -102,18 +102,18 @@ Current results on the 16 explainable incidents: **true cause ranked first in 16
 
 Example reports from `qwen2.5:3b`: [bad deploy](examples/reports/bad_deploy.md), [traffic spike](examples/reports/traffic_spike.md).
 
-## Results so far
+## Results (v0.1)
 
-First end-to-end run of `rca batch` on 20 generated incidents with `qwen2.5:3b` on a MacBook Air (M1, 8 GB), about 27 seconds per incident:
+`rca batch` on 20 generated incidents with `qwen2.5:3b` on a MacBook Air (M1, 8 GB), about 34 seconds per incident:
 
 | Measure | Score |
 |---|---|
 | Sufficiency verdict correct (incl. 4 "insufficient" cases) | 20/20 |
 | Affected service/region correct | 20/20 |
-| Top cause cites the true cause record | 15/16 |
-| Top cause category correct | 13/16 |
+| Top cause category correct | 16/16 |
+| Top cause cites the true cause record | 16/16 |
 
-The category misses were "dependency" outages labelled "infrastructure"; adding category definitions to the prompt fixed all three in a re-check. A full evaluation with harder incidents follows in week 2.
+These incidents are deliberately clean. Week 2 adds harder ones (noise, red herrings, overlapping changes, missing records) and a stricter evidence-sufficiency check, so expect these numbers to drop before they improve. The model still lists 2.2 factors on average where one is usually enough.
 
 ## Project structure
 
