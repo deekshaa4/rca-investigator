@@ -5,7 +5,7 @@ A focused 2-week build, using only free and open tools.
 ## Week 1: a working investigator (v0.1)
 
 - [x] Project setup, report format (JSON Schema), local model client
-- [ ] Incident simulator: metrics and text records with known, injected root causes (bad deploy, config change, traffic spike, dependency outage, no clear cause)
+- [x] Incident simulator: metrics and text records with known, injected root causes (bad deploy, config change, traffic spike, dependency outage, no clear cause)
 - [ ] Numerical engine: change-point detection, size of change, segment drill-down
 - [ ] Text engine: record search and an event timeline around the change
 - [ ] LLM investigator: evidence pack in, structured cited report out

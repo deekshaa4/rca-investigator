@@ -10,7 +10,7 @@ readme = "README.md"
 license = "MIT"
 authors = [{ name = "Deeksha" }]
 requires-python = ">=3.10"
-dependencies = ["pydantic>=2.7"]
+dependencies = ["pydantic>=2.7", "numpy>=1.26", "pandas>=2.1"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.5"]

@@ -4,7 +4,7 @@
 
 Most AI assistants tell you *what* went wrong. RCA Investigator works like an investigator: it finds **what changed**, works out **why it happened**, shows **the evidence** behind every finding, says honestly whether that evidence is **enough to be sure**, and recommends **how to prevent it** from happening again.
 
-> Status: early development (Day 1 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
+> Status: early development (Day 2 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
 
 ## What it does
 
@@ -47,8 +47,23 @@ pip install -e ".[dev]"
 
 ollama pull qwen2.5:3b     # small open model, about 2 GB
 rca check                  # confirms the model is reachable
+rca simulate --n 20        # generates 20 incidents with known causes in data/generated/
 pytest                     # runs the tests
 ```
+
+## Test incidents
+
+To measure whether the investigator finds the *right* cause, it needs incidents where the truth is known. `rca simulate` generates software-service incidents (4 services x 3 regions, 48 hours of 5-minute metrics, plus deploy notes, config changes, alerts, tickets and logs) with one of five injected scenarios:
+
+| Scenario | What happens | Expected verdict |
+|---|---|---|
+| `bad_deploy` | A release breaks one service in one region | sufficient |
+| `config_change` | A config change slows one service everywhere | sufficient |
+| `traffic_spike` | A campaign triples traffic in one region | sufficient |
+| `dependency_outage` | An upstream dependency fails | sufficient |
+| `no_clear_cause` | Errors rise with no record explaining why | **insufficient** |
+
+Each incident folder holds `incident.json` (the question), `metrics.csv`, `records.jsonl` and `truth.json` (the real cause, hidden from the investigator and used only for scoring).
 
 ## Project structure
 
@@ -56,6 +71,7 @@ pytest                     # runs the tests
 src/rca_investigator/
   schema.py     the RCA report format (with evidence-citation checks)
   llm.py        client for a local model served by Ollama
+  simulate.py   synthetic incidents with known, injected root causes
   cli.py        command-line interface (`rca ...`)
 schemas/        JSON Schema of the report
 examples/       example report

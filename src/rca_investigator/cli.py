@@ -44,6 +44,22 @@ def cmd_schema(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_simulate(args: argparse.Namespace) -> int:
+    """Generate synthetic incidents with known causes."""
+    from collections import Counter
+
+    from .simulate import generate_dataset, save_incident
+
+    incidents = generate_dataset(args.n, seed=args.seed)
+    for incident in incidents:
+        save_incident(incident, args.out)
+    counts = Counter(i.truth["scenario"] for i in incidents)
+    print(f"Wrote {len(incidents)} incidents to {args.out}/")
+    for scenario, count in counts.items():
+        print(f"  {scenario:<18} {count}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rca", description="Evidence-first root cause analysis")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -56,6 +72,12 @@ def main(argv: list[str] | None = None) -> int:
     schema = sub.add_parser("schema", help="export the report JSON Schema")
     schema.add_argument("--output", default="schemas/rca_report.schema.json")
     schema.set_defaults(func=cmd_schema)
+
+    simulate = sub.add_parser("simulate", help="generate synthetic incidents with known causes")
+    simulate.add_argument("--n", type=int, default=20, help="number of incidents")
+    simulate.add_argument("--seed", type=int, default=42)
+    simulate.add_argument("--out", default="data/generated")
+    simulate.set_defaults(func=cmd_simulate)
 
     args = parser.parse_args(argv)
     return args.func(args)
