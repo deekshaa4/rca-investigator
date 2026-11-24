@@ -4,7 +4,7 @@
 
 Most AI assistants tell you *what* went wrong. RCA Investigator works like an investigator: it finds **what changed**, works out **why it happened**, shows **the evidence** behind every finding, says honestly whether that evidence is **enough to be sure**, and recommends **how to prevent it** from happening again.
 
-> Status: early development (Day 3 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
+> Status: early development (Day 4 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
 
 ## What it does
 
@@ -49,6 +49,7 @@ ollama pull qwen2.5:3b     # small open model, about 2 GB
 rca check                  # confirms the model is reachable
 rca simulate --n 20        # generates 20 incidents with known causes in data/generated/
 rca analyze data/generated # finds what changed in each incident and scores it
+rca search data/generated  # finds the records that explain each change and scores it
 pytest                     # runs the tests
 ```
 
@@ -77,6 +78,17 @@ The numerical engine (`analyze.py`) uses simple, explainable statistics rather t
 
 Current results on 20 generated incidents: **right segment 100%**, **change time within 15 minutes 95%**.
 
+## Finding the records that explain it
+
+The text engine (`records.py`) ranks deploy notes, config changes, alerts, tickets and logs by four explainable signals, and lists the reasons for every score:
+
+- **Text**: TF-IDF similarity to a query built from the detected change (metric words, affected service/region, traffic words if traffic rose).
+- **Time**: causes come shortly before a change, symptoms shortly after; a record that names the change time (e.g. "goes live at 10:25") counts as on time.
+- **Segment**: records about the affected service/region count more.
+- **Source**: change events (deploys, config changes) outrank log lines, which are usually symptoms.
+
+Current results on the 16 explainable incidents: **true cause ranked first in 16/16**.
+
 ## Project structure
 
 ```
@@ -85,6 +97,7 @@ src/rca_investigator/
   llm.py        client for a local model served by Ollama
   simulate.py   synthetic incidents with known, injected root causes
   analyze.py    numerical engine: change point, size of change, affected segment
+  records.py    text engine: ranked records with reasons, event timeline
   cli.py        command-line interface (`rca ...`)
 schemas/        JSON Schema of the report
 examples/       example report

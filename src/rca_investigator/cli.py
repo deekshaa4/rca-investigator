@@ -106,6 +106,43 @@ def cmd_analyze(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_search(args: argparse.Namespace) -> int:
+    """Find the records that explain the change (one incident, or score a folder)."""
+    import json
+    from pathlib import Path
+
+    from .analyze import analyze_change
+    from .records import rank_records
+    from .simulate import load_incident
+
+    path = Path(args.path)
+    if (path / "incident.json").exists():
+        meta, metrics, records = load_incident(path)
+        hits = rank_records(records, analyze_change(metrics, meta["metric"]), top_k=args.top)
+        print(meta["question"])
+        for i, hit in enumerate(hits, start=1):
+            rec = hit.record
+            print(f"  {i}. [{hit.score:.2f}] {rec['id']} {rec['source']}: {rec['text']}")
+            print(f"       {'; '.join(hit.reasons)}")
+        return 0
+
+    folders = sorted(p for p in path.iterdir() if (p / "incident.json").exists())
+    found, total = 0, 0
+    for folder in folders:
+        meta, metrics, records = load_incident(folder)
+        truth = json.loads((folder / "truth.json").read_text())
+        if not truth["cause_record_ids"]:
+            continue
+        hits = rank_records(records, analyze_change(metrics, meta["metric"]), top_k=args.top)
+        ids = [h.record["id"] for h in hits]
+        rank = next((ids.index(c) + 1 for c in truth["cause_record_ids"] if c in ids), None)
+        total += 1
+        found += rank is not None
+        print(f"  {meta['incident_id']}  {truth['scenario']:<18} cause rank: {rank or 'missed'}")
+    print(f"\nCause record in top {args.top}: {found}/{total}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rca", description="Evidence-first root cause analysis")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -130,6 +167,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     analyze.add_argument("path")
     analyze.set_defaults(func=cmd_analyze)
+
+    search = sub.add_parser("search", help="find records that explain the change")
+    search.add_argument("path")
+    search.add_argument("--top", type=int, default=5)
+    search.set_defaults(func=cmd_search)
 
     args = parser.parse_args(argv)
     return args.func(args)
