@@ -1,0 +1,341 @@
+{
+  "$defs": {
+    "Action": {
+      "properties": {
+        "action": {
+          "minLength": 1,
+          "title": "Action",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ActionType"
+        },
+        "priority": {
+          "$ref": "#/$defs/Priority"
+        },
+        "addresses_factors": {
+          "description": "Ranks of the contributing factors this action addresses",
+          "items": {
+            "type": "integer"
+          },
+          "title": "Addresses Factors",
+          "type": "array"
+        }
+      },
+      "required": [
+        "action",
+        "type",
+        "priority"
+      ],
+      "title": "Action",
+      "type": "object"
+    },
+    "ActionType": {
+      "enum": [
+        "corrective",
+        "preventive"
+      ],
+      "title": "ActionType",
+      "type": "string"
+    },
+    "ChangeSummary": {
+      "properties": {
+        "metric": {
+          "title": "Metric",
+          "type": "string"
+        },
+        "segment": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Where the change is concentrated, e.g. {'service': 'checkout'}",
+          "title": "Segment",
+          "type": "object"
+        },
+        "change_start": {
+          "description": "ISO 8601 time the change began",
+          "title": "Change Start",
+          "type": "string"
+        },
+        "baseline_value": {
+          "title": "Baseline Value",
+          "type": "number"
+        },
+        "current_value": {
+          "title": "Current Value",
+          "type": "number"
+        },
+        "relative_change": {
+          "description": "(current - baseline) / baseline",
+          "title": "Relative Change",
+          "type": "number"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "metric",
+        "change_start",
+        "baseline_value",
+        "current_value",
+        "relative_change",
+        "evidence_ids"
+      ],
+      "title": "ChangeSummary",
+      "type": "object"
+    },
+    "ContributingFactor": {
+      "properties": {
+        "rank": {
+          "minimum": 1,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/FactorCategory"
+        },
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "why_chain": {
+          "description": "'5 Whys' chain from symptom to root cause",
+          "items": {
+            "type": "string"
+          },
+          "title": "Why Chain",
+          "type": "array"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "rank",
+        "description",
+        "category",
+        "confidence",
+        "evidence_ids"
+      ],
+      "title": "ContributingFactor",
+      "type": "object"
+    },
+    "Evidence": {
+      "properties": {
+        "id": {
+          "description": "Evidence ID, e.g. 'E1'",
+          "pattern": "^E\\d+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/EvidenceKind"
+        },
+        "source": {
+          "description": "Where it came from, e.g. 'metrics:error_rate' or 'deploys'",
+          "title": "Source",
+          "type": "string"
+        },
+        "summary": {
+          "minLength": 1,
+          "title": "Summary",
+          "type": "string"
+        },
+        "timestamp": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "ISO 8601 time, if known",
+          "title": "Timestamp"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "source",
+        "summary"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "EvidenceKind": {
+      "enum": [
+        "metric",
+        "record"
+      ],
+      "title": "EvidenceKind",
+      "type": "string"
+    },
+    "FactorCategory": {
+      "enum": [
+        "deployment",
+        "config_change",
+        "traffic",
+        "dependency",
+        "infrastructure",
+        "data",
+        "unknown"
+      ],
+      "title": "FactorCategory",
+      "type": "string"
+    },
+    "Priority": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Priority",
+      "type": "string"
+    },
+    "RuledOutHypothesis": {
+      "properties": {
+        "hypothesis": {
+          "title": "Hypothesis",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "hypothesis",
+        "reason"
+      ],
+      "title": "RuledOutHypothesis",
+      "type": "object"
+    },
+    "Sufficiency": {
+      "properties": {
+        "verdict": {
+          "$ref": "#/$defs/Verdict"
+        },
+        "score": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Score",
+          "type": "number"
+        },
+        "reasons": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Reasons",
+          "type": "array"
+        },
+        "missing_data": {
+          "description": "Data that would make the conclusion more reliable",
+          "items": {
+            "type": "string"
+          },
+          "title": "Missing Data",
+          "type": "array"
+        }
+      },
+      "required": [
+        "verdict",
+        "score",
+        "reasons"
+      ],
+      "title": "Sufficiency",
+      "type": "object"
+    },
+    "Verdict": {
+      "enum": [
+        "sufficient",
+        "partial",
+        "insufficient"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "incident_id": {
+      "title": "Incident Id",
+      "type": "string"
+    },
+    "question": {
+      "title": "Question",
+      "type": "string"
+    },
+    "what_changed": {
+      "$ref": "#/$defs/ChangeSummary"
+    },
+    "contributing_factors": {
+      "items": {
+        "$ref": "#/$defs/ContributingFactor"
+      },
+      "title": "Contributing Factors",
+      "type": "array"
+    },
+    "ruled_out": {
+      "items": {
+        "$ref": "#/$defs/RuledOutHypothesis"
+      },
+      "title": "Ruled Out",
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/Evidence"
+      },
+      "minItems": 1,
+      "title": "Evidence",
+      "type": "array"
+    },
+    "sufficiency": {
+      "$ref": "#/$defs/Sufficiency"
+    },
+    "actions": {
+      "items": {
+        "$ref": "#/$defs/Action"
+      },
+      "title": "Actions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "incident_id",
+    "question",
+    "what_changed",
+    "contributing_factors",
+    "evidence",
+    "sufficiency"
+  ],
+  "title": "RCAReport",
+  "type": "object"
+}

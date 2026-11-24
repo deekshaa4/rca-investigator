@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Environment and editor
+.env
+.DS_Store
+.vscode/
+.idea/
+
+# Generated data
+data/generated/

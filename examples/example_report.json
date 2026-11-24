@@ -1,0 +1,59 @@
+{
+  "incident_id": "INC-007",
+  "question": "Why did the checkout error rate jump on 12 March?",
+  "what_changed": {
+    "metric": "error_rate",
+    "segment": {"service": "checkout", "region": "eu-west"},
+    "change_start": "2026-03-12T14:05:00Z",
+    "baseline_value": 0.004,
+    "current_value": 0.031,
+    "relative_change": 6.75,
+    "evidence_ids": ["E1", "E2"]
+  },
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "Checkout v2.14 deployed to eu-west lowered the payment client timeout from 5s to 500ms, so slow payment calls began to fail.",
+      "category": "deployment",
+      "confidence": 0.86,
+      "why_chain": [
+        "Checkout requests failed more often in eu-west.",
+        "Calls to the payment service timed out.",
+        "The client timeout was lowered from 5s to 500ms.",
+        "The new default came in with checkout v2.14.",
+        "The release had no load test against realistic payment latency."
+      ],
+      "evidence_ids": ["E3", "E4", "E5"]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "A traffic spike overloaded checkout.",
+      "reason": "Request volume stayed within 3% of the previous week.",
+      "evidence_ids": ["E6"]
+    }
+  ],
+  "evidence": [
+    {"id": "E1", "kind": "metric", "source": "metrics:error_rate", "summary": "Error rate rose from 0.4% to 3.1% at 14:05 (change point).", "timestamp": "2026-03-12T14:05:00Z"},
+    {"id": "E2", "kind": "metric", "source": "metrics:error_rate", "summary": "92% of the extra errors come from checkout in eu-west; other regions are flat."},
+    {"id": "E3", "kind": "record", "source": "deploys", "summary": "checkout v2.14 rolled out to eu-west at 14:02.", "timestamp": "2026-03-12T14:02:00Z"},
+    {"id": "E4", "kind": "record", "source": "config_changes", "summary": "v2.14 changed payment_client.timeout_ms from 5000 to 500.", "timestamp": "2026-03-12T14:02:00Z"},
+    {"id": "E5", "kind": "record", "source": "logs", "summary": "Repeated 'PaymentTimeout after 500ms' errors from 14:04 onwards.", "timestamp": "2026-03-12T14:04:10Z"},
+    {"id": "E6", "kind": "metric", "source": "metrics:requests", "summary": "Request volume within 3% of the same hour last week."}
+  ],
+  "sufficiency": {
+    "verdict": "sufficient",
+    "score": 0.84,
+    "reasons": [
+      "The deploy happened 3 minutes before the change point.",
+      "Logs and config record independently point to the same timeout.",
+      "The main alternative (traffic spike) is ruled out by the data."
+    ],
+    "missing_data": ["Payment service latency metrics would confirm how many calls exceed 500ms."]
+  },
+  "actions": [
+    {"action": "Roll back payment_client.timeout_ms to 5000 in eu-west.", "type": "corrective", "priority": "high", "addresses_factors": [1]},
+    {"action": "Add a release check that flags timeout changes below the p99 latency of the called service.", "type": "preventive", "priority": "medium", "addresses_factors": [1]},
+    {"action": "Roll out checkout releases to one region at a time with automatic rollback on error-rate alerts.", "type": "preventive", "priority": "medium", "addresses_factors": [1]}
+  ]
+}
