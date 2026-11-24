@@ -143,6 +143,32 @@ def cmd_search(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_investigate(args: argparse.Namespace) -> int:
+    """Investigate one incident and print the report."""
+    from pathlib import Path
+
+    from .investigate import investigate, save_report, to_markdown
+    from .simulate import load_incident
+
+    meta, metrics, records = load_incident(args.path)
+    client = None if args.no_llm else OllamaClient(model=args.model)
+    start = time.perf_counter()
+    try:
+        report = investigate(meta["incident_id"], meta["question"], meta["metric"], metrics,
+                             records, client)
+    except LLMError as exc:
+        print(f"Problem: {exc}")
+        return 1
+    print(to_markdown(report))
+    print(f"(took {time.perf_counter() - start:.0f}s)")
+    if args.save:
+        out = Path(args.path) / "report.json"
+        save_report(report, out)
+        (Path(args.path) / "report.md").write_text(to_markdown(report))
+        print(f"Saved {out} and report.md")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rca", description="Evidence-first root cause analysis")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -172,6 +198,13 @@ def main(argv: list[str] | None = None) -> int:
     search.add_argument("path")
     search.add_argument("--top", type=int, default=5)
     search.set_defaults(func=cmd_search)
+
+    inv = sub.add_parser("investigate", help="investigate one incident and write the report")
+    inv.add_argument("path")
+    inv.add_argument("--model", default=DEFAULT_MODEL)
+    inv.add_argument("--no-llm", action="store_true", help="engines only, no language model")
+    inv.add_argument("--save", action="store_true", help="save report.json and report.md")
+    inv.set_defaults(func=cmd_investigate)
 
     args = parser.parse_args(argv)
     return args.func(args)

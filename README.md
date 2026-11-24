@@ -4,7 +4,7 @@
 
 Most AI assistants tell you *what* went wrong. RCA Investigator works like an investigator: it finds **what changed**, works out **why it happened**, shows **the evidence** behind every finding, says honestly whether that evidence is **enough to be sure**, and recommends **how to prevent it** from happening again.
 
-> Status: early development (Day 4 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
+> Status: early development (Day 5 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
 
 ## What it does
 
@@ -50,6 +50,7 @@ rca check                  # confirms the model is reachable
 rca simulate --n 20        # generates 20 incidents with known causes in data/generated/
 rca analyze data/generated # finds what changed in each incident and scores it
 rca search data/generated  # finds the records that explain each change and scores it
+rca investigate data/generated/INC-001 --save   # full investigation report with the local model
 pytest                     # runs the tests
 ```
 
@@ -89,6 +90,17 @@ The text engine (`records.py`) ranks deploy notes, config changes, alerts, ticke
 
 Current results on the 16 explainable incidents: **true cause ranked first in 16/16**.
 
+## The investigator
+
+`investigate.py` keeps the language model's job small, so a 3B model running on a laptop is enough:
+
+1. Python gathers the facts (numerical and text engines) and numbers them as evidence `E1`, `E2`, ...
+2. The model reasons only over that evidence: contributing factors with a "5 Whys" chain, ruled-out alternatives, corrective and preventive actions. Its reply is constrained to a JSON schema.
+3. Guardrails check the reply: invented evidence IDs are removed, factors without evidence are dropped, factors resting only on records *after* the change (symptoms) are dropped, and the report must pass schema validation.
+4. When the evidence is insufficient, factors are shown as **possible leads (not confirmed)** with low confidence, together with the data that would settle the question.
+
+Example reports from `qwen2.5:3b`: [bad deploy](examples/reports/bad_deploy.md), [traffic spike](examples/reports/traffic_spike.md).
+
 ## Project structure
 
 ```
@@ -98,6 +110,7 @@ src/rca_investigator/
   simulate.py   synthetic incidents with known, injected root causes
   analyze.py    numerical engine: change point, size of change, affected segment
   records.py    text engine: ranked records with reasons, event timeline
+  investigate.py  evidence pack, model prompt, guardrails, Markdown report
   cli.py        command-line interface (`rca ...`)
 schemas/        JSON Schema of the report
 examples/       example report

@@ -203,7 +203,8 @@ def analyze_change(metrics: pd.DataFrame, metric: str) -> ChangeAnalysis:
         if other == metric:
             continue
         r = (after_v[other] - before_v[other]) / before_v[other]
-        verb = "rose" if r > 0.15 else "fell" if r < -0.15 else "stayed about the same"
+        # small moves are normal daily variation, so only +-30% counts as a change
+        verb = "rose" if r > 0.3 else "fell" if r < -0.3 else "stayed about the same"
         findings.append({
             "source": f"metrics:{other}",
             "summary": f"At the same time, {LABELS[other]} for {desc} {verb} "

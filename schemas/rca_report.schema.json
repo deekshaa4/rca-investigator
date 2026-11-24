@@ -293,7 +293,15 @@
       "type": "string"
     },
     "what_changed": {
-      "$ref": "#/$defs/ChangeSummary"
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ChangeSummary"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "contributing_factors": {
       "items": {
@@ -331,7 +339,6 @@
   "required": [
     "incident_id",
     "question",
-    "what_changed",
     "contributing_factors",
     "evidence",
     "sufficiency"

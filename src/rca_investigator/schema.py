@@ -106,7 +106,7 @@ class Action(BaseModel):
 class RCAReport(BaseModel):
     incident_id: str
     question: str
-    what_changed: ChangeSummary
+    what_changed: ChangeSummary | None = None  # None when no significant change was found
     contributing_factors: list[ContributingFactor]
     ruled_out: list[RuledOutHypothesis] = Field(default_factory=list)
     evidence: list[Evidence] = Field(min_length=1)
@@ -120,7 +120,7 @@ class RCAReport(BaseModel):
             raise ValueError("evidence IDs must be unique")
         known_ids = set(known)
 
-        cited: list[str] = list(self.what_changed.evidence_ids)
+        cited: list[str] = list(self.what_changed.evidence_ids) if self.what_changed else []
         for factor in self.contributing_factors:
             cited.extend(factor.evidence_ids)
         for hypothesis in self.ruled_out:
