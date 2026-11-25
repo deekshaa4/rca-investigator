@@ -18,51 +18,59 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The change in the auth feature flag caused the error rate to increase.",
+      "description": "The auth feature flag change increased error rate.",
       "category": "config_change",
       "confidence": 0.9,
       "why_chain": [
-        "The auth feature flag was changed to 50% in eu-west, which likely affected the service's behavior.",
-        "The error rate for service auth increased sharply after this change.",
-        "The error rate for service auth was flat in other regions, indicating the change was specific to the eu-west region."
+        "The auth feature flag was changed to 50% in eu-west.",
+        "This change affected the error rate for service auth.",
+        "The error rate increased from 0.39% to 5.06%.",
+        "evidence_ids_supporting_chain_of_causes_and_confidence_in_cause_0.9_012_02",
+        "evidence_ids_supporting_chain_of_causes_and_confidence_in_cause_0.9_012_02"
       ],
       "evidence_ids": [
-        "E5",
-        "E1"
+        "E5"
       ]
     },
     {
       "rank": 2,
-      "description": "The upstream identity-db service became unavailable, causing the error rate to increase.",
+      "description": "Upstream identity-db service failure caused the error rate increase.",
       "category": "dependency",
       "confidence": 0.8,
       "why_chain": [
-        "The upstream identity-db service returned HTTP 503, indicating it was unavailable.",
-        "The error rate for service auth increased after the identity-db service became unavailable.",
-        "The error rate for service auth was flat in other regions, indicating the issue was specific to the identity-db service."
+        "The upstream identity-db service returned HTTP 503 for auth.",
+        "This caused the auth service to timeout and fail.",
+        "The auth service then had a higher error rate.",
+        "evidence_ids_supporting_chain_of_causes_and_confidence_in_cause_0.8_014_02",
+        "evidence_ids_supporting_chain_of_causes_and_confidence_in_cause_0.8_014_02"
       ],
       "evidence_ids": [
-        "E6",
-        "E7",
-        "E8",
-        "E9"
+        "E6"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in error rate was due to a spike in request volume.",
-      "reason": "The request volume for service auth did not change significantly.",
+      "hypothesis": "The increase in request volume caused the error rate increase.",
+      "reason": "The request volume for service auth stayed about the same.",
       "evidence_ids": [
         "E3"
       ]
     },
     {
-      "hypothesis": "The increase in error rate was due to a change in the service's internal configuration.",
-      "reason": "The error rate for service auth was flat in other regions, indicating the issue was specific to the eu-west region.",
+      "hypothesis": "The increase in p95 latency caused the error rate increase.",
+      "reason": "The p95 latency for service auth rose, but the error rate increased more.",
       "evidence_ids": [
-        "E5",
-        "E1"
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "The log error messages were the root cause.",
+      "reason": "The log error messages occurred after the change and are symptoms, not causes.",
+      "evidence_ids": [
+        "E7",
+        "E8",
+        "E9"
       ]
     }
   ],
@@ -99,35 +107,35 @@
       "id": "E5",
       "kind": "record",
       "source": "config_changes",
-      "summary": "Changed auth feature flag new_ui_flow to 50% in eu-west (auth, eu-west; 2 min before the change; record R012)",
+      "summary": "Changed auth feature flag new_ui_flow to 50% in eu-west (auth, eu-west; 2 min before the change; record R012; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-03T06:52:48Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "alerts",
-      "summary": "Upstream identity-db returning HTTP 503 for auth (auth; 5 min after the change; record R014)",
+      "summary": "Upstream identity-db returning HTTP 503 for auth (auth; 5 min after the change; record R014; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-03T06:59:50Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "logs",
-      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, ap-south; 1 min after the change; record R013)",
+      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, ap-south; 1 min after the change; record R013; fit: describes a symptom, not a change)",
       "timestamp": "2026-03-03T06:56:25Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "logs",
-      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, us-east; 7 min after the change; record R015)",
+      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, us-east; 7 min after the change; record R015; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-03T07:02:21Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, eu-west; 15 min after the change; record R016)",
+      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, eu-west; 15 min after the change; record R016; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-03T07:09:37Z"
     }
   ],
@@ -149,7 +157,7 @@
   },
   "actions": [
     {
-      "action": "Roll back the auth feature flag change to 50% in eu-west.",
+      "action": "Roll back the auth feature flag change to 50% and monitor the error rate.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -157,7 +165,7 @@
       ]
     },
     {
-      "action": "Monitor the identity-db service and ensure it is available and responsive.",
+      "action": "Monitor the upstream identity-db service and ensure it is stable.",
       "type": "preventive",
       "priority": "high",
       "addresses_factors": [
@@ -165,19 +173,21 @@
       ]
     },
     {
-      "action": "Review and optimize the retry logic for the auth service.",
+      "action": "Review and optimize the error handling in the auth service.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
-        1
+        2
       ]
     }
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 9,
+    "ids_cited": 7,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

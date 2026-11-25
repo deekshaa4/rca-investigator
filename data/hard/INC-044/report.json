@@ -18,13 +18,13 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The catalog feature flag change likely caused the error rate to increase.",
+      "description": "The catalog feature flag change led to increased error rate.",
       "category": "config_change",
-      "confidence": 0.8,
+      "confidence": 0.9,
       "why_chain": [
-        "The catalog feature flag was changed to 50% in eu-west, which could have affected the service catalog's functionality.",
-        "The change in the feature flag may have caused the service catalog to behave differently, leading to more errors.",
-        "The error rate increased from 0.38% to 3.01%, indicating that the change in the feature flag had a significant impact on the service catalog's performance."
+        "The catalog feature flag was changed to 50% in eu-west, causing the service to behave differently.",
+        "This change affected the catalog service, leading to a higher error rate as the system tried to handle the new configuration.",
+        "The error rate increased from 0.38% to 3.01% after the change, indicating the change had a direct impact on the error rate."
       ],
       "evidence_ids": [
         "E6",
@@ -33,13 +33,13 @@
     },
     {
       "rank": 2,
-      "description": "The upstream catalog-db service issues contributed to the error rate increase.",
+      "description": "The upstream catalog-db service was experiencing issues, causing timeouts and errors.",
       "category": "dependency",
-      "confidence": 0.7,
+      "confidence": 0.8,
       "why_chain": [
-        "The catalog-db service returned HTTP 503 (Service Unavailable) for the catalog, causing retries and timeouts.",
-        "These retries and timeouts led to increased latency and error rates in the service catalog.",
-        "The error rate increased from 0.38% to 3.01%, indicating that the issues with the upstream catalog-db service were the root cause."
+        "The catalog service was experiencing timeouts and errors due to upstream catalog-db service issues.",
+        "These issues caused the service to return HTTP 503, leading to a higher error rate.",
+        "The error rate increased from 0.38% to 3.01% after the change, indicating the upstream service issues were the root cause."
       ],
       "evidence_ids": [
         "E5",
@@ -51,15 +51,15 @@
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in request volume caused the error rate to rise.",
-      "reason": "The request volume for service catalog stayed about the same, with a 24% increase in requests per 5 minutes.",
+      "hypothesis": "The increase in request volume caused the error rate to go up.",
+      "reason": "The request volume did not change significantly, and the error rate increased after the change.",
       "evidence_ids": [
         "E3"
       ]
     },
     {
-      "hypothesis": "The increase in p95 latency caused the error rate to rise.",
-      "reason": "The p95 latency for service catalog rose from 121 ms to 217 ms, but the error rate increased from 0.38% to 3.01%, indicating that latency alone was not the cause.",
+      "hypothesis": "The increase in p95 latency caused the error rate to go up.",
+      "reason": "The p95 latency increased, but the error rate increased after the change, indicating the latency increase was a symptom, not a cause.",
       "evidence_ids": [
         "E4"
       ]
@@ -98,35 +98,35 @@
       "id": "E5",
       "kind": "record",
       "source": "alerts",
-      "summary": "Upstream catalog-db returning HTTP 503 for catalog (catalog; 2 min after the change; record R013)",
+      "summary": "Upstream catalog-db returning HTTP 503 for catalog (catalog; 2 min after the change; record R013; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-26T11:37:24Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "config_changes",
-      "summary": "Changed catalog feature flag new_ui_flow to 50% in eu-west (catalog, eu-west; 2 min before the change; record R012)",
+      "summary": "Changed catalog feature flag new_ui_flow to 50% in eu-west (catalog, eu-west; 2 min before the change; record R012; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-26T11:32:38Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "logs",
-      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, eu-west; 14 min after the change; record R014)",
+      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, eu-west; 14 min after the change; record R014; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-26T11:48:49Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "logs",
-      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, us-east; 14 min after the change; record R015)",
+      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, us-east; 14 min after the change; record R015; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-26T11:49:19Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, ap-south; 16 min after the change; record R016)",
+      "summary": "catalog: ERROR upstream catalog-db timeout after 3 retries (catalog, ap-south; 16 min after the change; record R016; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-26T11:50:38Z"
     }
   ],
@@ -148,7 +148,7 @@
   },
   "actions": [
     {
-      "action": "Fix the upstream catalog-db service issues by ensuring the service is available and responsive.",
+      "action": "Fix the upstream catalog-db service issues",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -156,19 +156,19 @@
       ]
     },
     {
-      "action": "Review and potentially revert the catalog feature flag change to ensure the service catalog's functionality is not affected.",
+      "action": "Monitor the catalog feature flag changes and their impact",
       "type": "preventive",
-      "priority": "medium",
+      "priority": "high",
       "addresses_factors": [
         1
       ]
     },
     {
-      "action": "Monitor the catalog-db service and implement retries and fallback mechanisms to handle service unavailability.",
+      "action": "Review and stabilize the catalog feature flag configuration",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
-        2
+        1
       ]
     }
   ],
@@ -177,6 +177,8 @@
     "ids_cited": 8,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

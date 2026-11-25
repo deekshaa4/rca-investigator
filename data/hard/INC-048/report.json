@@ -18,60 +18,50 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The increase in request volume and error rate are likely due to the flash sale campaign going live.",
+      "description": "The flash sale campaign likely increased the load on the system.",
       "category": "traffic",
       "confidence": 0.9,
       "why_chain": [
-        "The flash sale campaign went live at 08:10 UTC, 162 minutes before the change.",
-        "The request volume increased significantly from 2048 per 5 minutes to 9799 per 5 minutes.",
-        "The error rate increased from 0.37% to 0.74%.",
+        "The marketing campaign went live at the right time and place (162 minutes before the change).",
+        "The increase in request volume and error rate are consistent with a sudden surge in traffic.",
+        "The rise in p95 latency is also consistent with increased load on the system.",
         "evidence_ids"
       ],
       "evidence_ids": [
         "E5",
-        "E4",
-        "E6"
+        "E2",
+        "E3",
+        "E4"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in latency is due to a configuration change.",
-      "reason": "The change in latency occurred after the flash sale campaign and the autoscaler scaling out, and there is no evidence of a configuration change.",
+      "hypothesis": "The deployment caused the increase in latency.",
+      "reason": "The change point is at the right time and place, and the increase in latency is a symptom, not a cause.",
       "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4",
-        "E5",
-        "E6",
-        "E7"
+        "E1"
       ]
     },
     {
-      "hypothesis": "The increase in latency is due to a dependency issue with an external service.",
-      "reason": "There is no evidence of a dependency issue, as the error rate and request volume are within normal ranges for the region.",
+      "hypothesis": "The config change caused the increase in latency.",
+      "reason": "The change point is at the right time and place, and the increase in latency is a symptom, not a cause.",
       "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4",
-        "E5",
-        "E6",
-        "E7"
+        "E1"
       ]
     },
     {
-      "hypothesis": "The increase in latency is due to a data issue.",
-      "reason": "There is no evidence of bad or unusual input data, as the error rate and request volume are within normal ranges for the region.",
+      "hypothesis": "The dependency issue caused the increase in latency.",
+      "reason": "The increase in latency is a symptom, not a cause.",
       "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4",
-        "E5",
-        "E6",
-        "E7"
+        "E1"
+      ]
+    },
+    {
+      "hypothesis": "The data quality issue caused the increase in latency.",
+      "reason": "The increase in latency is a symptom, not a cause.",
+      "evidence_ids": [
+        "E1"
       ]
     }
   ],
@@ -108,21 +98,21 @@
       "id": "E5",
       "kind": "record",
       "source": "tickets",
-      "summary": "Marketing: flash sale campaign goes live in eu-west at 08:10 UTC (eu-west; 162 min before the change; record R011)",
+      "summary": "Marketing: flash sale campaign goes live in eu-west at 08:10 UTC (eu-west; 162 min before the change; record R011; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-25T05:28:13Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "alerts",
-      "summary": "Request volume 3x normal in eu-west (eu-west; 12 min after the change; record R012)",
+      "summary": "Request volume 3x normal in eu-west (eu-west; 12 min after the change; record R012; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-25T08:22:00Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "logs",
-      "summary": "autoscaler: scaling out, 4 new instances requested (eu-west; 20 min after the change; record R013)",
+      "summary": "autoscaler: scaling out, 4 new instances requested (eu-west; 20 min after the change; record R013; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-25T08:30:00Z"
     }
   ],
@@ -141,7 +131,7 @@
   },
   "actions": [
     {
-      "action": "Implement a traffic management system to handle sudden spikes in traffic during campaigns.",
+      "action": "Review and optimize the autoscaler configuration to ensure it scales in a timely manner.",
       "type": "preventive",
       "priority": "high",
       "addresses_factors": [
@@ -149,9 +139,17 @@
       ]
     },
     {
-      "action": "Review and optimize the autoscaler configuration to better handle sudden spikes in load.",
-      "type": "corrective",
+      "action": "Monitor the marketing campaigns and adjust the autoscaler accordingly to avoid similar issues in the future.",
+      "type": "preventive",
       "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and possibly reduce the flash sale campaign duration to avoid similar spikes in traffic.",
+      "type": "preventive",
+      "priority": "medium",
       "addresses_factors": [
         1
       ]
@@ -159,9 +157,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 25,
+    "ids_cited": 12,
     "ids_invented": 0,
     "factors_dropped": 1,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

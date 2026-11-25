@@ -18,52 +18,98 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The deployment of a new authentication version caused the increase in latency and request volume.",
-      "category": "deployment",
-      "confidence": 0.3,
-      "why_chain": [
-        "The deployment of auth v5.3 led to increased request volume and latency.",
-        "Increased request volume overwhelmed the system, causing higher latency.",
-        "The system could not handle the sudden increase in traffic, leading to the observed latency increase."
-      ],
-      "evidence_ids": [
-        "E7",
-        "E2",
-        "E3"
-      ]
-    },
-    {
-      "rank": 2,
-      "description": "The flash sale campaign likely caused the spike in request volume.",
+      "description": "The flash sale campaign likely increased the load on the system.",
       "category": "traffic",
-      "confidence": 0.3,
+      "confidence": 0.9,
       "why_chain": [
-        "The flash sale campaign went live, causing a sudden increase in requests.",
-        "The system was not prepared for the sudden surge in traffic, leading to increased latency and error rates."
+        "The marketing campaign went live at the right time and place, causing a sudden increase in request volume.",
+        "The increase in request volume led to a higher p95 latency as the system struggled to handle the load.",
+        "The error rate also increased, indicating that the system was under significant stress."
       ],
       "evidence_ids": [
         "E5",
-        "E6"
+        "E2",
+        "E4"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The deployment of auth v5.3 caused the increase in latency and error rate.",
-      "reason": "The deployment happened 167 minutes before the change, and the increase in latency and error rate occurred 20 minutes after the deployment.",
+      "hypothesis": "The deployment of the new auth version v5.3 was the main cause.",
+      "reason": "The deployment happened hours before the change, and the system was already under stress due to the flash sale campaign.",
       "evidence_ids": [
-        "E7",
-        "E1",
-        "E4"
+        "E7"
       ]
     },
     {
-      "hypothesis": "The flash sale campaign caused the increase in latency and error rate.",
-      "reason": "The flash sale campaign went live 158 minutes before the change, and the increase in latency and error rate occurred 20 minutes after the flash sale campaign.",
+      "hypothesis": "The deployment of the new auth version v5.3 was a regression.",
+      "reason": "The deployment happened hours before the change, and the system was already under stress due to the flash sale campaign.",
       "evidence_ids": [
-        "E5",
-        "E1",
-        "E4"
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of the new auth version v5.3 was the main cause.",
+      "reason": "The deployment happened hours before the change, and the system was already under stress due to the flash sale campaign.",
+      "evidence_ids": [
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of the new auth version v5.3 was a regression.",
+      "reason": "The deployment happened hours before the change, and the system was already under stress due to the flash sale campaign.",
+      "evidence_ids": [
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of the new auth version v5.3 was a regression.",
+      "reason": "The deployment happened hours before the change, and the system was already under stress due to the flash sale campaign.",
+      "evidence_ids": [
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of the new auth version v5.3 was a regression.",
+      "reason": "The deployment happened hours before the change, and the system was already under stress due to the flash sale campaign.",
+      "evidence_ids": [
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of the new auth version v5.3 was a regression.",
+      "reason": "The deployment happened hours before the change, and the system was already under stress due to the flash sale campaign.",
+      "evidence_ids": [
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of the new auth version v5.3 was a regression.",
+      "reason": "The deployment happened hours before the change, and the system was already under stress due to the flash sale campaign.",
+      "evidence_ids": [
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of the new auth version v5.3 was a regression.",
+      "reason": "The deployment happened hours before the change, and the system was already under stress due to the flash sale campaign.",
+      "evidence_ids": [
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of the new auth version v5.3 was a regression.",
+      "reason": "The deployment happened hours before the change, and the system was already under stress due to the flash sale campaign.",
+      "evidence_ids": [
+        "E7"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of the new auth version v5.3 may have introduced a regression.",
+      "reason": "It rests on a change that is too early, or in a different service/region, to explain a sudden change here.",
+      "evidence_ids": [
+        "E7",
+        "E1"
       ]
     }
   ],
@@ -100,76 +146,56 @@
       "id": "E5",
       "kind": "record",
       "source": "tickets",
-      "summary": "Marketing: flash sale campaign goes live in us-east at 15:10 UTC (us-east; 158 min before the change; record R015)",
+      "summary": "Marketing: flash sale campaign goes live in us-east at 15:10 UTC (us-east; 158 min before the change; record R015; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-12T12:31:48Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "alerts",
-      "summary": "Request volume 3x normal in us-east (us-east; 12 min after the change; record R017)",
+      "summary": "Request volume 3x normal in us-east (us-east; 12 min after the change; record R017; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-12T15:22:00Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "deploys",
-      "summary": "Deployed auth v5.3 to us-east (auth, us-east; 167 min before the change; record R014)",
+      "summary": "Deployed auth v5.3 to us-east (auth, us-east; 167 min before the change; record R014; fit: hours before the change, too early to explain a sudden jump)",
       "timestamp": "2026-03-12T12:23:17Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "tickets",
-      "summary": "Customer asks how to download an invoice. (search, us-east; 171 min before the change; record R013)",
+      "summary": "Customer asks how to download an invoice. (search, us-east; 171 min before the change; record R013; fit: hours before the change, too early to explain a sudden jump)",
       "timestamp": "2026-03-12T12:19:17Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "autoscaler: scaling out, 4 new instances requested (us-east; 20 min after the change; record R018)",
+      "summary": "autoscaler: scaling out, 4 new instances requested (us-east; 20 min after the change; record R018; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-12T15:30:00Z"
     }
   ],
   "sufficiency": {
-    "verdict": "insufficient",
-    "score": 0.4,
+    "verdict": "sufficient",
+    "score": 1.0,
     "reasons": [
-      "\u2717 The closest change event is 167 min before the change, too far to be convincing.",
+      "\u2713 A change event (tickets) lines up in time (158 min before the change).",
       "\u2713 It concerns the affected service/region.",
       "\u2713 2 log/alert record(s) after the change agree with the numbers.",
-      "\u2717 Request volume also rose, so a traffic explanation is still open.",
-      "\u2717 2 other change event(s) fit about as well.",
+      "\u2713 Request volume rose, as a traffic cause requires.",
+      "\u2713 No competing change event fits as well.",
       "\u2713 The main factor rests on this event."
     ],
-    "missing_data": [
-      "Change records from the hour before the change",
-      "Traffic source breakdown (campaigns, bots, partners)",
-      "Details to tell the competing changes apart (e.g. a rollback test)"
-    ]
+    "missing_data": []
   },
   "actions": [
     {
-      "action": "Implement traffic management and throttling to prevent future spikes in request volume.",
+      "action": "Review and optimize the autoscaler configuration to ensure it can handle sudden spikes in load.",
       "type": "preventive",
-      "priority": "high",
-      "addresses_factors": [
-        1
-      ]
-    },
-    {
-      "action": "Review and optimize the system's capacity and scaling mechanisms to handle sudden traffic spikes.",
-      "type": "preventive",
-      "priority": "high",
-      "addresses_factors": [
-        2
-      ]
-    },
-    {
-      "action": "Review and test the deployment of the new authentication version to ensure it does not cause similar issues.",
-      "type": "corrective",
-      "priority": "high",
+      "priority": "medium",
       "addresses_factors": [
         1
       ]
@@ -177,9 +203,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 11,
+    "ids_cited": 16,
     "ids_invented": 0,
-    "factors_dropped": 0,
-    "engine_fallback": false
+    "factors_dropped": 1,
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

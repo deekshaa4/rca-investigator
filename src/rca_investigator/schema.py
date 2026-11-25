@@ -115,6 +115,15 @@ class Guardrails(BaseModel):
     engine_fallback: bool = Field(
         default=False, description="The main factor came from the engines, not the model"
     )
+    engine_override: bool = Field(
+        default=False,
+        description="A model factor resting on a change that is too early or in another "
+        "place was replaced by the engines' candidate",
+    )
+    rivals_added: int = Field(
+        default=0, ge=0, description="Competing changes added so that every equally good "
+        "candidate is named",
+    )
 
 
 class RCAReport(BaseModel):

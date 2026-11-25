@@ -29,7 +29,15 @@ from .schema import (
     RCAReport,
     Verdict,
 )
-from .sufficiency import CAUSE_GRACE_MIN, assess, engine_factor, find_candidate
+from .sufficiency import (
+    CAUSE_GRACE_MIN,
+    assess,
+    credible_candidates,
+    engine_factor,
+    find_candidate,
+    fit_label,
+    rivals_of,
+)
 
 MAX_FACTORS = 3
 
@@ -40,6 +48,10 @@ Rules:
 - A cause must come before, or at the same time as, the change it explains.
   Alerts and error logs after the change are symptoms, not causes.
 - If no evidence explains the change, return an empty list of contributing factors.
+- Each record has a "fit" note. Prefer records marked "right time and place". A change
+  hours earlier or in a different service/region is usually a red herring.
+- If two records are both "right time and place", name both: the data may not tell
+  them apart.
 - Usually there is ONE main cause. Add a second or third factor only if separate
   evidence clearly supports it.
 - Categories: deployment = a new release or version; config_change = a changed setting;
@@ -118,7 +130,8 @@ def build_evidence(analysis: ChangeAnalysis, hits: list[RecordHit]) -> list[dict
         where = ", ".join(v for v in (rec.get("service"), rec.get("region")) if v) or "all"
         evidence.append({"kind": "record", "source": rec["source"],
                          "minutes": h.minutes_from_change, "record_id": rec["id"],
-                         "summary": f"{rec['text']} ({where}; {when}; record {rec['id']})",
+                         "summary": f"{rec['text']} ({where}; {when}; record {rec['id']}; "
+                                    f"fit: {fit_label(h)})",
                          "timestamp": rec["timestamp"]})
     for i, e in enumerate(evidence, start=1):
         e["id"] = f"E{i}"
@@ -196,6 +209,55 @@ def _clean(reply: dict, evidence: list[dict]
     return factors, ruled_out, actions, stats
 
 
+def _prefer_credible(factors: list[dict], ruled_out: list[dict], actions: list[dict],
+                     hits: list[RecordHit], evidence: list[dict], analysis: ChangeAnalysis):
+    """Let the engines overrule a weak pick, and name every equally good candidate.
+
+    A factor must rest on a change that is close in time and in the affected place.
+    Factors that don't are moved to "ruled out" and replaced by the engines' best
+    candidate. If other changes fit just as well, they are added as competing factors.
+    """
+    creds = credible_candidates(hits, evidence)
+    if not creds:
+        return factors, ruled_out, actions, False, 0, False
+    cred_ids = {c.evidence_id for c in creds}
+    kept = [f for f in factors if cred_ids & set(f["evidence_ids"])]
+    dropped = [f for f in factors if f not in kept]
+    override = bool(factors) and factors[0] in dropped
+    if not kept:
+        kept = [engine_factor(creds[0], analysis)]
+    for f in dropped:
+        ruled_out = [*ruled_out, {
+            "hypothesis": f["description"],
+            "reason": "It rests on a change that is too early, or in a different "
+                      "service/region, to explain a sudden change here.",
+            "evidence_ids": f["evidence_ids"],
+        }]
+    old_rank = {id(f): f["rank"] for f in factors}
+    best = next(c for c in creds if c.evidence_id in kept[0]["evidence_ids"]) \
+        if any(c.evidence_id in kept[0]["evidence_ids"] for c in creds) else creds[0]
+    named = {i for f in kept for i in f["evidence_ids"]}
+    added = 0
+    for rival in rivals_of(best, creds):
+        if rival.evidence_id not in named and len(kept) < MAX_FACTORS:
+            f = engine_factor(rival, analysis)
+            f["description"] = ("Competing change at the same time and place: "
+                                + f["description"])
+            f["confidence"] = min(f["confidence"], kept[0]["confidence"], 0.5)
+            kept.append(f)
+            added += 1
+    new_rank = {}
+    for i, f in enumerate(kept, start=1):
+        if id(f) in old_rank:
+            new_rank[old_rank[id(f)]] = i
+        f["rank"] = i
+    if dropped or added:
+        actions = [{**a, "addresses_factors": [new_rank[n] for n in a["addresses_factors"]
+                                               if n in new_rank]} for a in actions]
+        actions = [a for a in actions if a["addresses_factors"]]
+    return kept, ruled_out, actions, override, added, not factors
+
+
 def investigate(incident_id: str, question: str, metric: str, metrics: pd.DataFrame,
                 records: list[dict], client: ChatClient | None, top_k: int = 5) -> RCAReport:
     analysis = analyze_change(metrics, metric)
@@ -212,6 +274,11 @@ def investigate(incident_id: str, question: str, metric: str, metrics: pd.DataFr
         factors, ruled_out, actions, stats = _clean(reply, evidence)
         guard.update(stats)
 
+    if analysis.detected:
+        factors, ruled_out, actions, override, added, fallback = _prefer_credible(
+            factors, ruled_out, actions, hits, evidence, analysis)
+        guard.update(engine_override=override, rivals_added=added)
+        guard["engine_fallback"] = fallback and client is not None
     if analysis.detected and not factors:
         # No usable factor from the model: fall back to the engines' best candidate.
         cand = find_candidate(hits, factors, evidence)
@@ -275,6 +342,12 @@ def to_markdown(report: RCAReport) -> str:
         out += ["", "## Fact-check", (f"- Evidence IDs cited by the model: {g.ids_cited}, "
                 f"invented (removed): {g.ids_invented}"),
                 f"- Factors dropped (no real evidence, or symptoms only): {g.factors_dropped}"]
+        if g.engine_override:
+            out.append("- The model's main factor rested on a change that was too early or in "
+                       "another place; the engines' candidate was used instead.")
+        if g.rivals_added:
+            out.append(f"- Competing changes added so every equally good candidate is named: "
+                       f"{g.rivals_added}")
         if g.engine_fallback:
             out.append("- The model gave no usable factor; the main factor comes from the engines.")
     out += ["", "## Evidence"]

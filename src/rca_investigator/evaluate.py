@@ -39,6 +39,9 @@ def score_report(report: RCAReport, truth: dict) -> dict:
         if explainable else None,
         "cause_cited": bool(set(truth["cause_record_ids"]) & cited_record_ids(report))
         if explainable else None,
+        "cause_named": bool(set(truth["cause_record_ids"]) & {
+            i for f in report.contributing_factors for i in cited_record_ids(report, f.rank)})
+        if explainable else None,
         "n_factors": len(report.contributing_factors),
         "twist": truth.get("twist", "none"),
         **_guardrail_counts(report),
@@ -49,9 +52,10 @@ def _guardrail_counts(report: RCAReport) -> dict:
     g = report.guardrails
     if g is None or not g.model_used:
         return {"ids_cited": None, "ids_invented": None, "factors_dropped": None,
-                "engine_fallback": None}
+                "engine_fallback": None, "engine_override": None}
     return {"ids_cited": g.ids_cited, "ids_invented": g.ids_invented,
-            "factors_dropped": g.factors_dropped, "engine_fallback": g.engine_fallback}
+            "factors_dropped": g.factors_dropped, "engine_fallback": g.engine_fallback,
+            "engine_override": g.engine_override}
 
 
 def summarise(rows: list[dict]) -> dict[str, float]:
@@ -63,7 +67,12 @@ def summarise(rows: list[dict]) -> dict[str, float]:
         "top cause category correct": expl["category_ok"].astype(bool).mean() if len(expl) else 0,
         "true cause record cited by top factor": expl["cause_cited"].astype(bool).mean()
         if len(expl) else 0,
+        "true cause record named by any factor": expl["cause_named"].astype(bool).mean()
+        if len(expl) and "cause_named" in expl else 0,
     }
+    if "engine_override" in df and df["engine_override"].notna().any():
+        out["reports where the engines overruled the model"] = (
+            df["engine_override"].dropna().astype(bool).mean())
     if "ids_cited" in df and df["ids_cited"].notna().any():
         llm = df[df["ids_cited"].notna()]
         cited = llm["ids_cited"].sum()
@@ -87,5 +96,6 @@ def breakdown(rows: list[dict], by: str) -> pd.DataFrame:
         segment=("segment_ok", frac),
         category=("category_ok", frac),
         cause_cited=("cause_cited", frac),
+        cause_named=("cause_named", frac),
     )
     return table

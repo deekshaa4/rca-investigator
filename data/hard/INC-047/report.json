@@ -18,13 +18,13 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The change in db.pool_size caused the connection pool to be exhausted, leading to increased latency.",
+      "description": "Config change increased db.pool_size from 50 to 5, causing connection pool exhaustion.",
       "category": "config_change",
       "confidence": 0.9,
       "why_chain": [
-        "The db.pool_size was changed from 50 to 5, reducing the number of available connections.",
-        "With fewer connections, the pool could not handle the increased load, causing exhaustion.",
-        "Exhausted connections led to longer wait times, increasing p95 latency."
+        "The config change reduced the pool size, leading to a larger number of concurrent connections.",
+        "With fewer connections available, the pool exhausted more quickly, causing waiting.",
+        "Waiting for a free connection increased p95 latency."
       ],
       "evidence_ids": [
         "E5",
@@ -32,32 +32,42 @@
         "E8",
         "E9"
       ]
-    },
-    {
-      "rank": 2,
-      "description": "The increase in request volume did not explain the p95 latency increase.",
-      "category": "unknown",
-      "confidence": 0.8,
-      "why_chain": [
-        "The request volume remained stable, contradicting the idea that more requests caused the issue."
-      ],
-      "evidence_ids": [
-        "E3"
-      ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in p95 latency was due to a sudden spike in user traffic.",
-      "reason": "The request volume did not change significantly, contradicting this hypothesis.",
+      "hypothesis": "The increase in error rate was due to the config change.",
+      "reason": "The error rate increased after the change, but the config change happened before the error rate increase.",
       "evidence_ids": [
-        "E3"
+        "E4",
+        "E5"
       ]
     },
     {
-      "hypothesis": "The increase in p95 latency was caused by a new dependency issue.",
-      "reason": "There is no evidence of a new external service failure or slowdown.",
-      "evidence_ids": []
+      "hypothesis": "The increase in p95 latency was due to a spike in user activity.",
+      "reason": "The error rate increased after the change, but the error rate spike happened after the p95 latency increase.",
+      "evidence_ids": [
+        "E4",
+        "E5"
+      ]
+    },
+    {
+      "hypothesis": "The increase in p95 latency was due to a network issue.",
+      "reason": "There were no network-related logs or alerts, and the issue was specific to the database connection pool.",
+      "evidence_ids": [
+        "E6",
+        "E7",
+        "E8",
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "Request volume increase led to more connections being made, exacerbating the pool exhaustion.",
+      "reason": "It rests on a change that is too early, or in a different service/region, to explain a sudden change here.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
     }
   ],
   "evidence": [
@@ -93,35 +103,35 @@
       "id": "E5",
       "kind": "record",
       "source": "config_changes",
-      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 2 min before the change; record R009)",
+      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 2 min before the change; record R009; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-22T13:03:07Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "alerts",
-      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R011)",
+      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R011; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-22T13:20:00Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, eu-west; 6 min after the change; record R010)",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, eu-west; 6 min after the change; record R010; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-22T13:10:43Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 20 min after the change; record R012)",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 20 min after the change; record R012; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-22T13:25:02Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 21 min after the change; record R013)",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 21 min after the change; record R013; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-22T13:26:18Z"
     }
   ],
@@ -140,7 +150,7 @@
   },
   "actions": [
     {
-      "action": "Reduce the db.pool_size back to 50 to prevent future connection pool exhaustion.",
+      "action": "Reduce db.pool_size back to 50 to mitigate connection pool exhaustion.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -148,15 +158,7 @@
       ]
     },
     {
-      "action": "Monitor the connection pool closely and adjust db.pool_size as needed.",
-      "type": "preventive",
-      "priority": "medium",
-      "addresses_factors": [
-        1
-      ]
-    },
-    {
-      "action": "Review and optimize the checkout service's connection pool management.",
+      "action": "Implement connection pooling optimization or increase db.pool_size if needed.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
@@ -166,9 +168,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 6,
+    "ids_cited": 14,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

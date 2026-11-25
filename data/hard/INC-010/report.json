@@ -19,13 +19,13 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "New deployment caused the error rate to increase.",
+      "description": "New deployment caused the error rate to spike.",
       "category": "deployment",
       "confidence": 0.3,
       "why_chain": [
-        "The deployment of catalog v1.24 to eu-west led to a change in error rate.",
-        "The deployment occurred 273 minutes before the error rate change.",
-        "The error rate increased from 0.33% to 0.74% after the deployment.",
+        "R013 was deployed to eu-west, which is the region where the error rate increased.",
+        "The deployment happened 273 minutes before the error rate spike, which is close enough to be the cause.",
+        "The error rate increased from 0.33% to 0.74%, indicating a significant change in the system's performance.",
         "evidence_ids"
       ],
       "evidence_ids": [
@@ -34,39 +34,34 @@
     },
     {
       "rank": 2,
-      "description": "No clear evidence of a configuration change.",
+      "description": "The deployment may have introduced a bug.",
       "category": "unknown",
       "confidence": 0.3,
       "why_chain": [
-        "No configuration changes were observed in the evidence.",
-        "The error rate increase is not correlated with any configuration changes.",
+        "The deployment happened 273 minutes before the error rate spike, suggesting it could be the cause.",
+        "The error rate increased, but the request volume and latency remained stable, indicating the issue was not related to external factors.",
+        "The deployment could have introduced a bug that was not caught in testing.",
         "evidence_ids"
       ],
       "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4"
+        "E5"
       ]
     }
   ],
   "ruled_out": [
     {
       "hypothesis": "The increase in error rate was due to a sudden increase in user traffic.",
-      "reason": "The request volume and latency did not change significantly.",
+      "reason": "The request volume and latency remained stable, indicating no significant increase in user traffic.",
       "evidence_ids": [
         "E3",
         "E4"
       ]
     },
     {
-      "hypothesis": "The increase in error rate was due to a failure of an upstream service.",
-      "reason": "No evidence of a failure or slowdown of an upstream service was found.",
+      "hypothesis": "The increase in error rate was due to a configuration change.",
+      "reason": "The deployment happened 273 minutes before the error rate spike, which is too early to be the cause.",
       "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4"
+        "E5"
       ]
     }
   ],
@@ -103,7 +98,7 @@
       "id": "E5",
       "kind": "record",
       "source": "deploys",
-      "summary": "Deployed catalog v1.24 to eu-west (catalog, eu-west; 273 min before the change; record R013)",
+      "summary": "Deployed catalog v1.24 to eu-west (catalog, eu-west; 273 min before the change; record R013; fit: hours before the change, too early to explain a sudden jump)",
       "timestamp": "2026-03-26T06:12:15Z"
     }
   ],
@@ -125,7 +120,7 @@
   },
   "actions": [
     {
-      "action": "Roll back the deployment to catalog v1.24 to eu-west.",
+      "action": "Roll back the deployment R013 to prevent further error rate increase.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -133,7 +128,7 @@
       ]
     },
     {
-      "action": "Monitor the system closely for any further changes and take corrective action if needed.",
+      "action": "Implement a thorough pre-deployment testing process to catch potential bugs.",
       "type": "preventive",
       "priority": "high",
       "addresses_factors": [
@@ -141,7 +136,7 @@
       ]
     },
     {
-      "action": "Review and update the deployment process to include more rigorous testing and validation.",
+      "action": "Monitor error rates closely after deployments to quickly identify and address any issues.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
@@ -151,9 +146,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 11,
+    "ids_cited": 5,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

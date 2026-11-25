@@ -18,29 +18,13 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The increase in request volume and error rate are likely due to the flash sale campaign going live.",
-      "category": "traffic",
+      "description": "The new UI flow feature flag change likely caused the increase in latency.",
+      "category": "config_change",
       "confidence": 0.9,
       "why_chain": [
-        "The flash sale campaign went live at 02:35 UTC, causing a surge in request volume.",
-        "The surge in requests led to increased load on the system, causing higher latency.",
-        "The increased load also resulted in higher error rates due to system strain."
-      ],
-      "evidence_ids": [
-        "E6",
-        "E7",
-        "E8"
-      ]
-    },
-    {
-      "rank": 2,
-      "description": "The change in auth feature flag could have contributed to the increase in latency.",
-      "category": "config_change",
-      "confidence": 0.7,
-      "why_chain": [
-        "The auth feature flag was changed to 50% at the same time as the latency spike.",
-        "The change in feature flag may have affected the system's performance.",
-        "The system may have been underperforming due to the change, leading to increased latency."
+        "The new UI flow feature flag change to 50% in eu-west led to increased latency.",
+        "Increased latency is a known side effect of feature flag changes.",
+        "The change in feature flag occurred 2 minutes before the latency increase, supporting a temporal relationship."
       ],
       "evidence_ids": [
         "E5",
@@ -48,38 +32,28 @@
       ]
     },
     {
-      "rank": 3,
-      "description": "The deployment of auth v3.26 could have caused the latency spike.",
-      "category": "deployment",
-      "confidence": 0.6,
+      "rank": 2,
+      "description": "The flash sale campaign likely caused the increase in request volume and error rate.",
+      "category": "traffic",
+      "confidence": 0.8,
       "why_chain": [
-        "The auth v3.26 deployment happened 200 minutes before the change point.",
-        "The deployment could have introduced a bug or incompatibility.",
-        "This could have led to increased latency and error rates."
+        "The flash sale campaign went live at the same time as the latency increase.",
+        "The increase in request volume and error rate are consistent with a sudden spike in traffic.",
+        "The campaign is a known cause of such spikes in traffic and errors."
       ],
       "evidence_ids": [
-        "E9",
-        "E1"
+        "E4",
+        "E2",
+        "E6"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in latency was due to a bug in the autoscaler.",
-      "reason": "The autoscaler scaling out happened 20 minutes after the change point.",
+      "hypothesis": "The deployment of auth v3.26 to us-east was the cause.",
+      "reason": "The deployment was in a different region and service, making it unlikely to be the cause.",
       "evidence_ids": [
-        "E7",
-        "E8"
-      ]
-    },
-    {
-      "hypothesis": "The increase in latency was due to a data issue.",
-      "reason": "There is no evidence of bad or unusual input data.",
-      "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4"
+        "E9"
       ]
     }
   ],
@@ -116,57 +90,58 @@
       "id": "E5",
       "kind": "record",
       "source": "config_changes",
-      "summary": "Changed auth feature flag new_ui_flow to 50% in eu-west (auth, eu-west; 2 min before the change; record R011)",
+      "summary": "Changed auth feature flag new_ui_flow to 50% in eu-west (auth, eu-west; 2 min before the change; record R011; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-20T02:33:12Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "tickets",
-      "summary": "Marketing: flash sale campaign goes live in eu-west at 02:35 UTC (eu-west; 242 min before the change; record R008)",
+      "summary": "Marketing: flash sale campaign goes live in eu-west at 02:35 UTC (eu-west; 242 min before the change; record R008; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-19T22:32:50Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "alerts",
-      "summary": "Request volume 3x normal in eu-west (eu-west; 12 min after the change; record R012)",
+      "summary": "Request volume 3x normal in eu-west (eu-west; 12 min after the change; record R012; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-20T02:47:00Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "logs",
-      "summary": "autoscaler: scaling out, 4 new instances requested (eu-west; 20 min after the change; record R013)",
+      "summary": "autoscaler: scaling out, 4 new instances requested (eu-west; 20 min after the change; record R013; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-20T02:55:00Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "deploys",
-      "summary": "Deployed auth v3.26 to us-east (routine release) (auth, us-east; 200 min before the change; record R010)",
+      "summary": "Deployed auth v3.26 to us-east (routine release) (auth, us-east; 200 min before the change; record R010; fit: different service/region, so unlikely to be the cause)",
       "timestamp": "2026-03-19T23:15:25Z"
     }
   ],
   "sufficiency": {
     "verdict": "partial",
-    "score": 0.9,
+    "score": 0.8,
     "reasons": [
-      "\u2713 A change event (tickets) lines up in time (242 min before the change).",
+      "\u2713 A change event (config_changes) lines up in time (2 min before the change).",
       "\u2713 It concerns the affected service/region.",
       "\u2713 2 log/alert record(s) after the change agree with the numbers.",
-      "\u2713 Request volume rose, as a traffic cause requires.",
+      "\u2717 Request volume also rose, so a traffic explanation is still open.",
       "\u2717 1 other change event(s) fit about as well.",
       "\u2713 The main factor rests on this event.",
       "\u2717 Two or more changes fit equally well, so the cause cannot be confirmed."
     ],
     "missing_data": [
+      "Traffic source breakdown (campaigns, bots, partners)",
       "Details to tell the competing changes apart (e.g. a rollback test)"
     ]
   },
   "actions": [
     {
-      "action": "Roll back the auth feature flag change to 50%.",
+      "action": "Roll back the new UI flow feature flag change to 50% in eu-west.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -174,15 +149,15 @@
       ]
     },
     {
-      "action": "Review the auth v3.26 deployment for any issues.",
+      "action": "Implement traffic management and rate limiting for the flash sale campaign.",
       "type": "preventive",
-      "priority": "medium",
+      "priority": "high",
       "addresses_factors": [
-        3
+        2
       ]
     },
     {
-      "action": "Monitor request volume and error rates closely in the future.",
+      "action": "Monitor and adjust the autoscaler to prevent unnecessary scaling out.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
@@ -192,9 +167,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 13,
+    "ids_cited": 8,
     "ids_invented": 0,
-    "factors_dropped": 0,
-    "engine_fallback": false
+    "factors_dropped": 1,
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

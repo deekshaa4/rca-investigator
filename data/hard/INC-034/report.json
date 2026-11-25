@@ -18,13 +18,13 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "Upstream search-cluster is the root cause of the error rate increase.",
+      "description": "Upstream search-cluster is returning HTTP 503, causing service search error rate to spike.",
       "category": "dependency",
-      "confidence": 1.0,
+      "confidence": 0.9,
       "why_chain": [
-        "The error rate in service search increased due to the upstream search-cluster returning HTTP 503.",
-        "The upstream search-cluster is the service that the search service calls, and it is experiencing issues.",
-        "The upstream search-cluster is the root cause of the error rate increase in service search."
+        "Upstream search-cluster is experiencing degraded performance, leading to HTTP 503 errors.",
+        "These errors cause service search to fail, increasing error rate.",
+        "The error rate increase is observed in service search, with no other service/region segments changing significantly."
       ],
       "evidence_ids": [
         "E5",
@@ -37,31 +37,29 @@
   ],
   "ruled_out": [
     {
-      "hypothesis": "The error rate increase is due to a configuration change.",
-      "reason": "There is no evidence of a configuration change that would cause the error rate to increase.",
-      "evidence_ids": [
-        "E1"
-      ]
-    },
-    {
-      "hypothesis": "The error rate increase is due to a sudden increase in user traffic.",
-      "reason": "The request volume for service search did not change significantly, and the error rate increase is not correlated with a spike in user traffic.",
+      "hypothesis": "The increase in request volume is causing the error rate to rise.",
+      "reason": "Request volume for service search stayed about the same, with a 24% increase in p95 latency.",
       "evidence_ids": [
         "E3"
       ]
     },
     {
-      "hypothesis": "The error rate increase is due to a data quality issue.",
-      "reason": "There is no evidence of bad or unusual input data causing the error rate increase.",
-      "evidence_ids": [
-        "E1"
-      ]
+      "hypothesis": "The error rate increase is due to a configuration change in service search.",
+      "reason": "No configuration change is noted in the evidence.",
+      "evidence_ids": []
     },
     {
-      "hypothesis": "The error rate increase is due to infrastructure issues.",
-      "reason": "There is no evidence of any infrastructure issues, such as network or server capacity problems.",
+      "hypothesis": "The error rate increase is due to a deployment of a new release or version in service search.",
+      "reason": "No deployment is noted in the evidence.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "Service search's p95 latency is increasing, indicating degraded performance.",
+      "reason": "It rests on a change that is too early, or in a different service/region, to explain a sudden change here.",
       "evidence_ids": [
-        "E1"
+        "E2",
+        "E3",
+        "E4"
       ]
     }
   ],
@@ -98,35 +96,35 @@
       "id": "E5",
       "kind": "record",
       "source": "alerts",
-      "summary": "Upstream search-cluster returning HTTP 503 for search (search; 3 min after the change; record R013)",
+      "summary": "Upstream search-cluster returning HTTP 503 for search (search; 3 min after the change; record R013; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-16T11:08:18Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "logs",
-      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, ap-south; 5 min after the change; record R014)",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, ap-south; 5 min after the change; record R014; fit: describes a symptom, not a change)",
       "timestamp": "2026-03-16T11:09:36Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "logs",
-      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, eu-west; 14 min after the change; record R015)",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, eu-west; 14 min after the change; record R015; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-16T11:19:17Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "tickets",
-      "summary": "search-cluster status page: investigating degraded performance (search; 30 min after the change; record R017)",
+      "summary": "search-cluster status page: investigating degraded performance (search; 30 min after the change; record R017; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-16T11:35:00Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, us-east; 23 min after the change; record R016)",
+      "summary": "search: ERROR upstream search-cluster timeout after 3 retries (search, us-east; 23 min after the change; record R016; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-16T11:27:54Z"
     }
   ],
@@ -145,7 +143,7 @@
   },
   "actions": [
     {
-      "action": "Investigate and fix the upstream search-cluster issue.",
+      "action": "Investigate and address the degraded performance of the upstream search-cluster.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -153,15 +151,7 @@
       ]
     },
     {
-      "action": "Monitor the upstream search-cluster and take preemptive actions if it shows signs of degradation.",
-      "type": "preventive",
-      "priority": "medium",
-      "addresses_factors": [
-        1
-      ]
-    },
-    {
-      "action": "Review and optimize the retry logic for the search service to handle upstream failures more gracefully.",
+      "action": "Monitor and optimize the performance of the upstream search-cluster.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
@@ -171,9 +161,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 11,
+    "ids_cited": 9,
     "ids_invented": 0,
-    "factors_dropped": 1,
-    "engine_fallback": false
+    "factors_dropped": 0,
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

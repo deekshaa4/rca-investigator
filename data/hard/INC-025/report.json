@@ -19,13 +19,13 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "New feature request may have introduced a regression.",
+      "description": "New feature request introduced unexpected load.",
       "category": "unknown",
       "confidence": 0.3,
       "why_chain": [
-        "Feature request R013 was submitted 287 minutes before the error rate spike.",
-        "The feature request may have introduced a regression or unintended side effect.",
-        "The error rate spike in service auth in region eu-west coincides with the feature request submission."
+        "Feature request R013 was made 287 minutes before the error rate spike.",
+        "The feature request likely caused a temporary increase in load on the system.",
+        "The error rate increased without a corresponding increase in request volume or latency."
       ],
       "evidence_ids": [
         "E5"
@@ -33,56 +33,71 @@
     },
     {
       "rank": 2,
-      "description": "Deployment of a new release may have caused the error rate spike.",
+      "description": "Deployment of a new feature introduced a bug.",
       "category": "deployment",
       "confidence": 0.3,
       "why_chain": [
-        "A new release was deployed at the same time as the error rate spike.",
-        "The error rate spike in service auth in region eu-west coincides with the deployment.",
-        "The error rate spike is concentrated in service auth in region eu-west."
+        "The error rate spike coincided with a deployment of a new feature.",
+        "The feature deployment was made 287 minutes before the error rate spike.",
+        "The error rate increased without a corresponding increase in request volume or latency."
       ],
       "evidence_ids": [
         "E1",
-        "E2"
+        "E2",
+        "E5"
       ]
     },
     {
       "rank": 3,
-      "description": "Configuration change may have affected the service.",
-      "category": "config_change",
+      "description": "Increased load due to a new feature.",
+      "category": "traffic",
       "confidence": 0.3,
       "why_chain": [
-        "The error rate spike in service auth in region eu-west coincides with the deployment.",
-        "The error rate spike is concentrated in service auth in region eu-west.",
-        "The request volume and latency did not change significantly."
+        "The error rate spike coincided with a deployment of a new feature.",
+        "The feature deployment was made 287 minutes before the error rate spike.",
+        "The error rate increased without a corresponding increase in request volume or latency."
       ],
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E5"
+      ]
+    }
+  ],
+  "ruled_out": [
+    {
+      "hypothesis": "Configuration change caused the error rate spike.",
+      "reason": "No configuration changes were made around the time of the error rate spike.",
       "evidence_ids": [
         "E1",
         "E2",
         "E3",
         "E4"
       ]
-    }
-  ],
-  "ruled_out": [
-    {
-      "hypothesis": "The increase in error rate was due to a sudden increase in traffic.",
-      "reason": "The request volume did not change significantly.",
-      "evidence_ids": [
-        "E3"
-      ]
     },
     {
-      "hypothesis": "The increase in error rate was due to a configuration change elsewhere in the system.",
-      "reason": "The error rate spike is concentrated in service auth in region eu-west.",
+      "hypothesis": "Dependency issue with an external service caused the error rate spike.",
+      "reason": "No external services were known to be affected around the time of the error rate spike.",
       "evidence_ids": [
         "E1",
-        "E2"
+        "E2",
+        "E3",
+        "E4"
       ]
     },
     {
-      "hypothesis": "The increase in error rate was due to a dependency issue with an external service.",
-      "reason": "There is no evidence of a dependency issue.",
+      "hypothesis": "Infrastructure issue caused the error rate spike.",
+      "reason": "No infrastructure issues were reported around the time of the error rate spike.",
+      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "Data issue caused the error rate spike.",
+      "reason": "No unusual data inputs were reported around the time of the error rate spike.",
       "evidence_ids": [
         "E1",
         "E2",
@@ -124,7 +139,7 @@
       "id": "E5",
       "kind": "record",
       "source": "tickets",
-      "summary": "Feature request: dark mode for the account page. (catalog, eu-west; 287 min before the change; record R013)",
+      "summary": "Feature request: dark mode for the account page. (catalog, eu-west; 287 min before the change; record R013; fit: different service/region, so unlikely to be the cause)",
       "timestamp": "2026-03-09T10:27:42Z"
     }
   ],
@@ -147,35 +162,37 @@
   },
   "actions": [
     {
-      "action": "Review and test the new release for the service auth in region eu-west.",
+      "action": "Roll back the deployment of the new feature.",
       "type": "corrective",
-      "priority": "high",
-      "addresses_factors": [
-        1
-      ]
-    },
-    {
-      "action": "Monitor the system for any further errors and investigate if the error rate continues to increase.",
-      "type": "preventive",
       "priority": "high",
       "addresses_factors": [
         2
       ]
     },
     {
-      "action": "Review the feature request R013 and its implementation for any unintended side effects.",
+      "action": "Monitor for similar spikes in error rates in the future.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
-        3
+        2
+      ]
+    },
+    {
+      "action": "Review and test the new feature thoroughly before deployment.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
       ]
     }
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 14,
+    "ids_cited": 23,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

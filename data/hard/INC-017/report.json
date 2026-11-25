@@ -18,52 +18,58 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The deployment of a new version of the checkout service caused the p95 latency to increase.",
+      "description": "New deployment of checkout v2.26 caused increased latency and connection pool exhaustion.",
       "category": "deployment",
       "confidence": 0.9,
       "why_chain": [
-        "The deployment of checkout v2.26 led to a change in p95 latency.",
-        "The change in p95 latency was concentrated in the service checkout.",
-        "The change in p95 latency was accompanied by an increase in error rate and a warning about connection pool exhaustion."
+        "Checkout v2.26 deployment led to a change in service checkout's performance.",
+        "The change in checkout v2.26 deployment caused the p95 latency to rise.",
+        "The increased latency and connection pool exhaustion are symptoms of the deployment change."
       ],
       "evidence_ids": [
-        "E1",
-        "E2",
-        "E4",
-        "E5"
+        "E5",
+        "E1"
       ]
     },
     {
       "rank": 2,
-      "description": "The configuration change to reduce the database pool size also contributed to the increase in p95 latency.",
+      "description": "Config change to reduce db.pool_size from 50 to 5 led to increased latency and connection pool exhaustion.",
       "category": "config_change",
       "confidence": 0.8,
       "why_chain": [
-        "The configuration change to reduce the database pool size was made 1 minute before the deployment.",
-        "The reduction in the database pool size could have led to more frequent connection pool exhaustion warnings.",
-        "The connection pool exhaustion warnings were observed after the change."
+        "Reducing db.pool_size from 50 to 5 caused a change in service checkout's performance.",
+        "The reduced db.pool_size deployment change caused the p95 latency to rise.",
+        "The increased latency and connection pool exhaustion are symptoms of the config change."
       ],
       "evidence_ids": [
-        "E5",
         "E6",
-        "E7",
-        "E8",
-        "E9"
+        "E1"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in p95 latency was due to a sudden increase in request volume.",
-      "reason": "The request volume remained about the same before and after the change.",
+      "hypothesis": "Increased request volume caused the p95 latency to rise.",
+      "reason": "Request volume remained about the same before and after the change.",
       "evidence_ids": [
         "E3"
       ]
     },
     {
-      "hypothesis": "The increase in p95 latency was caused by a failure of the external service.",
-      "reason": "There is no evidence of a failure of an external service.",
-      "evidence_ids": []
+      "hypothesis": "Error rate increase was due to external factors.",
+      "reason": "Error rate increase is a symptom, not a cause.",
+      "evidence_ids": [
+        "E4"
+      ]
+    },
+    {
+      "hypothesis": "Connection pool exhaustion was due to external factors.",
+      "reason": "Connection pool exhaustion is a symptom, not a cause.",
+      "evidence_ids": [
+        "E7",
+        "E8",
+        "E9"
+      ]
     }
   ],
   "evidence": [
@@ -99,35 +105,35 @@
       "id": "E5",
       "kind": "record",
       "source": "deploys",
-      "summary": "Deployed checkout v2.26 to us-east (checkout, us-east; 2 min before the change; record R017)",
+      "summary": "Deployed checkout v2.26 to us-east (checkout, us-east; 2 min before the change; record R017; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-19T15:13:03Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "config_changes",
-      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 1 min before the change; record R018)",
+      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 1 min before the change; record R018; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-19T15:13:34Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "alerts",
-      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R020)",
+      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R020; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-19T15:30:00Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 10 min after the change; record R019)",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 10 min after the change; record R019; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-19T15:24:48Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 27 min after the change; record R021)",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 27 min after the change; record R021; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-19T15:42:11Z"
     }
   ],
@@ -149,7 +155,7 @@
   },
   "actions": [
     {
-      "action": "Rollback the deployment of checkout v2.26 to revert the changes.",
+      "action": "Rollback the deployment of checkout v2.26",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -157,15 +163,15 @@
       ]
     },
     {
-      "action": "Increase the database pool size to prevent connection pool exhaustion warnings.",
-      "type": "preventive",
+      "action": "Rollback the config change to reduce db.pool_size",
+      "type": "corrective",
       "priority": "high",
       "addresses_factors": [
         2
       ]
     },
     {
-      "action": "Monitor the database pool size and request volume closely to detect any future issues.",
+      "action": "Monitor and optimize the connection pool size for checkout",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
@@ -175,9 +181,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 10,
+    "ids_cited": 9,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

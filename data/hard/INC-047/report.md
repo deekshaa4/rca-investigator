@@ -12,24 +12,23 @@ latency_p95_ms for service checkout went from 220.9 to 692.8 (+214%) starting 20
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **The change in db.pool_size caused the connection pool to be exhausted, leading to increased latency.** (config_change, confidence 90%) [E5, E7, E8, E9]
-   - Why: The db.pool_size was changed from 50 to 5, reducing the number of available connections.
-   - Why: With fewer connections, the pool could not handle the increased load, causing exhaustion.
-   - Why: Exhausted connections led to longer wait times, increasing p95 latency.
-2. **The increase in request volume did not explain the p95 latency increase.** (unknown, confidence 80%) [E3]
-   - Why: The request volume remained stable, contradicting the idea that more requests caused the issue.
+1. **Config change increased db.pool_size from 50 to 5, causing connection pool exhaustion.** (config_change, confidence 90%) [E5, E7, E8, E9]
+   - Why: The config change reduced the pool size, leading to a larger number of concurrent connections.
+   - Why: With fewer connections available, the pool exhausted more quickly, causing waiting.
+   - Why: Waiting for a free connection increased p95 latency.
 
 ## Ruled out
-- The increase in p95 latency was due to a sudden spike in user traffic.: The request volume did not change significantly, contradicting this hypothesis. [E3]
-- The increase in p95 latency was caused by a new dependency issue.: There is no evidence of a new external service failure or slowdown. []
+- The increase in error rate was due to the config change.: The error rate increased after the change, but the config change happened before the error rate increase. [E4, E5]
+- The increase in p95 latency was due to a spike in user activity.: The error rate increased after the change, but the error rate spike happened after the p95 latency increase. [E4, E5]
+- The increase in p95 latency was due to a network issue.: There were no network-related logs or alerts, and the issue was specific to the database connection pool. [E6, E7, E8, E9]
+- Request volume increase led to more connections being made, exacerbating the pool exhaustion.: It rests on a change that is too early, or in a different service/region, to explain a sudden change here. [E3, E4]
 
 ## Actions
-- (corrective, high) Reduce the db.pool_size back to 50 to prevent future connection pool exhaustion.
-- (preventive, medium) Monitor the connection pool closely and adjust db.pool_size as needed.
-- (preventive, medium) Review and optimize the checkout service's connection pool management.
+- (corrective, high) Reduce db.pool_size back to 50 to mitigate connection pool exhaustion.
+- (preventive, medium) Implement connection pooling optimization or increase db.pool_size if needed.
 
 ## Fact-check
-- Evidence IDs cited by the model: 6, invented (removed): 0
+- Evidence IDs cited by the model: 14, invented (removed): 0
 - Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
@@ -37,8 +36,8 @@ latency_p95_ms for service checkout went from 220.9 to 692.8 (+214%) starting 20
 - **E2** (metric, metrics:latency_p95_ms) The change is concentrated in service checkout: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.02).
 - **E3** (metric, metrics:requests) At the same time, request volume for service checkout stayed about the same (833 per 5 min before, 997 per 5 min after, +20%).
 - **E4** (metric, metrics:error_rate) At the same time, error rate for service checkout rose (0.33% before, 0.49% after, +49%).
-- **E5** (record, config_changes) Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 2 min before the change; record R009)
-- **E6** (record, alerts) p95 latency above SLO on checkout (checkout; 15 min after the change; record R011)
-- **E7** (record, logs) checkout: WARN connection pool exhausted, waiting for a free connection (checkout, eu-west; 6 min after the change; record R010)
-- **E8** (record, logs) checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 20 min after the change; record R012)
-- **E9** (record, logs) checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 21 min after the change; record R013)
+- **E5** (record, config_changes) Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 2 min before the change; record R009; fit: right time and place: a strong candidate cause)
+- **E6** (record, alerts) p95 latency above SLO on checkout (checkout; 15 min after the change; record R011; fit: after the change, so a symptom, not a cause)
+- **E7** (record, logs) checkout: WARN connection pool exhausted, waiting for a free connection (checkout, eu-west; 6 min after the change; record R010; fit: after the change, so a symptom, not a cause)
+- **E8** (record, logs) checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 20 min after the change; record R012; fit: after the change, so a symptom, not a cause)
+- **E9** (record, logs) checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 21 min after the change; record R013; fit: after the change, so a symptom, not a cause)

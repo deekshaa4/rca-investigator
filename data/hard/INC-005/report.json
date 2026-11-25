@@ -19,45 +19,57 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "New deployment of catalog v4.20 to us-east caused the error rate to increase.",
+      "description": "New deployment of catalog v4.20 to us-east caused the error rate to rise in eu-west.",
       "category": "deployment",
       "confidence": 0.3,
       "why_chain": [
-        "Deployed catalog v4.20 to us-east (record R014) before the error rate spike.",
-        "The error rate for service checkout in region eu-west increased from 0.53% to 1.14% (evidence E1).",
-        "The error rate increase is concentrated in service checkout in region eu-west (evidence E2).",
-        "The request volume for service checkout in region eu-west stayed about the same (evidence E3).",
-        "The p95 latency for service checkout in region eu-west stayed about the same (evidence E4)."
+        "Deployed catalog v4.20 to us-east (record R014) caused the error rate to rise in eu-west (record E1).",
+        "The error rate in eu-west increased from 0.53% to 1.14% (record E1).",
+        "The error rate in eu-west was the only segment that changed (record E2).",
+        "evidence_ids"
       ],
       "evidence_ids": [
         "E1",
         "E2",
+        "E5"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The increase in error rate is not due to a change in request volume or latency.",
+      "category": "unknown",
+      "confidence": 0.3,
+      "why_chain": [
+        "The error rate in eu-west increased from 0.53% to 1.14% (record E1).",
+        "The request volume in eu-west stayed about the same (record E3).",
+        "The p95 latency in eu-west stayed about the same (record E4).",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E1",
         "E3",
-        "E4",
-        "E6",
-        "E7",
-        "E8"
+        "E4"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The error rate increase is due to a typo on the help page.",
-      "reason": "The error rate increase is not explained by the typo (evidence E6).",
+      "hypothesis": "The typo on the help page caused the error rate to rise.",
+      "reason": "Customer reports a typo on the help page (record R013) is not related to the error rate increase in eu-west (record E1).",
       "evidence_ids": [
         "E6"
       ]
     },
     {
-      "hypothesis": "The error rate increase is due to a customer asking how to download an invoice.",
-      "reason": "The error rate increase is not explained by the customer asking how to download an invoice (evidence E8).",
+      "hypothesis": "The customer asking how to download an invoice caused the error rate to rise.",
+      "reason": "Customer asks how to download an invoice (record R011) is not related to the error rate increase in eu-west (record E1).",
       "evidence_ids": [
         "E8"
       ]
     },
     {
-      "hypothesis": "The error rate increase is due to a routine release of checkout v3.20 to ap-south.",
-      "reason": "The error rate increase is not explained by the routine release (evidence E7).",
+      "hypothesis": "The routine release of checkout v3.20 to ap-south caused the error rate to rise in eu-west.",
+      "reason": "Routine release of checkout v3.20 to ap-south (record R012) is not related to the error rate increase in eu-west (record E1).",
       "evidence_ids": [
         "E7"
       ]
@@ -96,28 +108,28 @@
       "id": "E5",
       "kind": "record",
       "source": "deploys",
-      "summary": "Deployed catalog v4.20 to us-east (catalog, us-east; 1 min before the change; record R014)",
+      "summary": "Deployed catalog v4.20 to us-east (catalog, us-east; 1 min before the change; record R014; fit: different service/region, so unlikely to be the cause)",
       "timestamp": "2026-03-20T09:33:42Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "tickets",
-      "summary": "Customer reports a typo on the help page. (catalog, us-east; 91 min before the change; record R013)",
+      "summary": "Customer reports a typo on the help page. (catalog, us-east; 91 min before the change; record R013; fit: different service/region, so unlikely to be the cause)",
       "timestamp": "2026-03-20T08:03:55Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "deploys",
-      "summary": "Deployed checkout v3.20 to ap-south (routine release) (checkout, ap-south; 278 min before the change; record R012)",
+      "summary": "Deployed checkout v3.20 to ap-south (routine release) (checkout, ap-south; 278 min before the change; record R012; fit: different service/region, so unlikely to be the cause)",
       "timestamp": "2026-03-20T04:57:15Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "tickets",
-      "summary": "Customer asks how to download an invoice. (auth, us-east; 340 min before the change; record R011)",
+      "summary": "Customer asks how to download an invoice. (auth, us-east; 340 min before the change; record R011; fit: different service/region, so unlikely to be the cause)",
       "timestamp": "2026-03-20T03:55:15Z"
     }
   ],
@@ -125,7 +137,7 @@
     "verdict": "insufficient",
     "score": 0.4,
     "reasons": [
-      "\u2717 The closest change event is 91 min before the change, too far to be convincing.",
+      "\u2713 A change event (deploys) lines up in time (1 min before the change).",
       "\u2717 It concerns a different service/region than the one that changed.",
       "\u2717 No logs or alerts from the affected segment confirm the problem.",
       "\u2713 Request volume stayed steady, ruling out a traffic spike.",
@@ -133,7 +145,6 @@
       "\u2713 The main factor rests on this event."
     ],
     "missing_data": [
-      "Change records from the hour before the change",
       "Change records for the affected service/region",
       "Error logs or traces from the affected segment after the change"
     ]
@@ -148,15 +159,15 @@
       ]
     },
     {
-      "action": "Monitor the error rate for service checkout in region eu-west closely and take corrective action if the error rate increases again.",
+      "action": "Monitor the error rate in eu-west for the next 24 hours and take further action if the error rate continues to rise.",
       "type": "preventive",
-      "priority": "high",
+      "priority": "medium",
       "addresses_factors": [
         1
       ]
     },
     {
-      "action": "Review and test the new catalog v4.20 thoroughly before deploying to other regions.",
+      "action": "Review the deployment process for catalog v4.20 to ensure it does not cause similar issues in the future.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
@@ -166,9 +177,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 11,
-    "ids_invented": 1,
+    "ids_cited": 9,
+    "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

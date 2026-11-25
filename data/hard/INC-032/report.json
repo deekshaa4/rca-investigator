@@ -18,14 +18,13 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The increase in p95 latency is due to a reduction in the search db.pool_size, leading to connection pool exhaustion.",
+      "description": "Config change increased the pool size, leading to connection exhaustion.",
       "category": "config_change",
       "confidence": 0.9,
       "why_chain": [
-        "The db.pool_size was reduced from 50 to 5, causing the connection pool to be exhausted more frequently.",
-        "This exhaustion leads to waiting for a free connection, which is recorded in logs.",
-        "The waiting for a free connection results in a WARN message, which is recorded in logs.",
-        "The WARN message is escalated to an alert, indicating the p95 latency exceeded the service level objective (SLO)."
+        "Config change increased search db.pool_size from 50 to 5.",
+        "Connection pool size reduction led to exhaustion during high request volume.",
+        "High request volume caused the connection pool to exhaust, resulting in latency increase."
       ],
       "evidence_ids": [
         "E5",
@@ -34,39 +33,31 @@
         "E8",
         "E9"
       ]
-    },
-    {
-      "rank": 2,
-      "description": "The increase in p95 latency is also due to the increase in request volume, which put more strain on the system.",
-      "category": "traffic",
-      "confidence": 0.7,
-      "why_chain": [
-        "The request volume increased by 9% after the change, putting more pressure on the system.",
-        "The increased request volume led to more frequent connection pool exhaustion.",
-        "The connection pool exhaustion resulted in more WARN messages in logs.",
-        "The WARN messages were escalated to alerts, indicating the p95 latency exceeded the SLO."
-      ],
-      "evidence_ids": [
-        "E2",
-        "E3"
-      ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in p95 latency is due to a change in the service architecture.",
-      "reason": "No evidence supports a change in the service architecture, only a change in configuration.",
+      "hypothesis": "External dependency failure caused the latency increase.",
+      "reason": "No evidence of external service failure or slowdown.",
       "evidence_ids": []
     },
     {
-      "hypothesis": "The increase in p95 latency is due to a change in the external database.",
-      "reason": "No evidence supports a change in the external database, only a change in the internal database pool size.",
+      "hypothesis": "Infrastructure issue caused the latency increase.",
+      "reason": "No evidence of network or server issues.",
       "evidence_ids": []
     },
     {
-      "hypothesis": "The increase in p95 latency is due to a change in the network configuration.",
-      "reason": "No evidence supports a change in the network configuration, only a change in the internal database pool size.",
+      "hypothesis": "Data quality issues caused the latency increase.",
+      "reason": "No evidence of bad input data.",
       "evidence_ids": []
+    },
+    {
+      "hypothesis": "Increased request volume caused the connection pool to exhaust.",
+      "reason": "It rests on a change that is too early, or in a different service/region, to explain a sudden change here.",
+      "evidence_ids": [
+        "E3",
+        "E4"
+      ]
     }
   ],
   "evidence": [
@@ -102,35 +93,35 @@
       "id": "E5",
       "kind": "record",
       "source": "config_changes",
-      "summary": "Changed search db.pool_size from 50 to 5 (all regions) (search; 2 min before the change; record R011)",
+      "summary": "Changed search db.pool_size from 50 to 5 (all regions) (search; 2 min before the change; record R011; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-05T03:13:04Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "logs",
-      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, eu-west; 3 min after the change; record R012)",
+      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, eu-west; 3 min after the change; record R012; fit: describes a symptom, not a change)",
       "timestamp": "2026-03-05T03:17:46Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "alerts",
-      "summary": "p95 latency above SLO on search (search; 15 min after the change; record R013)",
+      "summary": "p95 latency above SLO on search (search; 15 min after the change; record R013; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-05T03:30:00Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "logs",
-      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, ap-south; 20 min after the change; record R014)",
+      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, ap-south; 20 min after the change; record R014; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-05T03:34:59Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, us-east; 26 min after the change; record R015)",
+      "summary": "search: WARN connection pool exhausted, waiting for a free connection (search, us-east; 26 min after the change; record R015; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-05T03:41:16Z"
     }
   ],
@@ -149,25 +140,9 @@
   },
   "actions": [
     {
-      "action": "Increase the db.pool_size back to 50 to prevent connection pool exhaustion.",
+      "action": "Roll back the config change to restore the original pool size of 50.",
       "type": "corrective",
       "priority": "high",
-      "addresses_factors": [
-        1
-      ]
-    },
-    {
-      "action": "Monitor request volume and adjust capacity if it exceeds the current limits.",
-      "type": "preventive",
-      "priority": "medium",
-      "addresses_factors": [
-        2
-      ]
-    },
-    {
-      "action": "Implement a retry mechanism for connection pool exhaustion to reduce the impact on latency.",
-      "type": "preventive",
-      "priority": "medium",
       "addresses_factors": [
         1
       ]
@@ -178,6 +153,8 @@
     "ids_cited": 7,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

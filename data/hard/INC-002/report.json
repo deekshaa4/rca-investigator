@@ -18,34 +18,16 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The increase in p95 latency is due to a reduction in the database pool size, leading to connection exhaustion.",
+      "description": "Config change to reduce db.pool_size from 50 to 5, causing connection pool exhaustion.",
       "category": "config_change",
       "confidence": 0.9,
       "why_chain": [
-        "The config_change (E5) reduced the db.pool_size from 50 to 5.",
-        "This reduction in pool size caused the connection pool to become exhausted more quickly.",
-        "The increased latency and error rate (E2, E4, E6, E7, E8, E9) are symptoms of the connection pool exhaustion."
+        "The config change reduced the connection pool size, leading to exhaustion.",
+        "With fewer connections available, the pool could not handle the increased request volume.",
+        "This resulted in the connection pool exhaustion warnings and increased latency."
       ],
       "evidence_ids": [
         "E5",
-        "E6",
-        "E7",
-        "E8",
-        "E9"
-      ]
-    },
-    {
-      "rank": 2,
-      "description": "The increase in p95 latency is also due to the increase in request volume, which put more pressure on the system.",
-      "category": "traffic",
-      "confidence": 0.8,
-      "why_chain": [
-        "The request volume for service checkout increased by 24% (E3).",
-        "The increased request volume put more pressure on the system, exacerbating the connection pool exhaustion.",
-        "The connection pool exhaustion (E6, E7, E8, E9) caused the p95 latency to rise."
-      ],
-      "evidence_ids": [
-        "E3",
         "E6",
         "E7",
         "E8",
@@ -55,40 +37,26 @@
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in p95 latency is due to a change in the service configuration.",
-      "reason": "The config_change (E5) was the only change made to the system before the p95 latency increase, and the increase in p95 latency is not a direct result of the config_change.",
-      "evidence_ids": [
-        "E5"
-      ]
+      "hypothesis": "External service failure or slowdown caused the issue.",
+      "reason": "No evidence of external service issues or slowdowns is provided.",
+      "evidence_ids": []
     },
     {
-      "hypothesis": "The increase in p95 latency is due to a change in the service's external dependencies.",
-      "reason": "There is no evidence that the service's external dependencies changed or failed around the time of the p95 latency increase.",
-      "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4",
-        "E5",
-        "E6",
-        "E7",
-        "E8",
-        "E9"
-      ]
+      "hypothesis": "Data quality issues caused the latency increase.",
+      "reason": "No evidence of bad or unusual input data is provided.",
+      "evidence_ids": []
     },
     {
-      "hypothesis": "The increase in p95 latency is due to a change in the service's infrastructure.",
-      "reason": "There is no evidence that the service's infrastructure changed or failed around the time of the p95 latency increase.",
+      "hypothesis": "Infrastructure issues caused the latency increase.",
+      "reason": "No evidence of server, network, or capacity issues is provided.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "Increased request volume for service checkout.",
+      "reason": "It rests on a change that is too early, or in a different service/region, to explain a sudden change here.",
       "evidence_ids": [
-        "E1",
         "E2",
-        "E3",
-        "E4",
-        "E5",
-        "E6",
-        "E7",
-        "E8",
-        "E9"
+        "E3"
       ]
     }
   ],
@@ -125,35 +93,35 @@
       "id": "E5",
       "kind": "record",
       "source": "config_changes",
-      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 1 min before the change; record R014)",
+      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 1 min before the change; record R014; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-02T10:48:43Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 2 min after the change; record R015)",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 2 min after the change; record R015; fit: describes a symptom, not a change)",
       "timestamp": "2026-03-02T10:52:04Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "alerts",
-      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R018)",
+      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R018; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-02T11:05:00Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, eu-west; 8 min after the change; record R016)",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, eu-west; 8 min after the change; record R016; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-02T10:58:20Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 14 min after the change; record R017)",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 14 min after the change; record R017; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-02T11:04:21Z"
     }
   ],
@@ -172,7 +140,7 @@
   },
   "actions": [
     {
-      "action": "Increase the db.pool_size back to 50 to prevent connection pool exhaustion.",
+      "action": "Roll back the config change to db.pool_size to 50 and monitor the system.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -180,19 +148,29 @@
       ]
     },
     {
-      "action": "Monitor request volume and adjust capacity if necessary to prevent connection pool exhaustion.",
+      "action": "Implement a connection pool monitoring and alerting system to detect exhaustion early.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Optimize the connection pool size based on historical request patterns.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
-        2
+        1
       ]
     }
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 29,
+    "ids_cited": 7,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

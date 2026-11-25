@@ -237,6 +237,19 @@
           "description": "The main factor came from the engines, not the model",
           "title": "Engine Fallback",
           "type": "boolean"
+        },
+        "engine_override": {
+          "default": false,
+          "description": "A model factor resting on a change that is too early or in another place was replaced by the engines' candidate",
+          "title": "Engine Override",
+          "type": "boolean"
+        },
+        "rivals_added": {
+          "default": 0,
+          "description": "Competing changes added so that every equally good candidate is named",
+          "minimum": 0,
+          "title": "Rivals Added",
+          "type": "integer"
         }
       },
       "required": [

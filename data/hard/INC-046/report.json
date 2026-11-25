@@ -23,46 +23,53 @@
       "category": "deployment",
       "confidence": 0.9,
       "why_chain": [
-        "Checkout v3.17 deployment caused the error rate to spike.",
-        "NullPointerException in RequestHandler.serialize was introduced with v3.17.",
-        "NullPointerException triggered by the new version caused the error rate to rise."
+        "Checkout v3.17 was deployed to ap-south 2 minutes before the error rate spike.",
+        "NullPointerException in RequestHandler.serialize was observed in the logs 10 minutes after the deployment.",
+        "The error rate increased from 0.53% to 3.54% after the deployment.",
+        "evidence_ids"
       ],
       "evidence_ids": [
         "E5",
+        "E6",
         "E7",
         "E8",
         "E9"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "The error rate spike coincided with a deployment, suggesting a correlation.",
+      "category": "unknown",
+      "confidence": 0.8,
+      "why_chain": [
+        "The error rate spike occurred at the same time as a deployment (checkout v3.17).",
+        "No other deployment was noted in the same region at the same time.",
+        "The error rate spike was not preceded by any other known changes or anomalies.",
+        "evidence_ids"
+      ],
+      "evidence_ids": [
+        "E5"
       ]
     }
   ],
   "ruled_out": [
     {
       "hypothesis": "The increase in error rate was due to a sudden increase in user traffic.",
-      "reason": "Request volume and p95 latency remained stable before and after the change.",
+      "reason": "The request volume and p95 latency did not change significantly.",
       "evidence_ids": [
         "E3",
         "E4"
       ]
     },
     {
-      "hypothesis": "The increase in error rate was caused by a configuration change.",
-      "reason": "No evidence supports a configuration change.",
-      "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4"
-      ]
+      "hypothesis": "The increase in error rate was due to a configuration change.",
+      "reason": "No configuration change was noted in the evidence.",
+      "evidence_ids": []
     },
     {
       "hypothesis": "The increase in error rate was due to a dependency issue with an external service.",
-      "reason": "No evidence supports a dependency issue.",
-      "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4"
-      ]
+      "reason": "No external service issues were noted in the evidence.",
+      "evidence_ids": []
     }
   ],
   "evidence": [
@@ -98,35 +105,35 @@
       "id": "E5",
       "kind": "record",
       "source": "deploys",
-      "summary": "Deployed checkout v3.17 to ap-south (checkout, ap-south; 2 min before the change; record R010)",
+      "summary": "Deployed checkout v3.17 to ap-south (checkout, ap-south; 2 min before the change; record R010; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-26T06:08:04Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "alerts",
-      "summary": "High error rate on checkout in ap-south (checkout, ap-south; 10 min after the change; record R011)",
+      "summary": "High error rate on checkout in ap-south (checkout, ap-south; 10 min after the change; record R011; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-26T06:20:00Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: ERROR NullPointerException in RequestHandler.serialize (v3.17) (checkout, ap-south; 10 min after the change; record R012)",
+      "summary": "checkout: ERROR NullPointerException in RequestHandler.serialize (v3.17) (checkout, ap-south; 10 min after the change; record R012; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-26T06:20:29Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: ERROR NullPointerException in RequestHandler.serialize (v3.17) (checkout, ap-south; 28 min after the change; record R013)",
+      "summary": "checkout: ERROR NullPointerException in RequestHandler.serialize (v3.17) (checkout, ap-south; 28 min after the change; record R013; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-26T06:37:37Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: ERROR NullPointerException in RequestHandler.serialize (v3.17) (checkout, ap-south; 36 min after the change; record R014)",
+      "summary": "checkout: ERROR NullPointerException in RequestHandler.serialize (v3.17) (checkout, ap-south; 36 min after the change; record R014; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-26T06:46:22Z"
     }
   ],
@@ -145,7 +152,7 @@
   },
   "actions": [
     {
-      "action": "Rollback the deployment of checkout v3.17 to revert the changes.",
+      "action": "Rollback the checkout v3.17 deployment to ap-south.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -171,9 +178,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 14,
+    "ids_cited": 8,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

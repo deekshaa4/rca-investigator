@@ -13,31 +13,32 @@ error_rate for service auth, region eu-west went from 0.002781 to 0.006804 (+145
 - Data that would help: Change records from the hour before the change; Change records for the affected service/region; Error logs or traces from the affected segment after the change
 
 ## Possible leads (not confirmed)
-1. **New feature request may have introduced a regression.** (unknown, confidence 30%) [E5]
-   - Why: Feature request R013 was submitted 287 minutes before the error rate spike.
-   - Why: The feature request may have introduced a regression or unintended side effect.
-   - Why: The error rate spike in service auth in region eu-west coincides with the feature request submission.
-2. **Deployment of a new release may have caused the error rate spike.** (deployment, confidence 30%) [E1, E2]
-   - Why: A new release was deployed at the same time as the error rate spike.
-   - Why: The error rate spike in service auth in region eu-west coincides with the deployment.
-   - Why: The error rate spike is concentrated in service auth in region eu-west.
-3. **Configuration change may have affected the service.** (config_change, confidence 30%) [E1, E2, E3, E4]
-   - Why: The error rate spike in service auth in region eu-west coincides with the deployment.
-   - Why: The error rate spike is concentrated in service auth in region eu-west.
-   - Why: The request volume and latency did not change significantly.
+1. **New feature request introduced unexpected load.** (unknown, confidence 30%) [E5]
+   - Why: Feature request R013 was made 287 minutes before the error rate spike.
+   - Why: The feature request likely caused a temporary increase in load on the system.
+   - Why: The error rate increased without a corresponding increase in request volume or latency.
+2. **Deployment of a new feature introduced a bug.** (deployment, confidence 30%) [E1, E2, E5]
+   - Why: The error rate spike coincided with a deployment of a new feature.
+   - Why: The feature deployment was made 287 minutes before the error rate spike.
+   - Why: The error rate increased without a corresponding increase in request volume or latency.
+3. **Increased load due to a new feature.** (traffic, confidence 30%) [E1, E2, E5]
+   - Why: The error rate spike coincided with a deployment of a new feature.
+   - Why: The feature deployment was made 287 minutes before the error rate spike.
+   - Why: The error rate increased without a corresponding increase in request volume or latency.
 
 ## Ruled out
-- The increase in error rate was due to a sudden increase in traffic.: The request volume did not change significantly. [E3]
-- The increase in error rate was due to a configuration change elsewhere in the system.: The error rate spike is concentrated in service auth in region eu-west. [E1, E2]
-- The increase in error rate was due to a dependency issue with an external service.: There is no evidence of a dependency issue. [E1, E2, E3, E4]
+- Configuration change caused the error rate spike.: No configuration changes were made around the time of the error rate spike. [E1, E2, E3, E4]
+- Dependency issue with an external service caused the error rate spike.: No external services were known to be affected around the time of the error rate spike. [E1, E2, E3, E4]
+- Infrastructure issue caused the error rate spike.: No infrastructure issues were reported around the time of the error rate spike. [E1, E2, E3, E4]
+- Data issue caused the error rate spike.: No unusual data inputs were reported around the time of the error rate spike. [E1, E2, E3, E4]
 
 ## Actions
-- (corrective, high) Review and test the new release for the service auth in region eu-west.
-- (preventive, high) Monitor the system for any further errors and investigate if the error rate continues to increase.
-- (preventive, medium) Review the feature request R013 and its implementation for any unintended side effects.
+- (corrective, high) Roll back the deployment of the new feature.
+- (preventive, medium) Monitor for similar spikes in error rates in the future.
+- (preventive, medium) Review and test the new feature thoroughly before deployment.
 
 ## Fact-check
-- Evidence IDs cited by the model: 14, invented (removed): 0
+- Evidence IDs cited by the model: 23, invented (removed): 0
 - Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
@@ -45,4 +46,4 @@ error_rate for service auth, region eu-west went from 0.002781 to 0.006804 (+145
 - **E2** (metric, metrics:error_rate) The change is concentrated in service auth in region eu-west: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.26).
 - **E3** (metric, metrics:requests) At the same time, request volume for service auth in region eu-west stayed about the same (391 per 5 min before, 439 per 5 min after, +12%).
 - **E4** (metric, metrics:latency_p95_ms) At the same time, p95 latency for service auth in region eu-west stayed about the same (90 ms before, 91 ms after, +0%).
-- **E5** (record, tickets) Feature request: dark mode for the account page. (catalog, eu-west; 287 min before the change; record R013)
+- **E5** (record, tickets) Feature request: dark mode for the account page. (catalog, eu-west; 287 min before the change; record R013; fit: different service/region, so unlikely to be the cause)

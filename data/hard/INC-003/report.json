@@ -22,27 +22,28 @@
       "category": "traffic",
       "confidence": 0.9,
       "why_chain": [
-        "The flash sale campaign triggered a spike in user activity in ap-south.",
-        "This led to a higher request volume, which increased the load on the system.",
-        "The increased load caused the p95 latency to rise as the system struggled to handle the traffic."
+        "The flash sale campaign went live at 10:25 UTC, 191 minutes before the change.",
+        "This led to a 276% increase in request volume in ap-south.",
+        "The increased request volume overwhelmed the system, causing a rise in error rate and latency."
       ],
       "evidence_ids": [
         "E5",
-        "E6"
+        "E2",
+        "E3"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The deployment of search v1.26 to eu-west caused the change in ap-south.",
-      "reason": "The deployment to eu-west occurred 4 minutes before the change point, and there is no evidence linking it to the ap-south issue.",
+      "hypothesis": "The deployment of search v1.26 to eu-west was the cause.",
+      "reason": "The deployment was 4 minutes before the change, in a different region.",
       "evidence_ids": [
         "E9"
       ]
     },
     {
-      "hypothesis": "The typo on the help page caused the change in ap-south.",
-      "reason": "The typo occurred 244 minutes before the change point, and there is no evidence linking it to the ap-south issue.",
+      "hypothesis": "The typo on the help page caused the change.",
+      "reason": "The typo was reported 244 minutes before the change, too early to explain the sudden jump.",
       "evidence_ids": [
         "E8"
       ]
@@ -81,35 +82,35 @@
       "id": "E5",
       "kind": "record",
       "source": "tickets",
-      "summary": "Marketing: flash sale campaign goes live in ap-south at 10:25 UTC (ap-south; 191 min before the change; record R014)",
+      "summary": "Marketing: flash sale campaign goes live in ap-south at 10:25 UTC (ap-south; 191 min before the change; record R014; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-21T07:13:56Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "alerts",
-      "summary": "Request volume 3x normal in ap-south (ap-south; 12 min after the change; record R017)",
+      "summary": "Request volume 3x normal in ap-south (ap-south; 12 min after the change; record R017; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-21T10:37:00Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "logs",
-      "summary": "autoscaler: scaling out, 4 new instances requested (ap-south; 20 min after the change; record R018)",
+      "summary": "autoscaler: scaling out, 4 new instances requested (ap-south; 20 min after the change; record R018; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-21T10:45:00Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "tickets",
-      "summary": "Customer reports a typo on the help page. (auth, ap-south; 244 min before the change; record R012)",
+      "summary": "Customer reports a typo on the help page. (auth, ap-south; 244 min before the change; record R012; fit: hours before the change, too early to explain a sudden jump)",
       "timestamp": "2026-03-21T06:21:28Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "deploys",
-      "summary": "Deployed search v1.26 to eu-west (search, eu-west; 4 min before the change; record R016)",
+      "summary": "Deployed search v1.26 to eu-west (search, eu-west; 4 min before the change; record R016; fit: different service/region, so unlikely to be the cause)",
       "timestamp": "2026-03-21T10:20:39Z"
     }
   ],
@@ -128,7 +129,15 @@
   },
   "actions": [
     {
-      "action": "Review and optimize the autoscaler configuration to prevent unnecessary scaling out.",
+      "action": "Implement a more aggressive autoscaler to handle sudden spikes in request volume.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor request volume and error rate closely during marketing campaigns to identify and address sudden spikes.",
       "type": "preventive",
       "priority": "high",
       "addresses_factors": [
@@ -136,9 +145,9 @@
       ]
     },
     {
-      "action": "Implement traffic shaping or rate limiting to manage user traffic during campaigns.",
+      "action": "Optimize the system to better handle the expected load during marketing campaigns.",
       "type": "preventive",
-      "priority": "high",
+      "priority": "medium",
       "addresses_factors": [
         1
       ]
@@ -146,9 +155,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 6,
+    "ids_cited": 8,
     "ids_invented": 0,
     "factors_dropped": 1,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

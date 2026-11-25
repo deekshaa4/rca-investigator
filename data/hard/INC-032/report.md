@@ -12,26 +12,19 @@ latency_p95_ms for service search went from 140.2 to 290.1 (+107%) starting 2026
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **The increase in p95 latency is due to a reduction in the search db.pool_size, leading to connection pool exhaustion.** (config_change, confidence 90%) [E5, E6, E7, E8, E9]
-   - Why: The db.pool_size was reduced from 50 to 5, causing the connection pool to be exhausted more frequently.
-   - Why: This exhaustion leads to waiting for a free connection, which is recorded in logs.
-   - Why: The waiting for a free connection results in a WARN message, which is recorded in logs.
-   - Why: The WARN message is escalated to an alert, indicating the p95 latency exceeded the service level objective (SLO).
-2. **The increase in p95 latency is also due to the increase in request volume, which put more strain on the system.** (traffic, confidence 70%) [E2, E3]
-   - Why: The request volume increased by 9% after the change, putting more pressure on the system.
-   - Why: The increased request volume led to more frequent connection pool exhaustion.
-   - Why: The connection pool exhaustion resulted in more WARN messages in logs.
-   - Why: The WARN messages were escalated to alerts, indicating the p95 latency exceeded the SLO.
+1. **Config change increased the pool size, leading to connection exhaustion.** (config_change, confidence 90%) [E5, E6, E7, E8, E9]
+   - Why: Config change increased search db.pool_size from 50 to 5.
+   - Why: Connection pool size reduction led to exhaustion during high request volume.
+   - Why: High request volume caused the connection pool to exhaust, resulting in latency increase.
 
 ## Ruled out
-- The increase in p95 latency is due to a change in the service architecture.: No evidence supports a change in the service architecture, only a change in configuration. []
-- The increase in p95 latency is due to a change in the external database.: No evidence supports a change in the external database, only a change in the internal database pool size. []
-- The increase in p95 latency is due to a change in the network configuration.: No evidence supports a change in the network configuration, only a change in the internal database pool size. []
+- External dependency failure caused the latency increase.: No evidence of external service failure or slowdown. []
+- Infrastructure issue caused the latency increase.: No evidence of network or server issues. []
+- Data quality issues caused the latency increase.: No evidence of bad input data. []
+- Increased request volume caused the connection pool to exhaust.: It rests on a change that is too early, or in a different service/region, to explain a sudden change here. [E3, E4]
 
 ## Actions
-- (corrective, high) Increase the db.pool_size back to 50 to prevent connection pool exhaustion.
-- (preventive, medium) Monitor request volume and adjust capacity if it exceeds the current limits.
-- (preventive, medium) Implement a retry mechanism for connection pool exhaustion to reduce the impact on latency.
+- (corrective, high) Roll back the config change to restore the original pool size of 50.
 
 ## Fact-check
 - Evidence IDs cited by the model: 7, invented (removed): 0
@@ -42,8 +35,8 @@ latency_p95_ms for service search went from 140.2 to 290.1 (+107%) starting 2026
 - **E2** (metric, metrics:latency_p95_ms) The change is concentrated in service search: 3 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.02).
 - **E3** (metric, metrics:requests) At the same time, request volume for service search stayed about the same (2514 per 5 min before, 2741 per 5 min after, +9%).
 - **E4** (metric, metrics:error_rate) At the same time, error rate for service search rose (0.40% before, 0.62% after, +53%).
-- **E5** (record, config_changes) Changed search db.pool_size from 50 to 5 (all regions) (search; 2 min before the change; record R011)
-- **E6** (record, logs) search: WARN connection pool exhausted, waiting for a free connection (search, eu-west; 3 min after the change; record R012)
-- **E7** (record, alerts) p95 latency above SLO on search (search; 15 min after the change; record R013)
-- **E8** (record, logs) search: WARN connection pool exhausted, waiting for a free connection (search, ap-south; 20 min after the change; record R014)
-- **E9** (record, logs) search: WARN connection pool exhausted, waiting for a free connection (search, us-east; 26 min after the change; record R015)
+- **E5** (record, config_changes) Changed search db.pool_size from 50 to 5 (all regions) (search; 2 min before the change; record R011; fit: right time and place: a strong candidate cause)
+- **E6** (record, logs) search: WARN connection pool exhausted, waiting for a free connection (search, eu-west; 3 min after the change; record R012; fit: describes a symptom, not a change)
+- **E7** (record, alerts) p95 latency above SLO on search (search; 15 min after the change; record R013; fit: after the change, so a symptom, not a cause)
+- **E8** (record, logs) search: WARN connection pool exhausted, waiting for a free connection (search, ap-south; 20 min after the change; record R014; fit: after the change, so a symptom, not a cause)
+- **E9** (record, logs) search: WARN connection pool exhausted, waiting for a free connection (search, us-east; 26 min after the change; record R015; fit: after the change, so a symptom, not a cause)

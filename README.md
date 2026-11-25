@@ -109,9 +109,10 @@ Current results on the 16 explainable incidents: **true cause ranked first in 16
 1. Python gathers the facts (numerical and text engines) and numbers them as evidence `E1`, `E2`, ...
 2. The model reasons only over that evidence: contributing factors with a "5 Whys" chain, ruled-out alternatives, corrective and preventive actions. Its reply is constrained to a JSON schema.
 3. Guardrails check the reply: invented evidence IDs are removed, factors without evidence are dropped, factors resting only on records *after* the change (symptoms) are dropped, and the report must pass schema validation.
-4. Every report records what the guardrails removed (a *Fact-check* section): how many evidence IDs the model cited, how many it invented, and how many factors were dropped.
-5. If the model gives no usable factor, the engines' best candidate is used instead, so a report never depends on the model alone.
-6. When the evidence is insufficient, factors are shown as **possible leads (not confirmed)** with low confidence, together with the data that would settle the question.
+4. Each record in the evidence carries a *fit* note (right time and place, too early, different place, or a symptom). Factors resting on a change that doesn't fit are ruled out in favour of the engines' candidate, and when two changes fit equally well both are named.
+5. Every report records what the guardrails removed (a *Fact-check* section): how many evidence IDs the model cited, how many it invented, and how many factors were dropped.
+6. If the model gives no usable factor, the engines' best candidate is used instead, so a report never depends on the model alone.
+7. When the evidence is insufficient, factors are shown as **possible leads (not confirmed)** with low confidence, together with the data that would settle the question.
 
 Example reports from `qwen2.5:3b`: [bad deploy](examples/reports/bad_deploy.md), [traffic spike](examples/reports/traffic_spike.md), [no clear cause](examples/reports/no_clear_cause.md).
 
@@ -132,28 +133,33 @@ Score ≥ 0.7 is **sufficient**, ≥ 0.45 **partial**, otherwise **insufficient*
 
 ## Results
 
-`rca batch` with `qwen2.5:3b` on a MacBook Air (M1, 8 GB), 30 to 60 seconds per incident. `rca evaluate` prints these tables from the saved reports.
+`rca batch` with `qwen2.5:3b` on a MacBook Air (M1, 8 GB), about 35 seconds per incident. `rca evaluate` prints these tables from the saved reports.
 
 | Measure | 20 standard incidents | 50 hard incidents |
 |---|---|---|
-| Sufficiency verdict correct | 20/20 | 48/50 |
+| Sufficiency verdict correct | 20/20 | 50/50 |
 | Affected service/region correct | 20/20 | 50/50 |
-| Top cause category correct | 16/16 | 75% |
-| Top cause cites the true cause record | 15/16 | 81% |
-| Evidence IDs invented by the model (removed by the guardrails) | - | 1 of 599 |
-| Reports where a factor was dropped by the guardrails | - | 15 of 49 |
+| Top cause category correct | 16/16 | 26/32 |
+| Top cause cites the true cause record | 15/16 | 26/32 |
+| True cause record named by some factor | 16/16 | 32/32 |
+| Evidence IDs invented by the model (removed by the guardrails) | - | 0 of 569 |
 
 Hard set by twist (cause accuracy counts only incidents that have a recorded cause):
 
-| Twist | Incidents | Verdict | Category | Cause cited |
+| Twist | Incidents | Verdict | Top cause right | Cause named |
 |---|---|---|---|---|
 | none | 10 | 10/10 | 8/8 | 8/8 |
 | red herring in another segment | 12 | 12/12 | 8/8 | 8/8 |
-| red herring hours too early | 12 | 11/12 | 6/8 | 7/8 |
+| red herring hours too early | 12 | 12/12 | 8/8 | 8/8 |
 | cause missing from the records | 8 | 8/8 | - | - |
-| two competing changes | 8 | 7/8 | 2/8 | 3/8 |
+| two competing changes | 8 | 8/8 | 2/8 | 8/8 |
 
-The rules-based verdict holds up well, and the guardrails catch the rare invented citation. The small model's weak spot is choosing between changes: it is sometimes misled by an early deploy, and with two competing changes it often picks the other one. In those cases the data cannot separate the two, so the verdict is correctly *partial*. Improving the model's choice of cause is the next step. (One incident's model call timed out on the re-run, so its fact-check counts are missing.)
+Two changes made the difference on the hard set (before: verdict 48/50, top cause right 81%, red herrings too early 7/8, competing changes 3/8):
+
+1. **Fit notes in the evidence.** Each record tells the model whether it fits as a cause ("right time and place", "hours before the change, too early", "different service/region", "after the change, so a symptom"). The small model follows these notes well.
+2. **Name every equally good candidate.** When two changes fit equally well, the report lists both, the verdict is *partial*, and the reader is told what would separate them. A factor resting on a change that is too early or in another place would be moved to *ruled out* and replaced by the engines' candidate; with the fit notes the model no longer needed this on the hard set.
+
+The remaining misses are all "two competing changes": the data cannot tell them apart, so which one comes first is a coin toss, and the report says so.
 
 ## Project structure
 

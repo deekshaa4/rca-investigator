@@ -82,6 +82,36 @@ def _segment_ok(hit: RecordHit) -> bool:
     return "matches the affected segment" in hit.reasons
 
 
+def is_credible(c: Candidate) -> bool:
+    """Close enough in time AND in the affected service/region to be a real candidate."""
+    return c.timing >= MIN_TIMING and _segment_ok(c.hit)
+
+
+def credible_candidates(hits: list[RecordHit], evidence: list[dict]) -> list[Candidate]:
+    cands = [c for c in _candidates(hits, evidence) if is_credible(c) and c.evidence_id]
+    return sorted(cands, key=lambda c: (c.timing, c.hit.score), reverse=True)
+
+
+def rivals_of(cand: Candidate, cands: list[Candidate]) -> list[Candidate]:
+    """Other change events in the same place that fit the timing about as well."""
+    return [c for c in cands if c.hit.record["id"] != cand.hit.record["id"]
+            and c.timing >= 0.8 * cand.timing and _segment_ok(c.hit)]
+
+
+def fit_label(hit: RecordHit) -> str:
+    """Plain-words hint for the model: does this record fit as a cause?"""
+    m = hit.minutes_from_change
+    if m > CAUSE_GRACE_MIN:
+        return "after the change, so a symptom, not a cause"
+    if hit.record["source"] not in CHANGE_SOURCES or not _could_be_cause(hit.record):
+        return "describes a symptom, not a change"
+    if not _segment_ok(hit):
+        return "different service/region, so unlikely to be the cause"
+    if _timing(hit) < MIN_TIMING:
+        return "hours before the change, too early to explain a sudden jump"
+    return "right time and place: a strong candidate cause"
+
+
 def _traffic_rose(analysis: ChangeAnalysis) -> bool:
     return any(f["source"] == "metrics:requests" and " rose " in f["summary"]
                for f in analysis.findings)
@@ -179,9 +209,7 @@ def assess(analysis: ChangeAnalysis, hits: list[RecordHit], factors: list[dict],
 
     rivals: list[Candidate] = []
     if cand is not None:
-        rivals = [c for c in _candidates(hits, evidence)
-                  if c is not cand and c.hit.record["id"] != cand.hit.record["id"]
-                  and c.timing >= 0.8 * timing and _segment_ok(c.hit)]
+        rivals = rivals_of(cand, _candidates(hits, evidence))
         check(0.10, 0.0 if rivals else 1.0, "No competing change event fits as well.",
               f"{len(rivals)} other change event(s) fit about as well.",
               "Details to tell the competing changes apart (e.g. a rollback test)")

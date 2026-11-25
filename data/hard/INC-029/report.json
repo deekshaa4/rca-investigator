@@ -22,9 +22,9 @@
       "category": "dependency",
       "confidence": 0.9,
       "why_chain": [
-        "The error rate for service auth increased sharply.",
-        "Upstream identity-db is returning HTTP 503 errors, indicating degraded performance.",
-        "The identity-db service is the upstream dependency for the auth service, leading to errors in the auth service."
+        "identity-db returns HTTP 503 to auth service (E5, E8, E9)",
+        "auth service experiences timeout errors (E6, E7, E9)",
+        "identity-db is investigating degraded performance (E8, E9)"
       ],
       "evidence_ids": [
         "E5",
@@ -32,44 +32,29 @@
         "E7",
         "E8",
         "E9"
-      ]
-    },
-    {
-      "rank": 2,
-      "description": "The auth service is experiencing higher request volume without a corresponding increase in capacity.",
-      "category": "infrastructure",
-      "confidence": 0.8,
-      "why_chain": [
-        "The error rate for service auth increased sharply.",
-        "The request volume for service auth increased by 19%.",
-        "The increased request volume is not matched by an increase in capacity, leading to higher error rates."
-      ],
-      "evidence_ids": [
-        "E3"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in error rate is due to a configuration change in the auth service.",
-      "reason": "The error rate increase is concentrated in service auth, and the change point is specific to service auth.",
+      "hypothesis": "The increase in error rate is due to a sudden increase in user traffic.",
+      "reason": "Request volume for auth service did not change significantly (E3)",
       "evidence_ids": [
-        "E2"
+        "E3"
       ]
     },
     {
-      "hypothesis": "The increase in error rate is due to a data quality issue in the auth service.",
-      "reason": "There is no evidence of unusual input data causing the error rate increase.",
+      "hypothesis": "The increase in error rate is due to a new deployment of the auth service.",
+      "reason": "No new deployment is indicated by the evidence (no deployment record found)",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "The error rate increase is due to a change in the auth service configuration.",
+      "reason": "It rests on a change that is too early, or in a different service/region, to explain a sudden change here.",
       "evidence_ids": [
         "E1",
         "E2",
-        "E3",
-        "E4",
-        "E5",
-        "E6",
-        "E7",
-        "E8",
-        "E9"
+        "E3"
       ]
     }
   ],
@@ -106,35 +91,35 @@
       "id": "E5",
       "kind": "record",
       "source": "alerts",
-      "summary": "Upstream identity-db returning HTTP 503 for auth (auth; 1 min after the change; record R016)",
+      "summary": "Upstream identity-db returning HTTP 503 for auth (auth; 1 min after the change; record R016; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-10T13:16:23Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "logs",
-      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, us-east; 12 min after the change; record R017)",
+      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, us-east; 12 min after the change; record R017; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-10T13:27:29Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "logs",
-      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, ap-south; 18 min after the change; record R018)",
+      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, ap-south; 18 min after the change; record R018; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-10T13:33:12Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "tickets",
-      "summary": "identity-db status page: investigating degraded performance (auth; 30 min after the change; record R020)",
+      "summary": "identity-db status page: investigating degraded performance (auth; 30 min after the change; record R020; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-10T13:45:00Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, eu-west; 22 min after the change; record R019)",
+      "summary": "auth: ERROR upstream identity-db timeout after 3 retries (auth, eu-west; 22 min after the change; record R019; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-10T13:36:59Z"
     }
   ],
@@ -153,35 +138,29 @@
   },
   "actions": [
     {
-      "action": "Increase the capacity of the auth service to handle the increased request volume.",
+      "action": "Investigate and fix the identity-db performance issue",
       "type": "corrective",
-      "priority": "high",
-      "addresses_factors": [
-        2
-      ]
-    },
-    {
-      "action": "Monitor the identity-db service and ensure it is performing optimally.",
-      "type": "preventive",
       "priority": "high",
       "addresses_factors": [
         1
       ]
     },
     {
-      "action": "Review and optimize the request handling logic in the auth service.",
+      "action": "Monitor identity-db performance and alert on any future degradation",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
-        2
+        1
       ]
     }
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 16,
+    "ids_cited": 9,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

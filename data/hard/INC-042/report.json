@@ -18,16 +18,69 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "Deployed checkout v3.17 to ap-south (1 min before the change, found by the engines).",
+      "description": "Deployment of a new version of the checkout service.",
       "category": "deployment",
-      "confidence": 1.0,
-      "why_chain": [],
+      "confidence": 0.9,
+      "why_chain": [
+        "Checkout v3.17 was deployed 1 minute before the change, which is right time and place.",
+        "The deployment likely introduced changes that affected the p95 latency.",
+        "The error rate and p95 latency increased shortly after the deployment, indicating the deployment was the cause."
+      ],
       "evidence_ids": [
-        "E5"
+        "E5",
+        "E1"
+      ]
+    },
+    {
+      "rank": 2,
+      "description": "Configuration change to reduce the database pool size.",
+      "category": "config_change",
+      "confidence": 0.9,
+      "why_chain": [
+        "The checkout db.pool_size was changed from 50 to 5 1 minute before the change, which is right time and place.",
+        "Reducing the pool size could have led to more connection pool exhaustion warnings.",
+        "The connection pool exhaustion warnings occurred shortly after the configuration change, suggesting it was the cause."
+      ],
+      "evidence_ids": [
+        "E6",
+        "E7"
       ]
     }
   ],
-  "ruled_out": [],
+  "ruled_out": [
+    {
+      "hypothesis": "External service failure",
+      "reason": "No evidence of connection issues or failures from other services.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "Data corruption",
+      "reason": "No evidence of bad input data or data corruption.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "Infrastructure failure",
+      "reason": "No evidence of network or server issues.",
+      "evidence_ids": []
+    },
+    {
+      "hypothesis": "Unknown cause",
+      "reason": "Deployment and configuration changes are strong candidates and are right time and place.",
+      "evidence_ids": [
+        "E5",
+        "E6"
+      ]
+    },
+    {
+      "hypothesis": "Increased request volume for checkout service.",
+      "reason": "It rests on a change that is too early, or in a different service/region, to explain a sudden change here.",
+      "evidence_ids": [
+        "E3",
+        "E4",
+        "E2"
+      ]
+    }
+  ],
   "evidence": [
     {
       "id": "E1",
@@ -61,35 +114,35 @@
       "id": "E5",
       "kind": "record",
       "source": "deploys",
-      "summary": "Deployed checkout v3.17 to ap-south (checkout, ap-south; 1 min before the change; record R015)",
+      "summary": "Deployed checkout v3.17 to ap-south (checkout, ap-south; 1 min before the change; record R015; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-13T11:48:49Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "config_changes",
-      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 1 min before the change; record R014)",
+      "summary": "Changed checkout db.pool_size from 50 to 5 (all regions) (checkout; 1 min before the change; record R014; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-13T11:48:39Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "alerts",
-      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R017)",
+      "summary": "p95 latency above SLO on checkout (checkout; 15 min after the change; record R017; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-13T12:05:00Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 8 min after the change; record R016)",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, us-east; 8 min after the change; record R016; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-13T11:58:25Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 18 min after the change; record R018)",
+      "summary": "checkout: WARN connection pool exhausted, waiting for a free connection (checkout, ap-south; 18 min after the change; record R018; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-13T12:08:13Z"
     }
   ],
@@ -109,5 +162,31 @@
       "Details to tell the competing changes apart (e.g. a rollback test)"
     ]
   },
-  "actions": []
+  "actions": [
+    {
+      "action": "Rollback the deployment of checkout v3.17",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Increase the database pool size to 50",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        2
+      ]
+    }
+  ],
+  "guardrails": {
+    "model_used": true,
+    "ids_cited": 9,
+    "ids_invented": 0,
+    "factors_dropped": 0,
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
+  }
 }

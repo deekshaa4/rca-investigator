@@ -12,24 +12,22 @@ error_rate for service catalog, region us-east went from 0.004509 to 0.02494 (+4
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **New deployment of catalog v4.7 introduced a NullPointerException.** (deployment, confidence 90%) [E5, E8, E9]
-   - Why: v4.7 deployment caused the error rate to rise.
-   - Why: NullPointerException in RequestHandler.serialize (v4.7) triggered the error.
-   - Why: The error rate increase is directly linked to the deployment of v4.7.
-2. **The deployment of v4.7 was followed by a deployment of v5.11, which may have caused the error.** (unknown, confidence 70%) [E5, E7]
-   - Why: v4.7 deployment followed by v5.11 deployment.
-   - Why: v5.11 deployment may have introduced a conflict or dependency issue.
-   - Why: The error rate increase could be a result of the v5.11 deployment.
+1. **A new deployment of catalog v4.7 caused the error rate to spike.** (deployment, confidence 90%) [E5, E8, E9]
+   - Why: v4.7 deployment introduced a new version of the RequestHandler that caused NullPointerExceptions.
+   - Why: NullPointerExceptions led to a high error rate in the catalog service.
+   - Why: The error rate increased from 0.45% to 2.49% within 21 minutes of the deployment.
+   - Why: evidence_ids
 
 ## Ruled out
-- The increase in error rate was due to a sudden increase in request volume.: Request volume stayed about the same before and after the change. [E3]
-- The increase in error rate was due to a change in latency.: p95 latency stayed about the same before and after the change. [E4]
-- The increase in error rate was due to a configuration change.: No configuration change was noted in the evidence. []
+- The error rate increase was due to a sudden increase in user traffic.: The request volume remained stable before and after the error rate increase. [E3]
+- The error rate increase was due to a sudden change in latency.: The p95 latency remained stable before and after the error rate increase. [E4]
+- The error rate increase is not due to a sudden surge in requests.: It rests on a change that is too early, or in a different service/region, to explain a sudden change here. [E3]
+- The error rate increase is not due to a sudden change in latency.: It rests on a change that is too early, or in a different service/region, to explain a sudden change here. [E4]
 
 ## Actions
 - (corrective, high) Roll back the v4.7 deployment to prevent further error rate increase.
-- (preventive, medium) Monitor the system for any issues related to v5.11 deployment and take appropriate action if necessary.
-- (corrective, high) Review the RequestHandler.serialize method in v4.7 to identify and fix the NullPointerException.
+- (preventive, high) Monitor the RequestHandler for potential issues before deploying new versions.
+- (preventive, medium) Investigate the root cause of the NullPointerExceptions in RequestHandler.
 
 ## Fact-check
 - Evidence IDs cited by the model: 7, invented (removed): 0
@@ -40,8 +38,8 @@ error_rate for service catalog, region us-east went from 0.004509 to 0.02494 (+4
 - **E2** (metric, metrics:error_rate) The change is concentrated in service catalog in region us-east: 1 of 12 service/region segments changed; the other segments stayed flat (largest after/before ratio 1.13).
 - **E3** (metric, metrics:requests) At the same time, request volume for service catalog in region us-east stayed about the same (727 per 5 min before, 904 per 5 min after, +24%).
 - **E4** (metric, metrics:latency_p95_ms) At the same time, p95 latency for service catalog in region us-east stayed about the same (121 ms before, 120 ms after, -1%).
-- **E5** (record, deploys) Deployed catalog v4.7 to us-east (catalog, us-east; 2 min before the change; record R013)
-- **E6** (record, alerts) High error rate on catalog in us-east (catalog, us-east; 10 min after the change; record R014)
-- **E7** (record, deploys) Deployed catalog v5.11 to us-east (catalog, us-east; 212 min before the change; record R012)
-- **E8** (record, logs) catalog: ERROR NullPointerException in RequestHandler.serialize (v4.7) (catalog, us-east; 21 min after the change; record R015)
-- **E9** (record, logs) catalog: ERROR NullPointerException in RequestHandler.serialize (v4.7) (catalog, us-east; 26 min after the change; record R016)
+- **E5** (record, deploys) Deployed catalog v4.7 to us-east (catalog, us-east; 2 min before the change; record R013; fit: right time and place: a strong candidate cause)
+- **E6** (record, alerts) High error rate on catalog in us-east (catalog, us-east; 10 min after the change; record R014; fit: after the change, so a symptom, not a cause)
+- **E7** (record, deploys) Deployed catalog v5.11 to us-east (catalog, us-east; 212 min before the change; record R012; fit: hours before the change, too early to explain a sudden jump)
+- **E8** (record, logs) catalog: ERROR NullPointerException in RequestHandler.serialize (v4.7) (catalog, us-east; 21 min after the change; record R015; fit: after the change, so a symptom, not a cause)
+- **E9** (record, logs) catalog: ERROR NullPointerException in RequestHandler.serialize (v4.7) (catalog, us-east; 26 min after the change; record R016; fit: after the change, so a symptom, not a cause)

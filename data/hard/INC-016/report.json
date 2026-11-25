@@ -19,13 +19,13 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The deployment of auth v2.27 to ap-south likely caused the increase in error rate.",
+      "description": "New deployment of auth v2.27 to ap-south",
       "category": "deployment",
       "confidence": 0.9,
       "why_chain": [
-        "The deployment of auth v2.27 to ap-south introduced a new version of the service.",
-        "The new version (v2.27) was deployed 2 minutes before the error rate spike.",
-        "The error rate increased significantly (from 0.49% to 4.43%) after the deployment."
+        "auth v2.27 deployment caused the error rate to rise in ap-south.",
+        "The error rate increased from 0.49% to 4.43% after the deployment.",
+        "The deployment happened 2 minutes before the error rate spike."
       ],
       "evidence_ids": [
         "E5",
@@ -34,13 +34,13 @@
     },
     {
       "rank": 2,
-      "description": "The change in the auth feature flag to 50% in ap-south may have contributed to the error rate increase.",
+      "description": "Changed auth feature flag to 50% in ap-south",
       "category": "config_change",
       "confidence": 0.8,
       "why_chain": [
-        "The feature flag change occurred 3 minutes before the error rate spike.",
-        "The feature flag change to 50% may have altered the service's behavior or performance.",
-        "The error rate spiked after the feature flag change."
+        "Changing the auth feature flag to 50% in ap-south caused the error rate to rise.",
+        "The feature flag change happened 3 minutes before the error rate spike.",
+        "The feature flag change could have introduced a bug or incompatibility."
       ],
       "evidence_ids": [
         "E6",
@@ -50,17 +50,34 @@
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in request volume caused the error rate to rise.",
-      "reason": "The request volume remained about the same before and after the change.",
+      "hypothesis": "More users or requests than usual caused the error rate to rise",
+      "reason": "The request volume and latency remained stable, contradicting this hypothesis.",
       "evidence_ids": [
-        "E3"
+        "E3",
+        "E4"
       ]
     },
     {
-      "hypothesis": "The change in p95 latency caused the error rate to rise.",
-      "reason": "The p95 latency remained about the same before and after the change.",
+      "hypothesis": "An upstream or external service failure caused the error rate to rise",
+      "reason": "No evidence of a failure in upstream services was found.",
       "evidence_ids": [
-        "E4"
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "Bad or unusual input data caused the error rate to rise",
+      "reason": "No evidence of unusual input data was found.",
+      "evidence_ids": [
+        "E9"
+      ]
+    },
+    {
+      "hypothesis": "No clear evidence of a direct dependency issue",
+      "reason": "It rests on a change that is too early, or in a different service/region, to explain a sudden change here.",
+      "evidence_ids": [
+        "E3",
+        "E4",
+        "E2"
       ]
     }
   ],
@@ -97,35 +114,35 @@
       "id": "E5",
       "kind": "record",
       "source": "deploys",
-      "summary": "Deployed auth v2.27 to ap-south (auth, ap-south; 2 min before the change; record R014)",
+      "summary": "Deployed auth v2.27 to ap-south (auth, ap-south; 2 min before the change; record R014; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-07T07:08:28Z"
     },
     {
       "id": "E6",
       "kind": "record",
       "source": "config_changes",
-      "summary": "Changed auth feature flag new_ui_flow to 50% in ap-south (auth, ap-south; 3 min before the change; record R013)",
+      "summary": "Changed auth feature flag new_ui_flow to 50% in ap-south (auth, ap-south; 3 min before the change; record R013; fit: right time and place: a strong candidate cause)",
       "timestamp": "2026-03-07T07:07:18Z"
     },
     {
       "id": "E7",
       "kind": "record",
       "source": "alerts",
-      "summary": "High error rate on auth in ap-south (auth, ap-south; 10 min after the change; record R015)",
+      "summary": "High error rate on auth in ap-south (auth, ap-south; 10 min after the change; record R015; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-07T07:20:00Z"
     },
     {
       "id": "E8",
       "kind": "record",
       "source": "logs",
-      "summary": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.27) (auth, ap-south; 19 min after the change; record R016)",
+      "summary": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.27) (auth, ap-south; 19 min after the change; record R016; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-07T07:28:47Z"
     },
     {
       "id": "E9",
       "kind": "record",
       "source": "logs",
-      "summary": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.27) (auth, ap-south; 28 min after the change; record R017)",
+      "summary": "auth: ERROR NullPointerException in RequestHandler.serialize (v2.27) (auth, ap-south; 28 min after the change; record R017; fit: after the change, so a symptom, not a cause)",
       "timestamp": "2026-03-07T07:37:42Z"
     }
   ],
@@ -147,7 +164,7 @@
   },
   "actions": [
     {
-      "action": "Roll back the deployment of auth v2.27 to ap-south.",
+      "action": "Roll back the auth v2.27 deployment to ap-south",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -155,15 +172,15 @@
       ]
     },
     {
-      "action": "Review and potentially revert the change in the auth feature flag to 50% in ap-south.",
-      "type": "preventive",
+      "action": "Review and revert the auth feature flag change to 50% in ap-south",
+      "type": "corrective",
       "priority": "high",
       "addresses_factors": [
         2
       ]
     },
     {
-      "action": "Monitor the error rate and request volume closely for any further spikes.",
+      "action": "Monitor the system for any further issues and take corrective action as needed",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
@@ -173,9 +190,11 @@
   ],
   "guardrails": {
     "model_used": true,
-    "ids_cited": 6,
+    "ids_cited": 11,
     "ids_invented": 0,
     "factors_dropped": 0,
-    "engine_fallback": false
+    "engine_fallback": false,
+    "engine_override": false,
+    "rivals_added": 0
   }
 }

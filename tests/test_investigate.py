@@ -1,4 +1,5 @@
 from rca_investigator.cli import main
+from rca_investigator.evaluate import score_report
 from rca_investigator.investigate import investigate, llm_reply_schema, to_markdown
 from rca_investigator.simulate import generate_incident, save_incident
 
@@ -53,12 +54,12 @@ def test_report_is_built_and_valid():
 
 def test_invented_evidence_ids_are_removed():
     reply = {**GOOD_REPLY, "contributing_factors": [
-        {**GOOD_REPLY["contributing_factors"][0], "evidence_ids": ["E1", "E99"]},
+        {**GOOD_REPLY["contributing_factors"][0], "evidence_ids": ["E1", "E5", "E99"]},
         {**GOOD_REPLY["contributing_factors"][0], "evidence_ids": ["E42"]},
     ]}
     _, _, report = run("bad_deploy", reply)
     assert len(report.contributing_factors) == 1
-    assert report.contributing_factors[0].evidence_ids == ["E1"]
+    assert report.contributing_factors[0].evidence_ids == ["E1", "E5"]
 
 
 def test_no_clear_cause_is_insufficient_and_capped():
@@ -95,3 +96,41 @@ def test_factor_resting_only_on_later_records_is_dropped():
     _, _, report = run("bad_deploy", reply)
     assert len(report.contributing_factors) == 1
     assert report.contributing_factors[0].evidence_ids == ["E1", "E5"]
+
+
+def _hard(twist, scenario="bad_deploy", seed=12):
+    from rca_investigator.simulate import generate_incident as gen
+    return gen("INC-T", scenario, seed=seed, twist=twist)
+
+
+def test_evidence_says_whether_a_record_fits():
+    inc = _hard("red_herring_early")
+    report = investigate("INC-T", inc.question, inc.metric, inc.metrics, inc.records, None)
+    fits = [e.summary for e in report.evidence if "fit:" in e.summary]
+    assert any("right time and place" in f for f in fits)
+    assert any("too early" in f for f in fits)
+
+
+def _factor_citing(report, text):
+    eid = next(e.id for e in report.evidence if text in e.summary)
+    return {**GOOD_REPLY["contributing_factors"][0], "evidence_ids": [eid]}
+
+
+def test_engines_overrule_a_red_herring_pick():
+    inc = _hard("red_herring_early")
+    base = investigate("INC-T", inc.question, inc.metric, inc.metrics, inc.records, None)
+    misled = {**GOOD_REPLY, "contributing_factors": [_factor_citing(base, "too early")]}
+    report = investigate("INC-T", inc.question, inc.metric, inc.metrics, inc.records,
+                         FakeClient(misled))
+    assert report.guardrails.engine_override
+    assert report.ruled_out and "too early" in report.ruled_out[-1].reason
+    assert score_report(report, inc.truth)["cause_cited"]
+
+
+def test_competing_change_is_named():
+    inc = _hard("rival_change")
+    report = investigate("INC-T", inc.question, inc.metric, inc.metrics, inc.records, None)
+    assert report.sufficiency.verdict.value == "partial"
+    assert len(report.contributing_factors) == 2
+    assert "Competing change" in report.contributing_factors[1].description
+    assert score_report(report, inc.truth)["cause_named"]
