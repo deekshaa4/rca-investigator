@@ -12,28 +12,27 @@ error_rate for service catalog went from 0.004151 to 0.05466 (+1217%) starting 2
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **New deployment of catalog v3.27 introduced issues with upstream catalog-db.** (deployment, confidence 90%) [E1, E3, E4, E5, E6, E7, E8]
-   - Why: Deployed catalog v3.27 to eu-west (record R014).
-   - Why: The error rate for service catalog increased (record E1).
-   - Why: Upstream catalog-db returned HTTP 503 (record E5).
-   - Why: Upstream catalog-db timed out after retries (records E6, E7).
-2. **Increased load on catalog-db due to deployment.** (traffic, confidence 80%) [E1, E3, E4, E5, E6, E7]
-   - Why: The error rate for service catalog increased (record E1).
-   - Why: Request volume for service catalog increased (record E3).
-   - Why: Upstream catalog-db timed out after retries (records E6, E7).
+1. **The deployment of catalog v3.27 to eu-west caused the error rate to rise.** (deployment, confidence 90%) [E8, E5, E6, E7]
+   - Why: The deployment of catalog v3.27 introduced a new version of the service.
+   - Why: The new version of the service interacted with the upstream catalog-db, causing it to return HTTP 503.
+   - Why: The catalog-db timeout retries caused the service to experience increased latency and error rates.
+2. **The catalog-db is experiencing degraded performance, which is affecting the service catalog.** (dependency, confidence 80%) [E5, E6, E7]
+   - Why: The catalog-db is an upstream service used by the service catalog.
+   - Why: The catalog-db is experiencing degraded performance, indicated by the HTTP 503 status.
+   - Why: The degraded performance of the catalog-db is causing the service catalog to experience increased latency and error rates.
 
 ## Ruled out
-- The increase in error rate was due to a config_change.: No evidence supports a config_change. []
-- The increase in error rate was due to a data issue.: No evidence supports a data issue. []
-- The increase in error rate was due to a dependency issue with an external service.: The issue is with the upstream catalog-db, not an external service. [E5, E6, E7]
-- The increase in error rate was due to infrastructure issues.: No evidence supports infrastructure issues. []
-- The increase in error rate was due to a known bug.: No evidence supports a known bug. []
-- The increase in error rate was due to a sudden spike in users.: Request volume for service catalog did not increase significantly (record E3). [E3]
+- The increase in error rate is due to a sudden increase in user traffic.: The request volume for service catalog did not change significantly. [E3]
+- The increase in error rate is due to a configuration change in the service catalog.: The error rate change is concentrated in the service catalog, not in other service/region segments. [E2]
 
 ## Actions
 - (corrective, high) Roll back the catalog v3.27 deployment to eu-west.
-- (preventive, high) Monitor catalog-db performance and availability closely.
-- (preventive, medium) Optimize the catalog-db to handle the increased load.
+- (preventive, medium) Monitor the catalog-db for any further issues and ensure it is performing optimally.
+- (preventive, medium) Review and optimize the retry logic for the catalog-db calls in the service catalog.
+
+## Fact-check
+- Evidence IDs cited by the model: 9, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service catalog rose from 0.42% to 5.47% (+1217%), with a change point at 2026-03-21T15:30:00Z.

@@ -12,20 +12,24 @@ latency_p95_ms for region ap-south went from 136.9 to 290.2 (+112%) starting 202
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **The flash sale campaign likely caused the spike in request volume and error rate.** (traffic, confidence 90%) [E5, E6]
-   - Why: The flash sale campaign went live at the change point, leading to a sudden increase in request volume.
-   - Why: The increased request volume overwhelmed the system, causing a rise in error rate and latency.
-   - Why: The system could not handle the sudden surge, leading to the observed increase in p95 latency.
+1. **The flash sale campaign caused a sudden increase in request volume and error rate.** (traffic, confidence 90%) [E5, E6]
+   - Why: The flash sale campaign went live at the change point, causing a surge in requests.
+   - Why: The surge in requests led to increased latency as the system could not handle the load.
+   - Why: The increased latency resulted in the observed rise in P95 latency.
 
 ## Ruled out
-- The increase in latency was due to a configuration change.: No evidence supports a configuration change as the cause of the increase in latency. [E1]
-- The increase in latency was due to a data quality issue.: No evidence supports a data quality issue as the cause of the increase in latency. [E1]
-- The increase in latency was due to a dependency issue with an external service.: No evidence supports a dependency issue with an external service as the cause of the increase in latency. [E1]
+- The change was due to a configuration update.: No evidence supports a configuration change. []
+- The increase in latency was due to a data quality issue.: No evidence supports a data quality issue. []
+- The increase in latency was due to a dependency issue with an external service.: No evidence supports a dependency issue with an external service. []
 
 ## Actions
-- (preventive, high) Implement a traffic management system to better handle sudden spikes in request volume.
-- (preventive, medium) Review and optimize the autoscaler to better handle sudden spikes in request volume.
-- (preventive, medium) Investigate and possibly adjust the flash sale campaign to better manage expected traffic spikes.
+- (corrective, high) Implement a dynamic scaling strategy to better handle sudden spikes in traffic.
+- (preventive, high) Monitor request volume and error rates closely during marketing campaigns to detect and respond to sudden spikes.
+- (corrective, medium) Optimize the autoscaler to better handle the load during sudden traffic spikes.
+
+## Fact-check
+- Evidence IDs cited by the model: 3, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for region ap-south rose from 137 ms to 290 ms (+112%), with a change point at 2026-03-09T09:05:00Z.

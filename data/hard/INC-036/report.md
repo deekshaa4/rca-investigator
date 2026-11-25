@@ -3,28 +3,24 @@
 ## What changed
 error_rate for service catalog, region us-east went from 0.00311 to 0.01898 (+510%) starting 2026-03-11T04:00:00Z. [E1, E2]
 
-## Verdict: insufficient (score 0.15)
+## Verdict: insufficient (score 0.25)
 - ✗ No deploy, config change, ticket or alert lines up with the change.
 - ✓ 4 log/alert record(s) after the change agree with the numbers.
-- ✗ A traffic cause is claimed, but request volume did not rise.
+- ✓ Request volume stayed steady, ruling out a traffic spike.
 - Data that would help: Deploy and config-change history for the affected segment
 
 ## Possible leads (not confirmed)
-1. **Increased error rate due to higher request volume.** (traffic, confidence 30%) [E2, E3]
-   - Why: The error rate increase coincided with a 12% increase in request volume.
-   - Why: The error rate spike is not explained by the unchanged request volume.
-   - Why: The increase in request volume could have overwhelmed the system, leading to more errors.
+No contributing factor is supported by the evidence.
 
 ## Ruled out
-- The error rate increase was due to a configuration change.: No evidence supports a configuration change. The error rate and request volume remained stable. [E1, E2, E3]
-- The error rate increase was due to a dependency issue with an external service.: No evidence supports a dependency issue. The error rate and request volume remained stable. [E1, E2, E3]
-- The error rate increase was due to a data issue.: No evidence supports a data issue. The error rate and request volume remained stable. [E1, E2, E3]
-- The error rate increase was due to infrastructure issues.: No evidence supports infrastructure issues. The error rate and request volume remained stable. [E1, E2, E3]
+- The error rate spike was due to a sudden increase in user traffic.: The request volume and latency remained stable, contradicting this hypothesis. [E3, E4]
+- The error rate spike was due to a configuration change.: There is no evidence of a configuration change that would explain the error rate spike. [E1, E2, E3, E4, E5, E6, E7, E8]
+- The error rate spike was due to a dependency issue with an external service.: There is no evidence of a dependency issue with an external service. [E1, E2, E3, E4, E5, E6, E7, E8]
+- The error rate spike was due to infrastructure issues.: There is no evidence of infrastructure issues, such as network or server capacity problems. [E1, E2, E3, E4, E5, E6, E7, E8]
 
-## Actions
-- (corrective, high) Roll back the deployment of the new version of RequestHandler (v3.7).
-- (preventive, medium) Monitor request volume and adjust capacity if necessary.
-- (preventive, medium) Implement error handling and logging improvements in RequestHandler.
+## Fact-check
+- Evidence IDs cited by the model: 42, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 2
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service catalog in region us-east rose from 0.31% to 1.90% (+510%), with a change point at 2026-03-11T04:00:00Z.

@@ -14,23 +14,27 @@ latency_p95_ms for service checkout went from 220.1 to 601.4 (+173%) starting 20
 - Data that would help: Details to tell the competing changes apart (e.g. a rollback test)
 
 ## Why it happened
-1. **The deployment of a new version of the checkout service (v2.26) likely caused the increase in p95 latency.** (deployment, confidence 90%) [E5, E1]
-   - Why: The deployment of checkout v2.26 occurred 2 minutes before the change point.
-   - Why: The change in p95 latency was concentrated in the checkout service.
-   - Why: The deployment of a new version of the service is a known cause of performance changes.
-2. **The change in the checkout database pool size (from 50 to 5) may have contributed to the increased latency.** (config_change, confidence 80%) [E6, E1]
-   - Why: The change in db.pool_size occurred 1 minute before the change point.
-   - Why: The change in p95 latency was concentrated in the checkout service.
-   - Why: Changes in database configurations can affect performance.
+1. **The deployment of a new version of the checkout service caused the p95 latency to increase.** (deployment, confidence 90%) [E1, E2, E4, E5]
+   - Why: The deployment of checkout v2.26 led to a change in p95 latency.
+   - Why: The change in p95 latency was concentrated in the service checkout.
+   - Why: The change in p95 latency was accompanied by an increase in error rate and a warning about connection pool exhaustion.
+2. **The configuration change to reduce the database pool size also contributed to the increase in p95 latency.** (config_change, confidence 80%) [E5, E6, E7, E8, E9]
+   - Why: The configuration change to reduce the database pool size was made 1 minute before the deployment.
+   - Why: The reduction in the database pool size could have led to more frequent connection pool exhaustion warnings.
+   - Why: The connection pool exhaustion warnings were observed after the change.
 
 ## Ruled out
-- The increase in request volume caused the p95 latency to rise.: The request volume for checkout did not change significantly (12% increase). [E3]
-- The alerts and logs were unrelated to the change in p95 latency.: The alerts and logs were recorded after the change point and do not explain the increase in p95 latency. [E7, E8, E9]
+- The increase in p95 latency was due to a sudden increase in request volume.: The request volume remained about the same before and after the change. [E3]
+- The increase in p95 latency was caused by a failure of the external service.: There is no evidence of a failure of an external service. []
 
 ## Actions
-- (corrective, high) Rollback the deployment of checkout v2.26 to us-east.
-- (preventive, medium) Increase the db.pool_size back to 50 for all regions.
-- (preventive, medium) Monitor the connection pool and adjust as needed to prevent exhaustion.
+- (corrective, high) Rollback the deployment of checkout v2.26 to revert the changes.
+- (preventive, high) Increase the database pool size to prevent connection pool exhaustion warnings.
+- (preventive, medium) Monitor the database pool size and request volume closely to detect any future issues.
+
+## Fact-check
+- Evidence IDs cited by the model: 10, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for service checkout rose from 220 ms to 601 ms (+173%), with a change point at 2026-03-19T15:15:00Z.

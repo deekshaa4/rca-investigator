@@ -143,19 +143,27 @@ def build_prompt(question: str, evidence: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def _clean(reply: dict, evidence: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
-    """Guardrails: keep only claims backed by real evidence IDs."""
+def _clean(reply: dict, evidence: list[dict]
+           ) -> tuple[list[dict], list[dict], list[dict], dict]:
+    """Guardrails: keep only claims backed by real evidence IDs, and count what was removed."""
     known = {e["id"] for e in evidence}
     by_id = {e["id"]: e for e in evidence}
+    stats = {"ids_cited": 0, "ids_invented": 0, "factors_dropped": 0}
+    for item in reply.get("contributing_factors", []) + reply.get("ruled_out", []):
+        cited = item.get("evidence_ids", [])
+        stats["ids_cited"] += len(cited)
+        stats["ids_invented"] += sum(i not in known for i in cited)
     factors = []
     for f in reply.get("contributing_factors", [])[:MAX_FACTORS]:
         ids = [i for i in f.get("evidence_ids", []) if i in known]
         if not ids or not f.get("description"):
+            stats["factors_dropped"] += 1
             continue
         # A cause must come before the change (or within minutes, e.g. an outage alert).
         # Factors resting only on later records are symptoms, not causes.
         cited_records = [by_id[i] for i in ids if by_id[i]["kind"] == "record"]
         if cited_records and all(e["minutes"] > CAUSE_GRACE_MIN for e in cited_records):
+            stats["factors_dropped"] += 1
             continue
         category = f.get("category")
         if category not in {c.value for c in FactorCategory}:
@@ -185,7 +193,7 @@ def _clean(reply: dict, evidence: list[dict]) -> tuple[list[dict], list[dict], l
             "priority": a.get("priority") if a.get("priority") in {p.value for p in Priority} else "medium",
             "addresses_factors": [n] if n in ranks else [1],
         })
-    return factors, ruled_out, actions
+    return factors, ruled_out, actions, stats
 
 
 def investigate(incident_id: str, question: str, metric: str, metrics: pd.DataFrame,
@@ -197,16 +205,19 @@ def investigate(incident_id: str, question: str, metric: str, metrics: pd.DataFr
     factors: list[dict] = []
     ruled_out: list[dict] = []
     actions: list[dict] = []
+    guard = {"model_used": client is not None}
     if analysis.detected and client is not None:
         reply = client.chat_json(build_prompt(question, evidence), llm_reply_schema(),
                                  system=SYSTEM_PROMPT)
-        factors, ruled_out, actions = _clean(reply, evidence)
+        factors, ruled_out, actions, stats = _clean(reply, evidence)
+        guard.update(stats)
 
     if analysis.detected and not factors:
         # No usable factor from the model: fall back to the engines' best candidate.
         cand = find_candidate(hits, factors, evidence)
         if cand is not None and cand.evidence_id:
             factors = [engine_factor(cand, analysis)]
+            guard["engine_fallback"] = True
     sufficiency = assess(analysis, hits, factors, evidence)
     if sufficiency.verdict == Verdict.INSUFFICIENT:
         # Without enough evidence, present factors as unconfirmed rather than as the answer.
@@ -224,7 +235,7 @@ def investigate(incident_id: str, question: str, metric: str, metrics: pd.DataFr
     return RCAReport(
         incident_id=incident_id, question=question, what_changed=what_changed,
         contributing_factors=factors, ruled_out=ruled_out, evidence=evidence,
-        sufficiency=sufficiency, actions=actions,
+        sufficiency=sufficiency, actions=actions, guardrails=guard,
     )
 
 
@@ -259,6 +270,13 @@ def to_markdown(report: RCAReport) -> str:
     if report.actions:
         out += ["", "## Actions"]
         out += [f"- ({a.type.value}, {a.priority.value}) {a.action}" for a in report.actions]
+    g = report.guardrails
+    if g and g.model_used:
+        out += ["", "## Fact-check", (f"- Evidence IDs cited by the model: {g.ids_cited}, "
+                f"invented (removed): {g.ids_invented}"),
+                f"- Factors dropped (no real evidence, or symptoms only): {g.factors_dropped}"]
+        if g.engine_fallback:
+            out.append("- The model gave no usable factor; the main factor comes from the engines.")
     out += ["", "## Evidence"]
     out += [f"- **{e.id}** ({e.kind.value}, {e.source}) {e.summary}" for e in report.evidence]
     return "\n".join(out) + "\n"

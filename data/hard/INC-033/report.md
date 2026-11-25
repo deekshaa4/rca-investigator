@@ -13,23 +13,26 @@ latency_p95_ms for region us-east went from 136.8 to 295.5 (+116%) starting 2026
 - Data that would help: Change records from the hour before the change; Traffic source breakdown (campaigns, bots, partners); Details to tell the competing changes apart (e.g. a rollback test)
 
 ## Possible leads (not confirmed)
-1. **The deployment of a new authentication version caused the increase in latency and request volume.** (deployment, confidence 30%) [E7, E2, E4, E9]
+1. **The deployment of a new authentication version caused the increase in latency and request volume.** (deployment, confidence 30%) [E7, E2, E3]
    - Why: The deployment of auth v5.3 led to increased request volume and latency.
-   - Why: The increased request volume overwhelmed the system, causing autoscaler to scale out.
-   - Why: The scaling out process increased latency due to the load balancing and resource allocation delays.
-2. **The flash sale campaign likely caused the spike in request volume and error rate.** (traffic, confidence 30%) [E5, E6, E3]
-   - Why: The flash sale campaign went live, causing a sudden increase in request volume.
-   - Why: The increased request volume overwhelmed the system, leading to higher error rates.
-   - Why: The system's inability to handle the sudden surge in traffic caused the observed latency and error rate spikes.
+   - Why: Increased request volume overwhelmed the system, causing higher latency.
+   - Why: The system could not handle the sudden increase in traffic, leading to the observed latency increase.
+2. **The flash sale campaign likely caused the spike in request volume.** (traffic, confidence 30%) [E5, E6]
+   - Why: The flash sale campaign went live, causing a sudden increase in requests.
+   - Why: The system was not prepared for the sudden surge in traffic, leading to increased latency and error rates.
 
 ## Ruled out
-- The autoscaler scaling out was the cause of the increase in latency.: The autoscaler scaling out happened after the change, not before. [E9]
-- The customer support request was the cause of the increase in latency and error rate.: The customer support request happened before the change. [E8]
+- The deployment of auth v5.3 caused the increase in latency and error rate.: The deployment happened 167 minutes before the change, and the increase in latency and error rate occurred 20 minutes after the deployment. [E7, E1, E4]
+- The flash sale campaign caused the increase in latency and error rate.: The flash sale campaign went live 158 minutes before the change, and the increase in latency and error rate occurred 20 minutes after the flash sale campaign. [E5, E1, E4]
 
 ## Actions
-- (corrective, high) Roll back the deployment of auth v5.3 to mitigate the increased latency and request volume.
-- (preventive, high) Implement traffic management and load balancing to handle sudden spikes in request volume.
-- (preventive, medium) Optimize the system's capacity and performance to better handle the expected traffic during campaigns.
+- (preventive, high) Implement traffic management and throttling to prevent future spikes in request volume.
+- (preventive, high) Review and optimize the system's capacity and scaling mechanisms to handle sudden traffic spikes.
+- (corrective, high) Review and test the deployment of the new authentication version to ensure it does not cause similar issues.
+
+## Fact-check
+- Evidence IDs cited by the model: 11, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for region us-east rose from 137 ms to 295 ms (+116%), with a change point at 2026-03-12T15:10:00Z.

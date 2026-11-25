@@ -12,20 +12,31 @@ latency_p95_ms for service checkout went from 220.5 to 638.3 (+190%) starting 20
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **The increase in p95 latency is due to a sudden reduction in the database pool size, leading to connection exhaustion.** (config_change, confidence 90%) [E5, E6, E7, E8, E9]
-   - Why: The database pool size was reduced from 50 to 5, causing the connection pool to be exhausted.
-   - Why: This reduction in pool size led to a higher number of connection pool exhaustion warnings in the logs.
-   - Why: The connection pool exhaustion caused a significant increase in p95 latency for service checkout.
+1. **The increase in p95 latency is due to a reduction in the database pool size, leading to connection exhaustion.** (config_change, confidence 90%) [E5, E6, E7, E8, E9]
+   - Why: The database pool size was reduced from 50 to 5, causing the connection pool to be exhausted more frequently.
+   - Why: This reduction in pool size means fewer connections are available to service checkout requests.
+   - Why: As a result, more checkout requests are waiting for a free connection, leading to increased latency.
+2. **The increase in p95 latency is also due to the increase in error rate, indicating more checkout requests are failing.** (data, confidence 80%) [E2, E3, E4]
+   - Why: The error rate for checkout requests increased from 0.46% to 0.70% after the change.
+   - Why: More checkout requests are failing, which contributes to the overall p95 latency increase.
+   - Why: Failed requests add to the overall latency, as they require retries and additional processing time.
 
 ## Ruled out
-- The increase in p95 latency is due to a sudden increase in request volume.: The request volume for service checkout remained about the same before and after the change. [E3]
-- The increase in p95 latency is due to a sudden increase in error rate.: The error rate for service checkout did not increase significantly, only by 51%. [E4]
-- The increase in p95 latency is due to a sudden increase in traffic.: The request volume for service checkout did not increase significantly. [E3]
+- The increase in p95 latency is due to a sudden increase in request volume.: The request volume for checkout did not change significantly (15% increase). [E3]
+- The increase in p95 latency is due to a change in traffic patterns.: There is no evidence of a sudden increase in traffic or a campaign that could explain the change. []
+- The increase in p95 latency is due to a dependency issue with an external service.: There is no evidence of a failure or slowdown in any external service. []
+- The increase in p95 latency is due to an infrastructure issue.: There is no evidence of any network or server capacity issues. []
+- The increase in p95 latency is due to a configuration change unrelated to the database pool size.: The database pool size change is the only configuration change that occurred around the time of the change point. [E5]
+- The increase in p95 latency is due to a logging issue.: There is no evidence of any logging issues or changes in logging configuration. []
 
 ## Actions
-- (corrective, high) Increase the database pool size to a more appropriate value, such as 20 or 30.
-- (preventive, medium) Implement a connection pool monitoring system to detect and alert on exhaustion before it causes latency issues.
-- (preventive, medium) Review and optimize the database queries to reduce the number of connections needed.
+- (corrective, high) Increase the database pool size to a higher value to prevent connection exhaustion.
+- (preventive, medium) Monitor the error rate for checkout requests and take corrective action if it continues to rise.
+- (preventive, medium) Review and optimize the checkout process to reduce the number of failed requests.
+
+## Fact-check
+- Evidence IDs cited by the model: 10, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for service checkout rose from 220 ms to 638 ms (+190%), with a change point at 2026-03-04T04:55:00Z.

@@ -12,28 +12,29 @@ error_rate for service auth went from 0.004017 to 0.05003 (+1146%) starting 2026
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **Upstream identity-db service is experiencing degraded performance.** (dependency, confidence 90%) [E5, E6, E7, E8, E9]
-   - Why: The error rate for service auth increased due to upstream identity-db returning HTTP 503 errors.
-   - Why: The identity-db service is the upstream dependency for service auth, causing timeouts and retries.
-   - Why: The identity-db service is experiencing degraded performance, leading to the observed error rate increase.
-2. **The identity-db service is underperforming.** (dependency, confidence 90%) [E5, E6, E7, E8, E9]
-   - Why: The error rate for service auth increased due to identity-db returning HTTP 503 errors.
-   - Why: The identity-db service is the upstream dependency for service auth, causing timeouts and retries.
-   - Why: The identity-db service is underperforming, leading to the observed error rate increase.
-3. **The identity-db service is experiencing a temporary outage.** (traffic, confidence 80%) [E5, E6, E7, E8, E9]
-   - Why: The error rate for service auth increased due to identity-db returning HTTP 503 errors.
-   - Why: The identity-db service is the upstream dependency for service auth, causing timeouts and retries.
-   - Why: The identity-db service is experiencing a temporary outage, leading to the observed error rate increase.
+1. **Upstream identity-db service is experiencing degraded performance, causing auth service errors.** (dependency, confidence 90%) [E5, E9]
+   - Why: The error rate in auth service increased due to upstream identity-db service returning HTTP 503 errors.
+   - Why: The identity-db service is the upstream dependency of the auth service, and its degraded performance is causing the auth service to fail.
+   - Why: The identity-db service is experiencing degraded performance, as evidenced by the status page stating it is investigating degraded performance.
+2. **The auth service is experiencing increased latency due to upstream identity-db service.** (dependency, confidence 80%) [E4, E5]
+   - Why: The p95 latency for auth service increased due to upstream identity-db service returning HTTP 503 errors.
+   - Why: The increased latency is a result of the upstream identity-db service failing to respond within the expected time frame.
+   - Why: The identity-db service is the upstream dependency of the auth service, and its failure is causing the auth service to experience increased latency.
 
 ## Ruled out
-- The increase in error rate is due to a configuration change in service auth.: The error rate for service auth increased, but the config_change category has no supporting evidence. [E1, E2, E3, E4]
-- The increase in error rate is due to a spike in request volume for service auth.: The request volume for service auth did not change significantly, as evidenced by E3. [E1, E2, E3, E4]
-- The increase in error rate is due to a temporary network issue.: There is no evidence pointing to a network issue, only upstream service issues. [E1, E2, E3, E4]
+- The increase in error rate is due to a configuration change in the auth service.: The error rate increase is concentrated in the auth service, and the change point is at the same time as the error rate increase. [E2]
+- The increase in error rate is due to a change in the traffic to the auth service.: The request volume for the auth service did not change significantly, and the error rate increase is not explained by a change in traffic. [E3]
+- The increase in error rate is due to a change in the infrastructure of the auth service.: The infrastructure of the auth service did not change, and the error rate increase is not explained by a change in infrastructure. [E3]
+- The increase in error rate is due to a change in the data input to the auth service.: The data input to the auth service did not change, and the error rate increase is not explained by a change in data. [E3]
 
 ## Actions
-- (corrective, high) Contact identity-db support to investigate the performance degradation and potential outage.
-- (preventive, high) Monitor identity-db service performance and availability closely.
-- (preventive, medium) Review and optimize the retry logic for service auth in case of upstream service issues.
+- (corrective, high) Contact the identity-db service team to investigate the degraded performance and provide a fix.
+- (preventive, high) Monitor the identity-db service closely and take immediate action if it degrades again.
+- (preventive, medium) Review and optimize the retry logic in the auth service to reduce the impact of upstream failures.
+
+## Fact-check
+- Evidence IDs cited by the model: 11, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service auth rose from 0.40% to 5.00% (+1146%), with a change point at 2026-03-10T09:30:00Z.

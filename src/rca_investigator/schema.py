@@ -103,6 +103,20 @@ class Action(BaseModel):
     )
 
 
+class Guardrails(BaseModel):
+    """What the fact-checker removed from the model's answer."""
+
+    model_used: bool = Field(description="Whether a language model wrote the factors")
+    ids_cited: int = Field(default=0, ge=0, description="Evidence IDs the model cited")
+    ids_invented: int = Field(default=0, ge=0, description="Cited IDs that do not exist")
+    factors_dropped: int = Field(
+        default=0, ge=0, description="Factors removed (no real evidence, or symptoms only)"
+    )
+    engine_fallback: bool = Field(
+        default=False, description="The main factor came from the engines, not the model"
+    )
+
+
 class RCAReport(BaseModel):
     incident_id: str
     question: str
@@ -112,6 +126,7 @@ class RCAReport(BaseModel):
     evidence: list[Evidence] = Field(min_length=1)
     sufficiency: Sufficiency
     actions: list[Action] = Field(default_factory=list)
+    guardrails: Guardrails | None = None
 
     @model_validator(mode="after")
     def check_consistency(self) -> RCAReport:

@@ -14,22 +14,27 @@ error_rate for service search, region ap-south went from 0.004825 to 0.01069 (+1
 
 ## Possible leads (not confirmed)
 1. **New deployment caused the error rate to increase.** (deployment, confidence 30%) [E5, E1]
-   - Why: search v7.6 deployment introduced changes to the service search in region ap-south.
+   - Why: search v7.6 deployment introduced changes to the service search in ap-south.
+   - Why: The deployment occurred 217 minutes before the error rate increase.
    - Why: The error rate increased from 0.48% to 1.07% after the deployment.
-   - Why: The error rate increase is concentrated in service search in region ap-south, where the deployment occurred.
-2. **The deployment may have introduced a new issue that affected the error rate.** (unknown, confidence 30%) [E5, E1]
-   - Why: The deployment of search v7.6 did not affect the request volume or latency.
-   - Why: The error rate increase is not explained by changes in request volume or latency.
-   - Why: The error rate increase is specific to the service search in region ap-south, which is where the deployment occurred.
+2. **No clear evidence of a configuration change.** (unknown, confidence 30%) [E2, E3, E4]
+   - Why: The error rate increase coincides with the deployment, suggesting a change in the system.
+   - Why: There is no evidence of a configuration change that would explain the error rate increase.
+   - Why: The request volume and latency did not change significantly, indicating the issue is not related to system capacity or user load.
 
 ## Ruled out
-- The increase in error rate is due to a sudden increase in user traffic.: The request volume did not change significantly, and the error rate increase is specific to the service search in region ap-south. [E3]
-- The increase in error rate is due to a problem with the upstream service.: The deployment of search v7.6 did not affect the latency, and the error rate increase is specific to the service search in region ap-south. [E4]
+- The increase in error rate is due to a configuration change.: There is no evidence of a configuration change that would explain the error rate increase. [E5]
+- The increase in error rate is due to a sudden increase in user load.: The request volume did not change significantly, indicating the issue is not related to user load. [E3]
+- The increase in error rate is due to a dependency issue with an external service.: There is no evidence of a dependency issue with an external service. [E5]
 
 ## Actions
-- (corrective, high) Roll back the search v7.6 deployment to revert the changes.
-- (preventive, medium) Monitor the service search in region ap-south for any further issues and take appropriate action.
-- (preventive, medium) Review and test the deployment process to ensure it is robust and can handle changes without affecting other services.
+- (corrective, high) Roll back the search v7.6 deployment to ap-south.
+- (preventive, medium) Monitor the system for any further issues and adjust the deployment schedule if necessary.
+- (preventive, medium) Review and document the deployment process for future reference.
+
+## Fact-check
+- Evidence IDs cited by the model: 8, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service search in region ap-south rose from 0.48% to 1.07% (+122%), with a change point at 2026-03-21T11:55:00Z.

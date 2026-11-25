@@ -12,24 +12,31 @@ error_rate for service search, region ap-south went from 0.003353 to 0.02987 (+7
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **New deployment of search v2.20 caused the error rate to spike.** (deployment, confidence 90%) [E5, E1]
-   - Why: The deployment of search v2.20 introduced a new version of the service.
-   - Why: This new version was deployed 4 minutes before the error rate spike.
-   - Why: The error rate increased significantly after the deployment, indicating the deployment was the cause.
-2. **NullPointerException in RequestHandler.serialize caused the error.** (unknown, confidence 80%) [E7, E8, E5]
-   - Why: The deployment of search v2.20 introduced a new version of the service.
-   - Why: This new version caused a NullPointerException in RequestHandler.serialize.
-   - Why: This NullPointerException led to the error rate spike.
+1. **New deployment of search v2.20 caused the error rate to spike.** (deployment, confidence 90%) [E5, E7, E8]
+   - Why: search v2.20 deployment introduced a new error (NullPointerException) in RequestHandler.serialize.
+   - Why: This new error led to a higher error rate in service search in region ap-south.
+   - Why: The error rate increase was observed immediately after the deployment.
+2. **The error rate increase is not due to a sudden surge in request volume.** (unknown, confidence 90%) [E3, E4]
+   - Why: Request volume remained stable before and after the deployment.
+   - Why: The error rate increase coincided with the deployment, not with a change in request volume.
+   - Why: Therefore, the error rate increase is not due to a sudden surge in request volume.
+3. **The error rate increase is not due to a change in latency.** (unknown, confidence 90%) [E4]
+   - Why: p95 latency for service search in region ap-south remained stable before and after the deployment.
+   - Why: The error rate increase coincided with the deployment, not with a change in latency.
+   - Why: Therefore, the error rate increase is not due to a change in latency.
 
 ## Ruled out
-- The increase in request volume caused the error rate spike.: The request volume stayed about the same before and after the change. [E3]
-- The increase in p95 latency caused the error rate spike.: The p95 latency stayed about the same before and after the change. [E4]
-- The deployment of catalog v6.12 caused the error rate spike.: The deployment of catalog v6.12 happened 4 minutes before the change, not 4 minutes after. [E9]
+- The error rate increase is due to a sudden increase in user traffic.: Request volume remained stable before and after the deployment. [E3]
+- The error rate increase is due to a change in the upstream service.: No evidence suggests the error is caused by a change in the upstream service. [E9]
 
 ## Actions
-- (corrective, high) Fix the NullPointerException in RequestHandler.serialize in the new search v2.20 version.
-- (preventive, medium) Monitor the error rate and request volume closely after any deployment to ap-south.
-- (preventive, medium) Review and test the new search v2.20 version in a staging environment before deploying to production.
+- (corrective, high) Fix the NullPointerException in RequestHandler.serialize in search v2.20
+- (preventive, high) Monitor the error rate and request volume closely after deployments to identify any new issues early
+- (preventive, medium) Review and test the new deployment thoroughly before releasing to production
+
+## Fact-check
+- Evidence IDs cited by the model: 8, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service search in region ap-south rose from 0.34% to 2.99% (+791%), with a change point at 2026-03-26T06:20:00Z.

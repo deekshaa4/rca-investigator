@@ -12,23 +12,27 @@ latency_p95_ms for region ap-south went from 137.3 to 284.2 (+107%) starting 202
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **The flash sale campaign likely caused the spike in request volume and error rate.** (traffic, confidence 90%) [E5, E6]
-   - Why: The flash sale campaign went live at the change point, causing a sudden increase in request volume.
-   - Why: The increased request volume led to higher latency as the system struggled to handle the load.
-   - Why: The error rate rose due to the system being overwhelmed by the sudden surge in traffic.
-2. **The deployment of auth v4.9 may have introduced a latency issue.** (deployment, confidence 70%) [E7, E1]
-   - Why: The deployment of auth v4.9 occurred 251 minutes before the change point.
-   - Why: The system's performance degraded after the deployment, leading to increased latency.
-   - Why: The increased latency contributed to the overall system performance degradation.
+1. **The flash sale campaign likely caused the spike in request volume and error rate.** (traffic, confidence 90%) [E5, E4, E2]
+   - Why: The flash sale campaign went live at 03:30 UTC, 127 minutes before the change.
+   - Why: This led to a 265% increase in request volume and a 100% increase in error rate.
+   - Why: The increase in request volume and error rate contributed to the rise in P95 latency.
+2. **The deployment of auth v4.9 may have caused the increase in latency.** (deployment, confidence 70%) [E7, E1]
+   - Why: The deployment of auth v4.9 occurred 251 minutes before the change.
+   - Why: The P95 latency increased significantly in the region where the deployment occurred.
+   - Why: The deployment may have introduced a bug or performance issue.
 
 ## Ruled out
-- The deployment of catalog v1.1 caused the change.: The catalog v1.1 deployment was a routine release and occurred 163 minutes before the change point. [E8, E9]
-- The autoscaler scaling out caused the change.: The autoscaler scaling out occurred 20 minutes after the change point. [E8]
+- The autoscaler scaling out caused the increase in latency.: The autoscaler scaling out occurred 20 minutes after the change, which is too late to be the cause. [E8]
+- The deployment of catalog v1.1 caused the increase in latency.: The deployment of catalog v1.1 occurred 163 minutes before the change, which is too early to be the cause. [E6, E3, E2, E1, E5, E4, E7, E8]
 
 ## Actions
-- (corrective, high) Roll back the auth v4.9 deployment to revert the potential performance degradation.
-- (preventive, high) Implement a traffic management system to handle sudden spikes in traffic during marketing campaigns.
-- (preventive, medium) Optimize the autoscaler to better handle sudden traffic spikes.
+- (corrective, high) Roll back the auth v4.9 deployment to revert any potential changes.
+- (preventive, high) Monitor the system for any new deployments and ensure they are thoroughly tested.
+- (preventive, medium) Review and optimize the autoscaler configuration to better handle sudden spikes in traffic.
+
+## Fact-check
+- Evidence IDs cited by the model: 14, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for region ap-south rose from 137 ms to 284 ms (+107%), with a change point at 2026-03-19T03:30:00Z.

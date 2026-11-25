@@ -13,30 +13,35 @@ error_rate for service catalog, region eu-west went from 0.005311 to 0.009589 (+
 - Data that would help: Change records from the hour before the change; Change records for the affected service/region; Error logs or traces from the affected segment after the change
 
 ## Possible leads (not confirmed)
-1. **New deployment of checkout v1.12 to eu-west caused the error rate to rise.** (deployment, confidence 30%) [E5, E1]
-   - Why: Checkout v1.12 deployment introduced a new error condition.
-   - Why: This new error condition affected the error rate for service catalog in region eu-west.
-   - Why: The error rate increased from 0.53% to 0.96%.
+1. **New deployment of search v3.8 to ap-south caused increased error rate in eu-west.** (deployment, confidence 30%) [E5, E8]
+   - Why: search v3.8 deployment to ap-south increased the overall load on the system.
+   - Why: This additional load transferred to eu-west, causing the error rate to rise.
+   - Why: The error rate in eu-west did not change after the search v3.8 deployment to ap-south, indicating the issue was specific to eu-west.
    - Why: evidence_ids
-2. **The feature request for dark mode for the account page may have introduced a regression.** (unknown, confidence 30%) [E6, E1]
-   - Why: Feature request for dark mode may have introduced a regression.
-   - Why: This regression affected the error rate for service catalog in region eu-west.
-   - Why: The error rate increased from 0.53% to 0.96%.
+2. **The feature request for dark mode for the account page may have introduced a regression.** (unknown, confidence 30%) [E6, E9]
+   - Why: The feature request for dark mode could have introduced a regression in the service catalog.
+   - Why: This regression could have caused the error rate to increase in eu-west.
+   - Why: The error rate in eu-west did not change after the feature request, indicating the issue was specific to the deployment of search v3.8.
    - Why: evidence_ids
-3. **The deployment of search v3.8 to ap-south may have caused a ripple effect.** (unknown, confidence 30%) [E8, E1]
-   - Why: Deployment of search v3.8 to ap-south may have caused a ripple effect.
-   - Why: This ripple effect affected the error rate for service catalog in region eu-west.
-   - Why: The error rate increased from 0.53% to 0.96%.
+3. **The increase in request volume could have overwhelmed the system.** (traffic, confidence 30%) [E3, E1]
+   - Why: The request volume increased by 14% in eu-west.
+   - Why: This increase in load could have overwhelmed the system, leading to higher error rates.
+   - Why: The error rate in eu-west did not change after the request volume increase, indicating the issue was specific to the deployment of search v3.8.
    - Why: evidence_ids
 
 ## Ruled out
-- The increase in error rate was due to a sudden increase in user traffic.: Request volume and p95 latency did not change significantly. [E3, E4]
-- The new admin user request affected the error rate.: The request was made 192 minutes before the change. [E9]
+- The feature request for dark mode for the account page caused the error rate to increase.: The error rate in eu-west did not change after the feature request, indicating the issue was specific to the deployment of search v3.8. [E6, E9]
+- The increase in request volume caused the error rate to increase.: The error rate in eu-west did not change after the request volume increase, indicating the issue was specific to the deployment of search v3.8. [E3, E1]
+- The deployment of search v3.8 to ap-south caused the error rate to increase in eu-west.: The error rate in eu-west did not change after the search v3.8 deployment to ap-south, indicating the issue was specific to the deployment of search v3.8. [E5, E8]
 
 ## Actions
-- (corrective, high) Rollback the checkout v1.12 deployment to eu-west.
-- (preventive, medium) Monitor the checkout v1.12 deployment for any further issues.
-- (preventive, medium) Review the feature request for dark mode for the account page.
+- (corrective, high) Roll back the deployment of search v3.8 to ap-south.
+- (preventive, high) Monitor the system for any further issues and take corrective action if needed.
+- (preventive, medium) Review the feature request for dark mode for the account page and ensure it does not introduce regressions.
+
+## Fact-check
+- Evidence IDs cited by the model: 12, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service catalog in region eu-west rose from 0.53% to 0.96% (+81%), with a change point at 2026-03-22T04:30:00Z.

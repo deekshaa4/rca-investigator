@@ -19,26 +19,24 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The error rate increase is localized to the auth service in eu-west region.",
-      "category": "traffic",
+      "description": "The error rate spike coincides with a high error rate alert.",
+      "category": "unknown",
       "confidence": 0.3,
       "why_chain": [
-        "The error rate increase is concentrated in the auth service in the eu-west region.",
-        "The request volume and latency did not change significantly.",
-        "This suggests the issue is not due to a sudden increase in traffic or network latency.",
-        "evidence_ids"
+        "The error rate spike is also reflected in a high error rate alert.",
+        "This alert suggests that the error rate increase is a known issue, not a new problem.",
+        "The alert occurred 10 minutes before the change, indicating a possible correlation."
       ],
       "evidence_ids": [
-        "E2",
-        "E3",
-        "E4"
+        "E5",
+        "E9"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The error rate increase is due to a sudden increase in traffic.",
-      "reason": "The request volume and latency did not change significantly.",
+      "hypothesis": "The increase in error rate is due to a sudden increase in user traffic.",
+      "reason": "The request volume and p95 latency did not change significantly.",
       "evidence_ids": [
         "E3",
         "E4"
@@ -46,9 +44,12 @@
     },
     {
       "hypothesis": "The error rate increase is due to a configuration change.",
-      "reason": "The error rate increase is localized to the auth service in the eu-west region.",
+      "reason": "There is no evidence of a configuration change that would cause the error rate to spike.",
       "evidence_ids": [
-        "E2"
+        "E1",
+        "E2",
+        "E3",
+        "E4"
       ]
     }
   ],
@@ -119,11 +120,11 @@
   ],
   "sufficiency": {
     "verdict": "insufficient",
-    "score": 0.15,
+    "score": 0.25,
     "reasons": [
       "\u2717 No deploy, config change, ticket or alert lines up with the change.",
       "\u2713 4 log/alert record(s) after the change agree with the numbers.",
-      "\u2717 A traffic cause is claimed, but request volume did not rise."
+      "\u2713 Request volume stayed steady, ruling out a traffic spike."
     ],
     "missing_data": [
       "Deploy and config-change history for the affected segment"
@@ -131,7 +132,7 @@
   },
   "actions": [
     {
-      "action": "Roll back the deployment of version 5.21 of the RequestHandler.",
+      "action": "Roll back the deployment of the new version of the RequestHandler.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -139,7 +140,7 @@
       ]
     },
     {
-      "action": "Monitor the RequestHandler version 5.21 closely for any further issues.",
+      "action": "Monitor the service for any new errors and alert on any significant changes in error rate.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
@@ -147,12 +148,19 @@
       ]
     },
     {
-      "action": "Review and update the error handling in the RequestHandler version 5.21.",
+      "action": "Review the new version of the RequestHandler for potential issues and ensure proper testing before deployment.",
       "type": "preventive",
-      "priority": "medium",
+      "priority": "high",
       "addresses_factors": [
         1
       ]
     }
-  ]
+  ],
+  "guardrails": {
+    "model_used": true,
+    "ids_cited": 12,
+    "ids_invented": 0,
+    "factors_dropped": 1,
+    "engine_fallback": false
+  }
 }

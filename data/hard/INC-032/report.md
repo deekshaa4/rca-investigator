@@ -13,26 +13,29 @@ latency_p95_ms for service search went from 140.2 to 290.1 (+107%) starting 2026
 
 ## Why it happened
 1. **The increase in p95 latency is due to a reduction in the search db.pool_size, leading to connection pool exhaustion.** (config_change, confidence 90%) [E5, E6, E7, E8, E9]
-   - Why: The config_change (E5) reduced the search db.pool_size from 50 to 5.
-   - Why: This reduction in pool size caused the connection pool to become exhausted.
-   - Why: The exhausted pool led to the WARN connection pool exhausted, waiting for a free connection (E6, E7, E8, E9).
-   - Why: This resulted in increased latency, as the system had to wait for connections to become available.
-   - Why: evidence_ids
-2. **The increase in p95 latency is also due to the increase in request volume, which put additional strain on the system.** (traffic, confidence 80%) [E3, E5, E6, E7, E8, E9]
-   - Why: The request volume for service search increased by 9% (E3).
-   - Why: This increase in requests put additional strain on the system.
-   - Why: The reduced connection pool size (E5) exacerbated the strain, leading to connection pool exhaustion (E6, E7, E8, E9).
-   - Why: The connection pool exhaustion resulted in increased latency (E7, E8, E9).
-   - Why: evidence_ids
+   - Why: The db.pool_size was reduced from 50 to 5, causing the connection pool to be exhausted more frequently.
+   - Why: This exhaustion leads to waiting for a free connection, which is recorded in logs.
+   - Why: The waiting for a free connection results in a WARN message, which is recorded in logs.
+   - Why: The WARN message is escalated to an alert, indicating the p95 latency exceeded the service level objective (SLO).
+2. **The increase in p95 latency is also due to the increase in request volume, which put more strain on the system.** (traffic, confidence 70%) [E2, E3]
+   - Why: The request volume increased by 9% after the change, putting more pressure on the system.
+   - Why: The increased request volume led to more frequent connection pool exhaustion.
+   - Why: The connection pool exhaustion resulted in more WARN messages in logs.
+   - Why: The WARN messages were escalated to alerts, indicating the p95 latency exceeded the SLO.
 
 ## Ruled out
-- The increase in p95 latency is due to a bug in the search service code.: There is no evidence of a code change or error logs indicating a bug. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
-- The increase in p95 latency is due to a sudden spike in external traffic.: The error rate only increased by 53% (E4), not enough to explain the 107% increase in p95 latency. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
+- The increase in p95 latency is due to a change in the service architecture.: No evidence supports a change in the service architecture, only a change in configuration. []
+- The increase in p95 latency is due to a change in the external database.: No evidence supports a change in the external database, only a change in the internal database pool size. []
+- The increase in p95 latency is due to a change in the network configuration.: No evidence supports a change in the network configuration, only a change in the internal database pool size. []
 
 ## Actions
-- (corrective, high) Increase the search db.pool_size back to 50 to prevent connection pool exhaustion.
-- (preventive, high) Monitor request volume and adjust capacity if it exceeds current limits.
-- (preventive, medium) Review and optimize the search service's connection management to handle higher request volumes.
+- (corrective, high) Increase the db.pool_size back to 50 to prevent connection pool exhaustion.
+- (preventive, medium) Monitor request volume and adjust capacity if it exceeds the current limits.
+- (preventive, medium) Implement a retry mechanism for connection pool exhaustion to reduce the impact on latency.
+
+## Fact-check
+- Evidence IDs cited by the model: 7, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for service search rose from 140 ms to 290 ms (+107%), with a change point at 2026-03-05T03:15:00Z.

@@ -13,23 +13,30 @@ error_rate for service catalog, region eu-west went from 0.004027 to 0.03336 (+7
 
 ## Why it happened
 1. **New deployment of catalog v4.0 introduced a NullPointerException.** (deployment, confidence 90%) [E5, E8]
-   - Why: The error rate increased due to the deployment of catalog v4.0.
-   - Why: The deployment of v4.0 caused a NullPointerException in RequestHandler.serialize.
-   - Why: This NullPointerException led to an increase in error rate.
-   - Why: evidence_ids
-2. **Routine deployment of catalog v3.10 did not cause the error rate increase.** (unknown, confidence 80%) [E7]
-   - Why: Routine deployment of v3.10 did not affect the error rate.
-   - Why: The error rate increase was not due to the routine deployment.
-   - Why: evidence_ids
+   - Why: The error rate increased after the deployment of catalog v4.0.
+   - Why: The NullPointerException in RequestHandler.serialize (v4.0) caused the error.
+   - Why: The error occurred 1 minute after the deployment, indicating the change was the cause.
+2. **The deployment of catalog v4.0 was not followed by a routine release.** (unknown, confidence 80%) [E5, E7]
+   - Why: The error rate increased after the deployment of catalog v4.0.
+   - Why: There was no routine release of catalog v4.0, which could have mitigated the issue.
+   - Why: The error occurred 1 minute after the deployment, indicating the change was the cause.
+3. **The error rate increase is localized to the service catalog in region eu-west.** (unknown, confidence 70%) [E2]
+   - Why: The error rate increase is concentrated in the service catalog in region eu-west.
+   - Why: The error rate increase is not seen in other service/region segments.
+   - Why: The error rate increase is localized to the service catalog in region eu-west.
 
 ## Ruled out
-- The increase in error rate was due to a sudden increase in request volume.: The request volume stayed about the same before and after the change. [E3]
-- The increase in error rate was due to a change in latency.: The p95 latency stayed about the same before and after the change. [E4]
+- The increase in error rate is due to a sudden increase in user traffic.: The request volume and p95 latency did not change significantly. [E3, E4]
+- The increase in error rate is due to a configuration change.: The deployment of catalog v4.0 was the only change made to the service catalog in region eu-west. [E5]
 
 ## Actions
-- (corrective, high) Fix the NullPointerException in RequestHandler.serialize in catalog v4.0.
-- (preventive, high) Implement a robust error handling mechanism in RequestHandler.serialize.
-- (preventive, medium) Monitor the error rate closely and take immediate action if similar issues arise.
+- (corrective, high) Roll back the deployment of catalog v4.0 to eu-west.
+- (preventive, high) Implement a more robust error handling mechanism in RequestHandler.serialize.
+- (preventive, medium) Schedule routine releases for the service catalog in region eu-west.
+
+## Fact-check
+- Evidence IDs cited by the model: 8, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service catalog in region eu-west rose from 0.40% to 3.34% (+729%), with a change point at 2026-03-20T04:45:00Z.

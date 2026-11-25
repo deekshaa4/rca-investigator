@@ -15,7 +15,8 @@ A focused 2-week build, using only free and open tools.
 
 - [x] Evidence sufficiency check: timing match, agreement between numbers and records, ruled-out alternatives, data gaps
 - [x] Harder incidents: noise, red herrings, overlapping changes, missing records
-- [ ] Evaluation: top-1 / top-3 cause accuracy, citation accuracy, invented-evidence rate, correct "insufficient" verdicts
+- [x] Evaluation: `rca evaluate` with verdict, segment, category and cause-citation accuracy, invented-evidence rate, and breakdowns by scenario and twist
+- [ ] Better choice of cause by the model on red herrings and competing changes
 - [ ] Web interface with an animated investigator bot that shows each step live and presents the report
 - [ ] Documentation, examples and v1.0 release
 

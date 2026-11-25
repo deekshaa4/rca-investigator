@@ -13,30 +13,29 @@ error_rate for service catalog, region us-east went from 0.003775 to 0.007476 (+
 - Data that would help: Change records for the affected service/region; Error logs or traces from the affected segment after the change
 
 ## Possible leads (not confirmed)
-1. **The deployment of checkout v8.10 to eu-west may have caused the error rate to increase in us-east.** (deployment, confidence 30%) [E5, E1]
-   - Why: checkout v8.10 deployment to eu-west introduced a change that affected service catalog in us-east.
-   - Why: The change in checkout v8.10 deployment caused an error rate increase in service catalog in us-east.
-   - Why: The error rate increase in service catalog in us-east is reflected in the error rate metric.
+1. **The deployment of checkout v8.10 to eu-west may have caused the error rate increase in service catalog in us-east.** (deployment, confidence 30%) [E5, E1]
+   - Why: checkout v8.10 deployment to eu-west introduced a new version that affected service catalog in us-east.
+   - Why: The error rate in service catalog in us-east increased from 0.38% to 0.75%.
+   - Why: The deployment to eu-west occurred 7 minutes before the change in error rate in us-east.
    - Why: evidence_ids
-2. **The deployment of search v4.8 to us-east may have caused the error rate to increase in us-east.** (deployment, confidence 30%) [E6, E1]
-   - Why: search v4.8 deployment to us-east introduced a change that affected service catalog in us-east.
-   - Why: The change in search v4.8 deployment caused an error rate increase in service catalog in us-east.
-   - Why: The error rate increase in service catalog in us-east is reflected in the error rate metric.
-   - Why: evidence_ids
-3. **The slow query on the auth endpoint in ap-south may have caused the error rate to increase in us-east.** (unknown, confidence 30%) [E7, E1]
-   - Why: The slow query on the auth endpoint in ap-south may have caused a delay in processing requests.
-   - Why: This delay may have affected the service catalog in us-east, causing an error rate increase.
-   - Why: The error rate increase in service catalog in us-east is reflected in the error rate metric.
+2. **The deployment of search v4.8 to us-east was a routine release and did not cause the error rate increase.** (unknown, confidence 30%) [E6]
+   - Why: The deployment of search v4.8 to us-east was a routine release and did not introduce any new features or changes that would affect the error rate in service catalog in us-east.
+   - Why: The error rate in service catalog in us-east increased from 0.38% to 0.75%.
+   - Why: The deployment to us-east occurred 265 minutes before the change in error rate in us-east.
    - Why: evidence_ids
 
 ## Ruled out
-- The increase in error rate was due to a sudden increase in request volume.: The request volume for service catalog in us-east did not change significantly. [E3]
-- The increase in error rate was due to a sudden increase in p95 latency.: The p95 latency for service catalog in us-east did not change significantly. [E4]
+- The increase in error rate was due to a sudden increase in request volume.: The request volume for service catalog in us-east did not change significantly (18% increase). [E3]
+- The increase in error rate was due to a change in latency of the service.: The p95 latency for service catalog in us-east did not change significantly (1% increase). [E4]
 
 ## Actions
 - (corrective, high) Rollback the checkout v8.10 deployment to eu-west.
-- (preventive, medium) Monitor the performance of the search v4.8 deployment to us-east closely.
-- (preventive, medium) Investigate the slow query on the auth endpoint in ap-south further.
+- (preventive, medium) Monitor the error rate in service catalog in us-east closely for any further increases.
+- (preventive, medium) Review the logs for any other slow queries or issues related to the auth service.
+
+## Fact-check
+- Evidence IDs cited by the model: 5, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service catalog in region us-east rose from 0.38% to 0.75% (+98%), with a change point at 2026-03-05T06:05:00Z.

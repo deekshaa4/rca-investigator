@@ -4,32 +4,35 @@
 error_rate for service checkout, region eu-west went from 0.005316 to 0.01143 (+115%) starting 2026-03-20T09:35:00Z. [E1, E2]
 
 ## Verdict: insufficient (score 0.40)
-- ✓ A change event (deploys) lines up in time (1 min before the change).
+- ✗ The closest change event is 91 min before the change, too far to be convincing.
 - ✗ It concerns a different service/region than the one that changed.
 - ✗ No logs or alerts from the affected segment confirm the problem.
 - ✓ Request volume stayed steady, ruling out a traffic spike.
 - ✓ No competing change event fits as well.
 - ✓ The main factor rests on this event.
-- Data that would help: Change records for the affected service/region; Error logs or traces from the affected segment after the change
+- Data that would help: Change records from the hour before the change; Change records for the affected service/region; Error logs or traces from the affected segment after the change
 
 ## Possible leads (not confirmed)
-1. **New deployment of catalog v4.20 to us-east caused the error rate to rise.** (deployment, confidence 30%) [E5, E1]
+1. **New deployment of catalog v4.20 to us-east caused the error rate to increase.** (deployment, confidence 30%) [E1, E2, E3, E4, E6, E7, E8]
    - Why: Deployed catalog v4.20 to us-east (record R014) before the error rate spike.
    - Why: The error rate for service checkout in region eu-west increased from 0.53% to 1.14% (evidence E1).
-   - Why: The deployment to us-east occurred 1 min before the change point (evidence E1).
-2. **Routine release of checkout v3.20 to ap-south did not affect the error rate.** (unknown, confidence 30%) [E7, E1]
-   - Why: Checkout v3.20 to ap-south was a routine release (record R012).
-   - Why: The error rate for service checkout in region eu-west increased from 0.53% to 1.14% (evidence E1).
-   - Why: Routine releases to ap-south did not cause the error rate to spike (evidence E7).
+   - Why: The error rate increase is concentrated in service checkout in region eu-west (evidence E2).
+   - Why: The request volume for service checkout in region eu-west stayed about the same (evidence E3).
+   - Why: The p95 latency for service checkout in region eu-west stayed about the same (evidence E4).
 
 ## Ruled out
-- Customer typo on the help page caused the error rate to rise.: Customer reports a typo on the help page (record R013) 91 minutes before the change. [E6, E1]
-- Customer request for invoice download caused the error rate to rise.: Customer asks how to download an invoice (record R011) 340 minutes before the change. [E8, E1]
+- The error rate increase is due to a typo on the help page.: The error rate increase is not explained by the typo (evidence E6). [E6]
+- The error rate increase is due to a customer asking how to download an invoice.: The error rate increase is not explained by the customer asking how to download an invoice (evidence E8). [E8]
+- The error rate increase is due to a routine release of checkout v3.20 to ap-south.: The error rate increase is not explained by the routine release (evidence E7). [E7]
 
 ## Actions
 - (corrective, high) Roll back the catalog v4.20 deployment to us-east.
-- (preventive, medium) Monitor for similar error spikes in the future and take quick action if they occur.
-- (preventive, medium) Review and test the new catalog v4.20 in a staging environment before production deployment.
+- (preventive, high) Monitor the error rate for service checkout in region eu-west closely and take corrective action if the error rate increases again.
+- (preventive, medium) Review and test the new catalog v4.20 thoroughly before deploying to other regions.
+
+## Fact-check
+- Evidence IDs cited by the model: 11, invented (removed): 1
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service checkout in region eu-west rose from 0.53% to 1.14% (+115%), with a change point at 2026-03-20T09:35:00Z.

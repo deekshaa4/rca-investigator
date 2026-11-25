@@ -10,25 +10,34 @@ latency_p95_ms for service auth went from 90.47 to 268.5 (+197%) starting 2026-0
 - Data that would help: Deploy and config-change history for the affected segment
 
 ## Possible leads (not confirmed)
-1. **The increase in p95 latency is due to a connection pool exhaustion issue in the auth service.** (infrastructure, confidence 30%) [E1, E4, E6, E7, E8]
-   - Why: The p95 latency increased significantly (from 90 ms to 268 ms) after the change point.
-   - Why: The error rate for service auth also increased (from 0.38% to 0.60%).
-   - Why: Logs show warnings about connection pool exhaustion, indicating a problem with the database connections.
-   - Why: evidence_ids
-2. **The increase in p95 latency is due to a sudden increase in request volume for the auth service.** (traffic, confidence 30%) [E2, E3, E4]
-   - Why: The p95 latency increased significantly (from 90 ms to 268 ms) after the change point.
-   - Why: The request volume for service auth increased by 15% (from 1125 to 1299 per 5 min).
-   - Why: The error rate for service auth also increased (from 0.38% to 0.60%).
-   - Why: evidence_ids
+1. **The connection pool exhaustion warnings indicate a bottleneck in database connections.** (dependency, confidence 30%) [E2, E3, E4, E5, E6, E7, E8]
+   - Why: The increase in p95 latency is due to the connection pool exhaustion warnings.
+   - Why: The connection pool exhaustion is caused by the increase in request volume for service auth.
+   - Why: The increase in request volume is likely due to the rise in p95 latency, creating a feedback loop.
+2. **The service auth request volume increased, leading to connection pool exhaustion.** (traffic, confidence 30%) [E2, E3, E4, E5, E6, E7, E8]
+   - Why: The rise in p95 latency is caused by the connection pool exhaustion warnings.
+   - Why: The connection pool exhaustion is due to the increase in request volume for service auth.
+   - Why: The increase in request volume is likely due to the rise in p95 latency, creating a feedback loop.
+3. **The service auth request volume increased, leading to connection pool exhaustion.** (traffic, confidence 30%) [E2, E3, E4, E5, E6, E7, E8]
+   - Why: The rise in p95 latency is caused by the connection pool exhaustion warnings.
+   - Why: The connection pool exhaustion is due to the increase in request volume for service auth.
+   - Why: The increase in request volume is likely due to the rise in p95 latency, creating a feedback loop.
 
 ## Ruled out
-- The increase in p95 latency is due to a configuration change in the auth service.: The change in p95 latency is concentrated in service auth, and the other service/region segments stayed flat. [E2]
-- The increase in p95 latency is due to a dependency issue with an external service.: There is no evidence of a failure or slowdown in any external service. []
+- The increase in p95 latency is due to a configuration change in service auth.: The change in p95 latency is concentrated in service auth, but the other service/region segments stayed flat. [E2]
+- The increase in p95 latency is due to a deployment of a new release or version in service auth.: The change in p95 latency is concentrated in service auth, but there is no evidence of a deployment. [E1]
+- The increase in p95 latency is due to a data issue, such as bad or unusual input data.: There is no evidence of unusual input data. [E1, E2, E3, E4, E5, E6, E7, E8]
+- The increase in p95 latency is due to an infrastructure issue, such as a server or network problem.: There is no evidence of an infrastructure issue. [E1, E2, E3, E4, E5, E6, E7, E8]
+- The increase in p95 latency is due to a configuration change in the upstream service.: There is no evidence of a configuration change in the upstream service. [E1, E2, E3, E4, E5, E6, E7, E8]
 
 ## Actions
-- (corrective, high) Implement a connection pool optimization in the auth service to handle the increased request volume.
-- (preventive, medium) Monitor request volume and latency closely and take corrective action if the increase in request volume is detected.
-- (preventive, medium) Review and optimize the database connection pool settings to prevent future exhaustion.
+- (corrective, high) Implement a connection pool monitoring and alerting system to detect and respond to connection pool exhaustion warnings in a timely manner.
+- (preventive, high) Monitor and optimize the database connection pool size to prevent exhaustion.
+- (preventive, high) Implement a traffic management system to control and distribute request volume for service auth.
+
+## Fact-check
+- Evidence IDs cited by the model: 47, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for service auth rose from 90 ms to 268 ms (+197%), with a change point at 2026-03-16T14:35:00Z.

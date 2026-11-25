@@ -203,6 +203,48 @@
       "title": "FactorCategory",
       "type": "string"
     },
+    "Guardrails": {
+      "description": "What the fact-checker removed from the model's answer.",
+      "properties": {
+        "model_used": {
+          "description": "Whether a language model wrote the factors",
+          "title": "Model Used",
+          "type": "boolean"
+        },
+        "ids_cited": {
+          "default": 0,
+          "description": "Evidence IDs the model cited",
+          "minimum": 0,
+          "title": "Ids Cited",
+          "type": "integer"
+        },
+        "ids_invented": {
+          "default": 0,
+          "description": "Cited IDs that do not exist",
+          "minimum": 0,
+          "title": "Ids Invented",
+          "type": "integer"
+        },
+        "factors_dropped": {
+          "default": 0,
+          "description": "Factors removed (no real evidence, or symptoms only)",
+          "minimum": 0,
+          "title": "Factors Dropped",
+          "type": "integer"
+        },
+        "engine_fallback": {
+          "default": false,
+          "description": "The main factor came from the engines, not the model",
+          "title": "Engine Fallback",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "model_used"
+      ],
+      "title": "Guardrails",
+      "type": "object"
+    },
     "Priority": {
       "enum": [
         "high",
@@ -334,6 +376,17 @@
       },
       "title": "Actions",
       "type": "array"
+    },
+    "guardrails": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Guardrails"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "required": [

@@ -13,21 +13,23 @@ error_rate for service checkout, region eu-west went from 0.005187 to 0.01084 (+
 - Data that would help: Change records from the hour before the change; Change records for the affected service/region; Error logs or traces from the affected segment after the change
 
 ## Possible leads (not confirmed)
-1. **The deployment of auth v4.12 to ap-south likely caused the increase in error rate.** (deployment, confidence 30%) [E5, E1]
-   - Why: auth v4.12 deployment to ap-south introduced a new version of the service.
-   - Why: The new version of auth v4.12 was deployed to ap-south 146 minutes before the error rate increase.
-   - Why: The error rate for service checkout in region eu-west increased from 0.52% to 1.08% after the deployment.
-   - Why: evidence_ids
+1. **The deployment of auth v4.12 to ap-south may have caused the increase in error rate.** (deployment, confidence 30%) [E5, E1]
+   - Why: The deployment of auth v4.12 to ap-south introduced a new version of the authentication service.
+   - Why: This new version of the authentication service may have introduced bugs or incompatibilities.
+   - Why: These bugs or incompatibilities could have affected the service checkout in region eu-west, leading to an increase in error rate.
 
 ## Ruled out
-- The increase in error rate was due to a change in configuration settings.: No evidence of a configuration change that could have caused the error rate increase. [E3, E4]
-- The increase in error rate was due to a change in traffic patterns.: The request volume and p95 latency for service checkout in region eu-west did not change significantly. [E3, E4]
-- The increase in error rate was due to a failure of an external service.: No evidence of a failure of an external service that could have caused the error rate increase. [E3, E4]
+- The increase in error rate was due to a change in the configuration of the service checkout in region eu-west.: The error rate and request volume remained relatively stable, indicating no significant configuration changes. [E2, E3]
+- The increase in error rate was due to a change in the traffic patterns of the service checkout in region eu-west.: The request volume and latency remained relatively stable, indicating no significant changes in traffic patterns. [E2, E3]
 
 ## Actions
-- (corrective, high) Roll back the auth v4.12 deployment to ap-south.
-- (preventive, medium) Monitor the error rate for service checkout in region eu-west for any further increases and investigate the cause.
-- (preventive, medium) Monitor the error rate for service checkout in region eu-west for any further increases and investigate the cause.
+- (corrective, high) Roll back the deployment of catalog v8.27 to ap-south to investigate the root cause and prevent further issues.
+- (preventive, medium) Monitor the error rate and request volume for the service checkout in region eu-west closely after the deployment of auth v4.12 to ap-south.
+- (preventive, medium) Review and test the new version of the authentication service (auth v4.12) in a staging environment before deploying it to production.
+
+## Fact-check
+- Evidence IDs cited by the model: 8, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service checkout in region eu-west rose from 0.52% to 1.08% (+109%), with a change point at 2026-03-20T02:40:00Z.

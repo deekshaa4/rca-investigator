@@ -12,24 +12,28 @@ latency_p95_ms for service auth went from 90.69 to 293 (+223%) starting 2026-03-
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **The connection pool size change likely caused the connection exhaustion warnings.** (config_change, confidence 90%) [E5, E7, E8, E9]
-   - Why: The auth db.pool_size was changed from 50 to 5.
-   - Why: This reduction in pool size likely caused the connection pool to exhaust more quickly.
-   - Why: The connection pool exhaustion led to the WARN messages in the logs.
+1. **The change in auth db.pool_size likely caused the connection pool exhaustion.** (config_change, confidence 90%) [E5, E7, E8, E9]
+   - Why: The db.pool_size change from 50 to 5 reduced the number of available connections in the pool.
+   - Why: This reduction in connections led to the connection pool exhaustion warnings in the logs.
+   - Why: The exhaustion caused the p95 latency to spike as the service could not handle the load efficiently.
 2. **The increase in request volume did not cause the latency spike.** (traffic, confidence 80%) [E3, E4]
-   - Why: The request volume for service auth stayed about the same.
-   - Why: The error rate increased, not the request volume.
+   - Why: The request volume stayed about the same before and after the change.
+   - Why: The error rate increased, indicating issues with the service rather than increased load.
    - Why: The latency spike was more pronounced than the increase in requests.
 
 ## Ruled out
-- The increase in latency was due to a sudden surge in traffic.: The request volume did not change significantly. [E3]
-- The latency increase was caused by a new deployment.: No alerts or error logs were present before the change. [E1, E2, E4]
-- The latency increase was due to a dependency issue with an external service.: No external service failures or slowdowns were reported. [E1, E2, E4]
+- The increase in request volume caused the latency spike.: The request volume stayed about the same before and after the change. [E3]
+- The latency spike was due to a sudden increase in traffic.: The request volume stayed about the same before and after the change. [E3]
+- The latency spike was due to a sudden increase in error rate.: The error rate increased, but the latency spike was more pronounced. [E4]
 
 ## Actions
-- (corrective, high) Roll back the config change to restore the db.pool_size to 50.
-- (preventive, medium) Monitor the connection pool size and request volume closely in the future.
+- (corrective, high) Fix the db.pool_size configuration to a more appropriate value, e.g. 20 or 30 connections.
+- (preventive, medium) Monitor the connection pool size and error rates closely to prevent future issues.
 - (preventive, medium) Review and optimize the connection pool configuration for the auth service.
+
+## Fact-check
+- Evidence IDs cited by the model: 13, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for service auth rose from 91 ms to 293 ms (+223%), with a change point at 2026-03-20T04:05:00Z.

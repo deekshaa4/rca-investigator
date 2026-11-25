@@ -19,50 +19,47 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "New deployment of catalog v4.20 to us-east caused the error rate to rise.",
+      "description": "New deployment of catalog v4.20 to us-east caused the error rate to increase.",
       "category": "deployment",
       "confidence": 0.3,
       "why_chain": [
         "Deployed catalog v4.20 to us-east (record R014) before the error rate spike.",
         "The error rate for service checkout in region eu-west increased from 0.53% to 1.14% (evidence E1).",
-        "The deployment to us-east occurred 1 min before the change point (evidence E1)."
+        "The error rate increase is concentrated in service checkout in region eu-west (evidence E2).",
+        "The request volume for service checkout in region eu-west stayed about the same (evidence E3).",
+        "The p95 latency for service checkout in region eu-west stayed about the same (evidence E4)."
       ],
       "evidence_ids": [
-        "E5",
-        "E1"
-      ]
-    },
-    {
-      "rank": 2,
-      "description": "Routine release of checkout v3.20 to ap-south did not affect the error rate.",
-      "category": "unknown",
-      "confidence": 0.3,
-      "why_chain": [
-        "Checkout v3.20 to ap-south was a routine release (record R012).",
-        "The error rate for service checkout in region eu-west increased from 0.53% to 1.14% (evidence E1).",
-        "Routine releases to ap-south did not cause the error rate to spike (evidence E7)."
-      ],
-      "evidence_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E6",
         "E7",
-        "E1"
+        "E8"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "Customer typo on the help page caused the error rate to rise.",
-      "reason": "Customer reports a typo on the help page (record R013) 91 minutes before the change.",
+      "hypothesis": "The error rate increase is due to a typo on the help page.",
+      "reason": "The error rate increase is not explained by the typo (evidence E6).",
       "evidence_ids": [
-        "E6",
-        "E1"
+        "E6"
       ]
     },
     {
-      "hypothesis": "Customer request for invoice download caused the error rate to rise.",
-      "reason": "Customer asks how to download an invoice (record R011) 340 minutes before the change.",
+      "hypothesis": "The error rate increase is due to a customer asking how to download an invoice.",
+      "reason": "The error rate increase is not explained by the customer asking how to download an invoice (evidence E8).",
       "evidence_ids": [
-        "E8",
-        "E1"
+        "E8"
+      ]
+    },
+    {
+      "hypothesis": "The error rate increase is due to a routine release of checkout v3.20 to ap-south.",
+      "reason": "The error rate increase is not explained by the routine release (evidence E7).",
+      "evidence_ids": [
+        "E7"
       ]
     }
   ],
@@ -128,7 +125,7 @@
     "verdict": "insufficient",
     "score": 0.4,
     "reasons": [
-      "\u2713 A change event (deploys) lines up in time (1 min before the change).",
+      "\u2717 The closest change event is 91 min before the change, too far to be convincing.",
       "\u2717 It concerns a different service/region than the one that changed.",
       "\u2717 No logs or alerts from the affected segment confirm the problem.",
       "\u2713 Request volume stayed steady, ruling out a traffic spike.",
@@ -136,6 +133,7 @@
       "\u2713 The main factor rests on this event."
     ],
     "missing_data": [
+      "Change records from the hour before the change",
       "Change records for the affected service/region",
       "Error logs or traces from the affected segment after the change"
     ]
@@ -150,20 +148,27 @@
       ]
     },
     {
-      "action": "Monitor for similar error spikes in the future and take quick action if they occur.",
+      "action": "Monitor the error rate for service checkout in region eu-west closely and take corrective action if the error rate increases again.",
       "type": "preventive",
-      "priority": "medium",
+      "priority": "high",
       "addresses_factors": [
         1
       ]
     },
     {
-      "action": "Review and test the new catalog v4.20 in a staging environment before production deployment.",
+      "action": "Review and test the new catalog v4.20 thoroughly before deploying to other regions.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
         1
       ]
     }
-  ]
+  ],
+  "guardrails": {
+    "model_used": true,
+    "ids_cited": 11,
+    "ids_invented": 1,
+    "factors_dropped": 0,
+    "engine_fallback": false
+  }
 }

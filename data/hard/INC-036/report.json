@@ -16,58 +16,56 @@
       "E2"
     ]
   },
-  "contributing_factors": [
-    {
-      "rank": 1,
-      "description": "Increased error rate due to higher request volume.",
-      "category": "traffic",
-      "confidence": 0.3,
-      "why_chain": [
-        "The error rate increase coincided with a 12% increase in request volume.",
-        "The error rate spike is not explained by the unchanged request volume.",
-        "The increase in request volume could have overwhelmed the system, leading to more errors."
-      ],
-      "evidence_ids": [
-        "E2",
-        "E3"
-      ]
-    }
-  ],
+  "contributing_factors": [],
   "ruled_out": [
     {
-      "hypothesis": "The error rate increase was due to a configuration change.",
-      "reason": "No evidence supports a configuration change. The error rate and request volume remained stable.",
+      "hypothesis": "The error rate spike was due to a sudden increase in user traffic.",
+      "reason": "The request volume and latency remained stable, contradicting this hypothesis.",
       "evidence_ids": [
-        "E1",
-        "E2",
-        "E3"
+        "E3",
+        "E4"
       ]
     },
     {
-      "hypothesis": "The error rate increase was due to a dependency issue with an external service.",
-      "reason": "No evidence supports a dependency issue. The error rate and request volume remained stable.",
+      "hypothesis": "The error rate spike was due to a configuration change.",
+      "reason": "There is no evidence of a configuration change that would explain the error rate spike.",
       "evidence_ids": [
         "E1",
         "E2",
-        "E3"
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8"
       ]
     },
     {
-      "hypothesis": "The error rate increase was due to a data issue.",
-      "reason": "No evidence supports a data issue. The error rate and request volume remained stable.",
+      "hypothesis": "The error rate spike was due to a dependency issue with an external service.",
+      "reason": "There is no evidence of a dependency issue with an external service.",
       "evidence_ids": [
         "E1",
         "E2",
-        "E3"
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8"
       ]
     },
     {
-      "hypothesis": "The error rate increase was due to infrastructure issues.",
-      "reason": "No evidence supports infrastructure issues. The error rate and request volume remained stable.",
+      "hypothesis": "The error rate spike was due to infrastructure issues.",
+      "reason": "There is no evidence of infrastructure issues, such as network or server capacity problems.",
       "evidence_ids": [
         "E1",
         "E2",
-        "E3"
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8"
       ]
     }
   ],
@@ -138,40 +136,22 @@
   ],
   "sufficiency": {
     "verdict": "insufficient",
-    "score": 0.15,
+    "score": 0.25,
     "reasons": [
       "\u2717 No deploy, config change, ticket or alert lines up with the change.",
       "\u2713 4 log/alert record(s) after the change agree with the numbers.",
-      "\u2717 A traffic cause is claimed, but request volume did not rise."
+      "\u2713 Request volume stayed steady, ruling out a traffic spike."
     ],
     "missing_data": [
       "Deploy and config-change history for the affected segment"
     ]
   },
-  "actions": [
-    {
-      "action": "Roll back the deployment of the new version of RequestHandler (v3.7).",
-      "type": "corrective",
-      "priority": "high",
-      "addresses_factors": [
-        1
-      ]
-    },
-    {
-      "action": "Monitor request volume and adjust capacity if necessary.",
-      "type": "preventive",
-      "priority": "medium",
-      "addresses_factors": [
-        1
-      ]
-    },
-    {
-      "action": "Implement error handling and logging improvements in RequestHandler.",
-      "type": "preventive",
-      "priority": "medium",
-      "addresses_factors": [
-        1
-      ]
-    }
-  ]
+  "actions": [],
+  "guardrails": {
+    "model_used": true,
+    "ids_cited": 42,
+    "ids_invented": 0,
+    "factors_dropped": 2,
+    "engine_fallback": false
+  }
 }

@@ -12,22 +12,27 @@ latency_p95_ms for service checkout went from 221.6 to 579.4 (+161%) starting 20
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **The change in db.pool_size caused the connection pool to be exhausted, leading to increased latency.** (config_change, confidence 90%) [E5, E6, E7]
-   - Why: The db.pool_size was reduced from 50 to 5, causing the connection pool to be exhausted.
-   - Why: With fewer connections available, the checkout service experienced longer waits for connections.
-   - Why: This resulted in increased latency, as the service had to wait for connections to become available.
-2. **The increase in request volume did not explain the increase in latency.** (unknown, confidence 80%) [E3, E4]
-   - Why: The request volume for service checkout did not change significantly.
-   - Why: The error rate increased, indicating issues within the service itself, not just increased load.
+1. **The increase in p95 latency is due to a reduction in the database pool size, leading to connection exhaustion.** (config_change, confidence 90%) [E5, E6, E7, E8, E9]
+   - Why: The config_change (E5) reduced the db.pool_size from 50 to 5.
+   - Why: This reduction in pool size caused the connection pool to become exhausted more quickly.
+   - Why: The increased latency and error rate (E2, E4, E6, E7, E8, E9) are symptoms of the connection pool exhaustion.
+2. **The increase in p95 latency is also due to the increase in request volume, which put more pressure on the system.** (traffic, confidence 80%) [E3, E6, E7, E8, E9]
+   - Why: The request volume for service checkout increased by 24% (E3).
+   - Why: The increased request volume put more pressure on the system, exacerbating the connection pool exhaustion.
+   - Why: The connection pool exhaustion (E6, E7, E8, E9) caused the p95 latency to rise.
 
 ## Ruled out
-- The increase in latency was due to a sudden spike in traffic.: The request volume did not change significantly, and the error rate increased, not decreased. [E3]
-- The increase in latency was due to a dependency issue with an external service.: No evidence suggests the service was affected by an external service failure or slowdown. []
+- The increase in p95 latency is due to a change in the service configuration.: The config_change (E5) was the only change made to the system before the p95 latency increase, and the increase in p95 latency is not a direct result of the config_change. [E5]
+- The increase in p95 latency is due to a change in the service's external dependencies.: There is no evidence that the service's external dependencies changed or failed around the time of the p95 latency increase. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
+- The increase in p95 latency is due to a change in the service's infrastructure.: There is no evidence that the service's infrastructure changed or failed around the time of the p95 latency increase. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
 
 ## Actions
-- (corrective, high) Increase the db.pool_size back to 50 to ensure the connection pool is not exhausted.
-- (preventive, medium) Implement a mechanism to monitor and alert on connection pool exhaustion.
-- (preventive, medium) Review and optimize the checkout service's connection management to reduce the likelihood of connection pool exhaustion.
+- (corrective, high) Increase the db.pool_size back to 50 to prevent connection pool exhaustion.
+- (preventive, medium) Monitor request volume and adjust capacity if necessary to prevent connection pool exhaustion.
+
+## Fact-check
+- Evidence IDs cited by the model: 29, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for service checkout rose from 222 ms to 579 ms (+161%), with a change point at 2026-03-02T10:50:00Z.

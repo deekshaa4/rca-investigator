@@ -23,27 +23,26 @@
       "confidence": 0.9,
       "why_chain": [
         "The flash sale campaign triggered a spike in user activity in ap-south.",
-        "This spike led to a higher request volume and error rate.",
-        "The increased load caused the p95 latency to rise."
+        "This led to a higher request volume, which increased the load on the system.",
+        "The increased load caused the p95 latency to rise as the system struggled to handle the traffic."
       ],
       "evidence_ids": [
         "E5",
-        "E6",
-        "E4"
+        "E6"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The deployment of search v1.26 caused the change.",
-      "reason": "The deployment was in eu-west, not ap-south.",
+      "hypothesis": "The deployment of search v1.26 to eu-west caused the change in ap-south.",
+      "reason": "The deployment to eu-west occurred 4 minutes before the change point, and there is no evidence linking it to the ap-south issue.",
       "evidence_ids": [
         "E9"
       ]
     },
     {
-      "hypothesis": "The typo on the help page caused the change.",
-      "reason": "The help page typo occurred 244 minutes before the change.",
+      "hypothesis": "The typo on the help page caused the change in ap-south.",
+      "reason": "The typo occurred 244 minutes before the change point, and there is no evidence linking it to the ap-south issue.",
       "evidence_ids": [
         "E8"
       ]
@@ -129,15 +128,7 @@
   },
   "actions": [
     {
-      "action": "Implement a more aggressive autoscaler to handle sudden spikes in traffic.",
-      "type": "corrective",
-      "priority": "high",
-      "addresses_factors": [
-        1
-      ]
-    },
-    {
-      "action": "Monitor request volume and error rate closely during marketing campaigns to identify and address sudden spikes in traffic.",
+      "action": "Review and optimize the autoscaler configuration to prevent unnecessary scaling out.",
       "type": "preventive",
       "priority": "high",
       "addresses_factors": [
@@ -145,12 +136,19 @@
       ]
     },
     {
-      "action": "Optimize the autoscaler configuration to better handle sudden traffic spikes.",
+      "action": "Implement traffic shaping or rate limiting to manage user traffic during campaigns.",
       "type": "preventive",
-      "priority": "medium",
+      "priority": "high",
       "addresses_factors": [
         1
       ]
     }
-  ]
+  ],
+  "guardrails": {
+    "model_used": true,
+    "ids_cited": 6,
+    "ids_invented": 0,
+    "factors_dropped": 1,
+    "engine_fallback": false
+  }
 }

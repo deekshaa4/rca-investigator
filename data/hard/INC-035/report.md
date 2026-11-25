@@ -17,19 +17,19 @@ error_rate for service checkout, region ap-south went from 0.003675 to 0.008217 
    - Why: Checkout v8.9 was deployed to ap-south 211 minutes before the error rate increase.
    - Why: The error rate for service checkout in region ap-south increased from 0.37% to 0.82%.
    - Why: The deployment of checkout v8.9 is the most likely cause of the error rate increase.
-2. **The deployment may have introduced a bug.** (unknown, confidence 30%) [E1, E2, E3, E4]
-   - Why: Checkout v8.9 was deployed 211 minutes before the error rate increase.
-   - Why: The error rate increased, but the request volume and latency remained stable.
-   - Why: The deployment could have introduced a bug that was not caught in testing.
 
 ## Ruled out
-- The increase in error rate was due to a sudden increase in user traffic.: The request volume and p95 latency remained stable. [E3, E4]
-- The increase in error rate was due to a configuration change.: No configuration change was noted in the evidence. [E1, E2, E3, E4]
+- The increase in error rate was due to a sudden increase in request volume.: The request volume for service checkout in region ap-south stayed about the same before and after the change. [E3]
+- The increase in error rate was due to a change in latency.: The p95 latency for service checkout in region ap-south stayed about the same before and after the change. [E4]
 
 ## Actions
 - (corrective, high) Rollback the deployment of checkout v8.9 to ap-south.
-- (preventive, high) Implement a thorough pre-deployment testing process for the checkout v8.9 release.
-- (preventive, medium) Monitor error rates and request volumes closely after deployments to identify any anomalies.
+- (preventive, high) Monitor the system for any further issues and prepare for a quick rollback if necessary.
+- (preventive, medium) Investigate the deployment of checkout v8.9 to identify and address any issues.
+
+## Fact-check
+- Evidence IDs cited by the model: 3, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service checkout in region ap-south rose from 0.37% to 0.82% (+124%), with a change point at 2026-03-25T02:15:00Z.

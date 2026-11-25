@@ -174,9 +174,7 @@ def cmd_batch(args: argparse.Namespace) -> int:
     import json
     from pathlib import Path
 
-    import pandas as pd
-
-    from .evaluate import score_report, summarise
+    from .evaluate import score_report
     from .investigate import investigate, save_report, to_markdown
     from .simulate import load_incident
 
@@ -200,14 +198,44 @@ def cmd_batch(args: argparse.Namespace) -> int:
         rows.append(row)
         print(f"  {row['incident']} {row['scenario']:<18} verdict {row['verdict']:<12} "
               f"top {row['top_category']:<14} {row['seconds']}s", flush=True)
+    return _print_scores(rows, Path(args.path))
+
+
+def _print_scores(rows: list[dict], folder) -> int:
+    """Overall scores, then per scenario and per twist; also saved to scores.csv."""
+    import pandas as pd
+
+    from .evaluate import breakdown, summarise
+
     if not rows:
+        print(f"No reports to score in {folder}")
         return 1
-    table = pd.DataFrame(rows)
-    table.to_csv(Path(args.path) / "scores.csv", index=False)
-    print()
+    pd.DataFrame(rows).to_csv(folder / "scores.csv", index=False)
+    print(f"\nScores for {len(rows)} incidents")
     for name, value in summarise(rows).items():
-        print(f"{name:<40} {value:.0%}")
+        print(f"  {name:<40} {value:.0%}")
+    for by in ("scenario", "twist"):
+        if len({r[by] for r in rows}) > 1:
+            print(f"\nBy {by}:")
+            print(breakdown(rows, by).to_string())
     return 0
+
+
+def cmd_evaluate(args: argparse.Namespace) -> int:
+    """Score the reports already saved in a folder (no model needed)."""
+    import json
+    from pathlib import Path
+
+    from .evaluate import score_report
+    from .schema import RCAReport
+
+    folder = Path(args.path)
+    rows = []
+    for sub in sorted(folder.iterdir()):
+        if (sub / "report.json").exists() and (sub / "truth.json").exists():
+            report = RCAReport.model_validate_json((sub / "report.json").read_text())
+            rows.append(score_report(report, json.loads((sub / "truth.json").read_text())))
+    return _print_scores(rows, folder)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -254,6 +282,10 @@ def main(argv: list[str] | None = None) -> int:
     batch.add_argument("--model", default=DEFAULT_MODEL)
     batch.add_argument("--no-llm", action="store_true")
     batch.set_defaults(func=cmd_batch)
+
+    ev = sub.add_parser("evaluate", help="score saved reports against the known answers")
+    ev.add_argument("path")
+    ev.set_defaults(func=cmd_evaluate)
 
     args = parser.parse_args(argv)
     return args.func(args)

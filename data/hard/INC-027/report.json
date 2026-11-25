@@ -18,13 +18,13 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "The connection pool size change likely caused the connection exhaustion warnings.",
+      "description": "The change in auth db.pool_size likely caused the connection pool exhaustion.",
       "category": "config_change",
       "confidence": 0.9,
       "why_chain": [
-        "The auth db.pool_size was changed from 50 to 5.",
-        "This reduction in pool size likely caused the connection pool to exhaust more quickly.",
-        "The connection pool exhaustion led to the WARN messages in the logs."
+        "The db.pool_size change from 50 to 5 reduced the number of available connections in the pool.",
+        "This reduction in connections led to the connection pool exhaustion warnings in the logs.",
+        "The exhaustion caused the p95 latency to spike as the service could not handle the load efficiently."
       ],
       "evidence_ids": [
         "E5",
@@ -39,8 +39,8 @@
       "category": "traffic",
       "confidence": 0.8,
       "why_chain": [
-        "The request volume for service auth stayed about the same.",
-        "The error rate increased, not the request volume.",
+        "The request volume stayed about the same before and after the change.",
+        "The error rate increased, indicating issues with the service rather than increased load.",
         "The latency spike was more pronounced than the increase in requests."
       ],
       "evidence_ids": [
@@ -51,27 +51,23 @@
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in latency was due to a sudden surge in traffic.",
-      "reason": "The request volume did not change significantly.",
+      "hypothesis": "The increase in request volume caused the latency spike.",
+      "reason": "The request volume stayed about the same before and after the change.",
       "evidence_ids": [
         "E3"
       ]
     },
     {
-      "hypothesis": "The latency increase was caused by a new deployment.",
-      "reason": "No alerts or error logs were present before the change.",
+      "hypothesis": "The latency spike was due to a sudden increase in traffic.",
+      "reason": "The request volume stayed about the same before and after the change.",
       "evidence_ids": [
-        "E1",
-        "E2",
-        "E4"
+        "E3"
       ]
     },
     {
-      "hypothesis": "The latency increase was due to a dependency issue with an external service.",
-      "reason": "No external service failures or slowdowns were reported.",
+      "hypothesis": "The latency spike was due to a sudden increase in error rate.",
+      "reason": "The error rate increased, but the latency spike was more pronounced.",
       "evidence_ids": [
-        "E1",
-        "E2",
         "E4"
       ]
     }
@@ -156,7 +152,7 @@
   },
   "actions": [
     {
-      "action": "Roll back the config change to restore the db.pool_size to 50.",
+      "action": "Fix the db.pool_size configuration to a more appropriate value, e.g. 20 or 30 connections.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -164,7 +160,7 @@
       ]
     },
     {
-      "action": "Monitor the connection pool size and request volume closely in the future.",
+      "action": "Monitor the connection pool size and error rates closely to prevent future issues.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
@@ -179,5 +175,12 @@
         1
       ]
     }
-  ]
+  ],
+  "guardrails": {
+    "model_used": true,
+    "ids_cited": 13,
+    "ids_invented": 0,
+    "factors_dropped": 1,
+    "engine_fallback": false
+  }
 }

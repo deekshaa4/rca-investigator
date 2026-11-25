@@ -12,25 +12,28 @@ error_rate for service search went from 0.003516 to 0.03744 (+965%) starting 202
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **Upstream search-cluster is experiencing degraded performance, causing service search to fail with HTTP 503 and timeouts.** (dependency, confidence 90%) [E5, E6, E7, E8, E9]
-   - Why: The upstream search-cluster is returning HTTP 503, indicating it is down or overloaded.
-   - Why: The search-cluster is failing to respond within the retries, causing service search to time out.
-   - Why: The search-cluster is experiencing degraded performance, leading to the error rate increase in service search.
-2. **The error rate increase is concentrated in service search, suggesting a specific issue with this service.** (unknown, confidence 80%) [E2]
-   - Why: The error rate increase is not uniform across all service/region segments.
-   - Why: The error rate increase is specifically in service search, indicating a localized issue.
-   - Why: The localized issue in service search is likely related to the upstream search-cluster.
+1. **Upstream search-cluster is returning HTTP 503 and experiencing timeouts.** (dependency, confidence 100%) [E5, E6, E7, E8, E9]
+   - Why: The upstream search-cluster is the source of the error rate increase.
+   - Why: The search-cluster is returning HTTP 503, indicating a service failure.
+   - Why: The search-cluster is experiencing timeouts, causing retries and increased latency.
+2. **Request volume for service search is increasing, but not enough to explain the error rate increase.** (traffic, confidence 80%) [E2, E3]
+   - Why: The error rate increase is concentrated in service search, not all services.
+   - Why: The request volume for service search is only slightly higher after the change.
+   - Why: The error rate increase is more pronounced than the request volume increase.
 
 ## Ruled out
-- The increase in error rate is due to a sudden surge in user traffic.: The request volume for service search did not change significantly, and the error rate increase is concentrated in service search. [E3]
-- The increase in error rate is due to a configuration change in service search.: There is no evidence of a configuration change that would cause the error rate to increase. [E1]
-- The increase in error rate is due to a change in infrastructure, such as network or server capacity.: There is no evidence of a change in infrastructure that would cause the error rate to increase. [E1]
-- The increase in error rate is due to bad or unusual input data.: There is no evidence of bad or unusual input data that would cause the error rate to increase. [E1]
+- The error rate increase is due to a configuration change.: No evidence supports a configuration change. [E1]
+- The error rate increase is due to a data issue.: No evidence supports a data issue. [E1]
+- The error rate increase is due to a deployment issue.: The error rate increase is after the deployment, not before. [E1]
 
 ## Actions
-- (corrective, high) Investigate and fix the upstream search-cluster issue.
-- (preventive, medium) Monitor the upstream search-cluster and take preemptive actions if it shows signs of degradation.
-- (preventive, medium) Review and optimize the retry logic for service search.
+- (corrective, high) Contact the upstream search-cluster team to investigate the service failure and timeouts.
+- (preventive, high) Monitor the upstream search-cluster and take immediate action if it shows signs of failure again.
+- (preventive, medium) Review and optimize the request handling logic for service search to better handle increased load.
+
+## Fact-check
+- Evidence IDs cited by the model: 10, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service search rose from 0.35% to 3.74% (+965%), with a change point at 2026-03-07T05:30:00Z.

@@ -53,6 +53,7 @@ rca analyze data/generated # finds what changed in each incident and scores it
 rca search data/generated  # finds the records that explain each change and scores it
 rca investigate data/generated/INC-001 --save   # full investigation report with the local model
 rca batch data/generated   # investigates and scores every incident (about 30 s each)
+rca evaluate data/generated   # re-scores saved reports, by scenario and by twist (no model needed)
 pytest                     # runs the tests
 ```
 
@@ -108,8 +109,9 @@ Current results on the 16 explainable incidents: **true cause ranked first in 16
 1. Python gathers the facts (numerical and text engines) and numbers them as evidence `E1`, `E2`, ...
 2. The model reasons only over that evidence: contributing factors with a "5 Whys" chain, ruled-out alternatives, corrective and preventive actions. Its reply is constrained to a JSON schema.
 3. Guardrails check the reply: invented evidence IDs are removed, factors without evidence are dropped, factors resting only on records *after* the change (symptoms) are dropped, and the report must pass schema validation.
-4. If the model gives no usable factor, the engines' best candidate is used instead, so a report never depends on the model alone.
-5. When the evidence is insufficient, factors are shown as **possible leads (not confirmed)** with low confidence, together with the data that would settle the question.
+4. Every report records what the guardrails removed (a *Fact-check* section): how many evidence IDs the model cited, how many it invented, and how many factors were dropped.
+5. If the model gives no usable factor, the engines' best candidate is used instead, so a report never depends on the model alone.
+6. When the evidence is insufficient, factors are shown as **possible leads (not confirmed)** with low confidence, together with the data that would settle the question.
 
 Example reports from `qwen2.5:3b`: [bad deploy](examples/reports/bad_deploy.md), [traffic spike](examples/reports/traffic_spike.md), [no clear cause](examples/reports/no_clear_cause.md).
 
@@ -130,16 +132,28 @@ Score ≥ 0.7 is **sufficient**, ≥ 0.45 **partial**, otherwise **insufficient*
 
 ## Results
 
-`rca batch` with `qwen2.5:3b` on a MacBook Air (M1, 8 GB), about 31 seconds per incident.
+`rca batch` with `qwen2.5:3b` on a MacBook Air (M1, 8 GB), 30 to 60 seconds per incident. `rca evaluate` prints these tables from the saved reports.
 
 | Measure | 20 standard incidents | 50 hard incidents |
 |---|---|---|
 | Sufficiency verdict correct | 20/20 | 48/50 |
 | Affected service/region correct | 20/20 | 50/50 |
-| Top cause category correct | 16/16 | 74% |
+| Top cause category correct | 16/16 | 75% |
 | Top cause cites the true cause record | 15/16 | 81% |
+| Evidence IDs invented by the model (removed by the guardrails) | - | 1 of 599 |
+| Reports where a factor was dropped by the guardrails | - | 15 of 49 |
 
-On the hard set the rules-based verdict holds up well, but the small model is sometimes misled by red herrings (for example, blaming a deploy from hours earlier). In the `rival_change` cases the data genuinely cannot separate the two changes, so the verdict is correctly *partial* even when the model picks the other change. Improving the model's choice of cause is the next step.
+Hard set by twist (cause accuracy counts only incidents that have a recorded cause):
+
+| Twist | Incidents | Verdict | Category | Cause cited |
+|---|---|---|---|---|
+| none | 10 | 10/10 | 8/8 | 8/8 |
+| red herring in another segment | 12 | 12/12 | 8/8 | 8/8 |
+| red herring hours too early | 12 | 11/12 | 6/8 | 7/8 |
+| cause missing from the records | 8 | 8/8 | - | - |
+| two competing changes | 8 | 7/8 | 2/8 | 3/8 |
+
+The rules-based verdict holds up well, and the guardrails catch the rare invented citation. The small model's weak spot is choosing between changes: it is sometimes misled by an early deploy, and with two competing changes it often picks the other one. In those cases the data cannot separate the two, so the verdict is correctly *partial*. Improving the model's choice of cause is the next step. (One incident's model call timed out on the re-run, so its fact-check counts are missing.)
 
 ## Project structure
 

@@ -13,24 +13,28 @@ latency_p95_ms for region us-east went from 137.4 to 270.4 (+97%) starting 2026-
 - Data that would help: Change records from the hour before the change; Traffic source breakdown (campaigns, bots, partners)
 
 ## Possible leads (not confirmed)
-1. **The deployment of catalog v3.20 likely caused the increase in p95 latency.** (deployment, confidence 30%) [E6, E2, E4, E5, E7]
+1. **The deployment of catalog v3.20 caused the increase in latency and request volume.** (deployment, confidence 30%) [E6, E7]
    - Why: The deployment of catalog v3.20 introduced changes that affected the system's performance.
-   - Why: The change in catalog v3.20 led to a rise in request volume, which in turn increased p95 latency.
-   - Why: The rise in request volume caused the autoscaler to scale out, leading to increased latency.
-2. **The error rate increase could be a symptom of the underlying issues.** (unknown, confidence 30%) [E4, E6]
-   - Why: The error rate increase could be due to the deployment of catalog v3.20.
-   - Why: The deployment of catalog v3.20 may have introduced bugs or changes that affected error handling.
-   - Why: The bugs or changes led to an increase in error rate, which could be a symptom of the underlying issues.
+   - Why: The increase in request volume and error rate coincided with the deployment, indicating a possible correlation.
+   - Why: The autoscaler scaling out 4 new instances after the deployment suggests a system response to the increased load.
+2. **The error rate increase could be due to the deployment's impact on system stability.** (unknown, confidence 30%) [E4, E6, E7]
+   - Why: The error rate increased after the deployment, suggesting a potential issue with the new version.
+   - Why: The deployment could have introduced bugs or changes that affected system stability.
+   - Why: The autoscaler scaling out new instances indicates the system was under stress.
 
 ## Ruled out
-- The increase in p95 latency was due to a configuration change.: No evidence supports a configuration change as the cause of the increase in p95 latency. [E1, E2, E3, E4, E5, E6, E7]
-- The increase in p95 latency was due to a dependency issue with an external service.: No evidence supports a dependency issue with an external service as the cause of the increase in p95 latency. [E1, E2, E3, E4, E5, E6, E7]
-- The increase in p95 latency was due to a sudden increase in network traffic.: The increase in request volume and error rate are more likely causes than a sudden increase in network traffic. [E1, E2, E3, E4, E5, E6, E7]
+- The increase in latency and request volume were due to a configuration change.: No evidence supports a configuration change as the cause. The deployment of a new version is the most supported cause. [E1, E2, E3, E4, E5, E6, E7]
+- The increase in latency and request volume were due to a data issue.: No evidence supports a data issue. The increase in request volume and error rate are more aligned with system load and deployment impacts. [E1, E2, E3, E4, E5, E6, E7]
+- The increase in latency and request volume were due to a dependency issue with an external service.: No evidence supports a dependency issue. The deployment and increased load are more likely causes. [E1, E2, E3, E4, E5, E6, E7]
 
 ## Actions
-- (corrective, high) Roll back the catalog v3.20 deployment to revert the changes introduced by the deployment.
-- (preventive, medium) Monitor the system closely for any further changes or issues related to the catalog v3.20 deployment.
-- (preventive, medium) Review and optimize the autoscaler configuration to ensure it scales appropriately under normal and increased load conditions.
+- (corrective, high) Roll back the catalog v3.20 deployment to revert the changes and observe the system's behavior.
+- (preventive, medium) Implement a load balancer to distribute the increased request volume more evenly across servers.
+- (preventive, medium) Monitor the system closely for any further issues and adjust the autoscaler as needed.
+
+## Fact-check
+- Evidence IDs cited by the model: 29, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for region us-east rose from 137 ms to 270 ms (+97%), with a change point at 2026-03-16T04:40:00Z.

@@ -12,20 +12,24 @@ latency_p95_ms for region ap-south went from 137 to 252.1 (+84%) starting 2026-0
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **The flash sale campaign likely caused the increase in request volume and error rate.** (traffic, confidence 90%) [E5, E2, E4]
+1. **The flash sale campaign likely caused the spike in request volume and error rate.** (traffic, confidence 90%) [E5, E2, E4]
    - Why: The flash sale campaign went live at the change point (E5).
-   - Why: This led to a significant increase in request volume (E2, E4).
-   - Why: The increased load caused higher error rates (E4).
+   - Why: This led to a sudden increase in request volume (E2, E4).
+   - Why: The increased load caused the system to struggle, leading to higher error rates (E4).
    - Why: evidence_ids
 
 ## Ruled out
-- The deployment of catalog v6.12 caused the increase in latency.: The deployment of catalog v6.12 happened 3 minutes before the change point (E8). [E8]
-- The deployment of checkout v1.8 caused the increase in latency.: The deployment of checkout v1.8 happened 272 minutes before the change point (E9). [E9]
+- The deployment of catalog v6.12 caused the change.: The deployment was in us-east, not ap-south (E8). [E8]
+- The routine release of checkout v1.8 caused the change.: The release was 272 minutes before the change (E9). [E9]
 
 ## Actions
-- (corrective, high) Review and optimize the autoscaler configuration to handle sudden spikes in load more efficiently.
-- (preventive, high) Implement a traffic management system to handle sudden spikes in request volume during campaigns.
-- (preventive, medium) Monitor and adjust the autoscaler configuration to better handle sudden increases in load.
+- (corrective, high) Implement a load balancer to handle sudden spikes in traffic.
+- (preventive, high) Optimize the autoscaler to better handle sudden load increases.
+- (preventive, medium) Monitor and adjust the autoscaler response time to avoid over-scaling.
+
+## Fact-check
+- Evidence IDs cited by the model: 7, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for region ap-south rose from 137 ms to 252 ms (+84%), with a change point at 2026-03-12T06:35:00Z.

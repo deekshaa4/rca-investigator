@@ -13,31 +13,27 @@ latency_p95_ms for region ap-south went from 137.4 to 298 (+117%) starting 2026-
 - Data that would help: Change records from the hour before the change; Traffic source breakdown (campaigns, bots, partners)
 
 ## Possible leads (not confirmed)
-1. **The deployment of auth v2.23 to ap-south likely caused the increase in p95 latency.** (deployment, confidence 30%) [E6, E1]
+1. **The deployment of auth v2.23 to ap-south likely caused the increase in p95 latency.** (deployment, confidence 30%) [E6, E2]
    - Why: The deployment of auth v2.23 to ap-south occurred 220 minutes before the change point.
-   - Why: The p95 latency increased from 137 ms to 298 ms, a significant increase.
-   - Why: The deployment of auth v2.23 is a known change that could affect latency.
-   - Why: evidence_ids
-2. **The increase in request volume may have contributed to the latency increase.** (traffic, confidence 30%) [E3, E2]
-   - Why: The request volume increased from 1236 per 5 min to 5418 per 5 min, a significant increase.
-   - Why: The increase in request volume could have overwhelmed the system, leading to higher latency.
-   - Why: The deployment of auth v2.23 to ap-south is a known change that could affect request volume.
-   - Why: evidence_ids
-3. **The increase in error rate may be related to the deployment of auth v2.23.** (unknown, confidence 30%) [E4, E6]
-   - Why: The error rate increased from 0.41% to 0.81%, a significant increase.
-   - Why: The deployment of auth v2.23 to ap-south is a known change that could affect error rates.
-   - Why: The increase in error rate could be a symptom of the deployment of auth v2.23.
-   - Why: evidence_ids
+   - Why: The p95 latency increased significantly in ap-south after the deployment.
+   - Why: The error rate also increased after the deployment, suggesting a related issue.
+2. **The increase in request volume in ap-south may have contributed to the latency increase.** (traffic, confidence 30%) [E3, E2]
+   - Why: The request volume in ap-south increased significantly after the deployment.
+   - Why: Increased request volume can lead to higher latency due to load balancing and resource constraints.
+   - Why: The increase in request volume coincided with the deployment of auth v2.23.
 
 ## Ruled out
-- The increase in latency is due to a configuration change.: No evidence supports a config_change as the cause of the latency increase. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
-- The increase in latency is due to a dependency issue with an external service.: No evidence supports a dependency issue as the cause of the latency increase. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
-- The increase in latency is due to an infrastructure issue.: No evidence supports an infrastructure issue as the cause of the latency increase. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
+- The deployment of checkout v2.3 to eu-west was the cause.: checkout v2.3 was deployed to eu-west 74 minutes before the change point. [E8]
+- The slow query on the auth service in us-east was the cause.: The slow query occurred 63 minutes before the change point. [E9]
 
 ## Actions
-- (corrective, high) Roll back the deployment of auth v2.23 to ap-south
-- (preventive, medium) Monitor request volume and error rates closely in ap-south
-- (preventive, medium) Review and optimize the autoscaler in ap-south
+- (corrective, high) Roll back the deployment of auth v2.23 to ap-south.
+- (preventive, medium) Monitor request volume and latency closely in ap-south and adjust autoscaler as needed.
+- (preventive, medium) Review and optimize the autoscaler configuration for ap-south.
+
+## Fact-check
+- Evidence IDs cited by the model: 7, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for region ap-south rose from 137 ms to 298 ms (+117%), with a change point at 2026-03-26T06:10:00Z.

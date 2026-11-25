@@ -13,26 +13,28 @@ error_rate for service search, region eu-west went from 0.004807 to 0.009203 (+9
 - Data that would help: Change records from the hour before the change; Error logs or traces from the affected segment after the change
 
 ## Possible leads (not confirmed)
-1. **New deployment of search v5.23 to eu-west caused the error rate to increase.** (deployment, confidence 30%) [E1, E2, E5]
-   - Why: search v5.23 deployment introduced a new error condition.
-   - Why: The error condition propagated to the error rate metric.
-   - Why: The error rate metric increased from 0.48% to 0.92%.
-   - Why: evidence_ids
-2. **The increase in error rate is not due to a sudden increase in request volume or latency.** (unknown, confidence 30%) [E3, E4]
-   - Why: Request volume and latency remained stable before and after the change.
-   - Why: The error rate increase is not correlated with changes in request volume or latency.
-   - Why: The error rate increase is a standalone issue.
-   - Why: evidence_ids
+1. **New deployment of search v5.23 to eu-west caused the error rate to rise.** (deployment, confidence 30%) [E1, E2, E5]
+   - Why: The deployment of search v5.23 to eu-west resulted in a change in error rate.
+   - Why: The error rate increased from 0.48% to 0.92%.
+   - Why: The deployment happened 226 minutes before the change in error rate.
+2. **No clear evidence of a configuration change that caused the error rate increase.** (unknown, confidence 30%) [E1, E2, E5]
+   - Why: The deployment of search v5.23 to eu-west is the only known change.
+   - Why: No other configuration changes are evident.
+   - Why: The error rate increased after the deployment.
 
 ## Ruled out
-- The increase in error rate is due to a sudden increase in user traffic.: Request volume and latency remained stable before and after the change. [E3, E4]
-- The increase in error rate is due to a configuration change.: The deployment record R009 indicates a new deployment, not a configuration change. [E5]
-- The increase in error rate is due to a dependency issue with an external service.: No evidence suggests the error rate increase is due to a failure or slowdown of an external service. [E6]
+- The error rate increase was due to a configuration change.: No evidence supports a configuration change. [E1, E2, E5]
+- The error rate increase was due to a traffic spike.: Request volume and latency did not change significantly. [E3, E4]
+- The error rate increase was due to a dependency issue with an external service.: No evidence supports a dependency issue. [E1, E2, E5]
 
 ## Actions
-- (corrective, high) Roll back the search v5.23 deployment to eu-west.
-- (preventive, high) Monitor the error rate and request volume for any further anomalies.
-- (preventive, medium) Review the new search v5.23 release notes for any known issues.
+- (corrective, high) Roll back the deployment of search v5.23 to eu-west.
+- (preventive, high) Monitor the error rate and request volume for service search in region eu-west closely.
+- (preventive, medium) Review and test the new version of search v5.23 in a staging environment before full deployment.
+
+## Fact-check
+- Evidence IDs cited by the model: 14, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service search in region eu-west rose from 0.48% to 0.92% (+91%), with a change point at 2026-03-13T15:15:00Z.

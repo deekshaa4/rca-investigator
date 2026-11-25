@@ -15,49 +15,46 @@
       "E2"
     ]
   },
-  "contributing_factors": [],
+  "contributing_factors": [
+    {
+      "rank": 1,
+      "description": "Request volume increase due to a campaign.",
+      "category": "traffic",
+      "confidence": 0.3,
+      "why_chain": [
+        "The request volume increased, which could have led to the connection pool exhaustion.",
+        "The request volume increase is supported by the rise in error rate, which is often a symptom of increased load.",
+        "The error rate increased by 56%, which is a significant jump and could be attributed to the increased load."
+      ],
+      "evidence_ids": [
+        "E2",
+        "E3",
+        "E4"
+      ]
+    }
+  ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in latency was due to a new release or version.",
-      "reason": "No evidence supports a new release or version change.",
+      "hypothesis": "The increase in latency was due to a configuration change.",
+      "reason": "The latency increase is after the change point, and the configuration change evidence is not provided.",
       "evidence_ids": [
-        "E1"
+        "E1",
+        "E2"
+      ]
+    },
+    {
+      "hypothesis": "The increase in latency was due to a dependency issue with an external service.",
+      "reason": "There is no evidence of an external service failure or slowdown.",
+      "evidence_ids": [
+        "E5"
       ]
     },
     {
       "hypothesis": "The increase in latency was due to a configuration change.",
-      "reason": "No evidence supports a configuration change.",
+      "reason": "The configuration change evidence is not provided.",
       "evidence_ids": [
-        "E1"
-      ]
-    },
-    {
-      "hypothesis": "The increase in latency was due to a change in traffic.",
-      "reason": "Request volume and error rate did not change significantly.",
-      "evidence_ids": [
-        "E3",
-        "E4"
-      ]
-    },
-    {
-      "hypothesis": "The increase in latency was due to a dependency issue.",
-      "reason": "No evidence supports a dependency issue.",
-      "evidence_ids": [
-        "E1"
-      ]
-    },
-    {
-      "hypothesis": "The increase in latency was due to a data issue.",
-      "reason": "No evidence supports a data issue.",
-      "evidence_ids": [
-        "E1"
-      ]
-    },
-    {
-      "hypothesis": "The increase in latency was due to an unknown issue.",
-      "reason": "No evidence supports an unknown issue.",
-      "evidence_ids": [
-        "E1"
+        "E1",
+        "E2"
       ]
     }
   ],
@@ -128,15 +125,47 @@
   ],
   "sufficiency": {
     "verdict": "insufficient",
-    "score": 0.25,
+    "score": 0.15,
     "reasons": [
       "\u2717 No deploy, config change, ticket or alert lines up with the change.",
       "\u2713 4 log/alert record(s) after the change agree with the numbers.",
-      "\u2713 Request volume stayed steady, ruling out a traffic spike."
+      "\u2717 A traffic cause is claimed, but request volume did not rise."
     ],
     "missing_data": [
       "Deploy and config-change history for the affected segment"
     ]
   },
-  "actions": []
+  "actions": [
+    {
+      "action": "Implement a connection pool monitoring and alerting system to detect and respond to exhaustion issues.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor and adjust the connection pool size based on historical data and current load.",
+      "type": "preventive",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and optimize the cache warming process to reduce the time it takes for the cache to warm.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ],
+  "guardrails": {
+    "model_used": true,
+    "ids_cited": 15,
+    "ids_invented": 0,
+    "factors_dropped": 2,
+    "engine_fallback": false
+  }
 }

@@ -12,29 +12,25 @@ error_rate for service search went from 0.00415 to 0.04349 (+948%) starting 2026
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **Upstream search-cluster is the root cause of the error rate increase.** (dependency, confidence 90%) [E5, E6, E7, E8, E9]
-   - Why: The error rate in service search increased after the upstream search-cluster started returning HTTP 503.
-   - Why: The upstream search-cluster timeout errors were observed after the change point, indicating a problem with the upstream service.
-   - Why: The error rate in service search did not change in other regions, suggesting the issue is specific to the upstream search-cluster.
-2. **The increase in request volume is not the cause of the error rate increase.** (unknown, confidence 80%) [E3]
-   - Why: The request volume for service search did not change significantly, with a 24% increase in requests.
-   - Why: The error rate increase occurred after the change point, which is when the upstream search-cluster started returning HTTP 503.
-   - Why: If the increase in request volume was the cause, we would expect to see a similar increase in error rate, but it did not happen.
-3. **The increase in p95 latency is not the cause of the error rate increase.** (unknown, confidence 80%) [E4]
-   - Why: The p95 latency increased by 82%, but the error rate increased by 948%. The latency increase is a symptom, not a cause.
-   - Why: The error rate increase occurred after the change point, which is when the upstream search-cluster started returning HTTP 503.
-   - Why: If the increase in p95 latency was the cause, we would expect to see a similar increase in error rate, but it did not happen.
+1. **Upstream search-cluster is the root cause of the error rate increase.** (dependency, confidence 100%) [E5, E6, E7, E8, E9]
+   - Why: The error rate in service search increased due to the upstream search-cluster returning HTTP 503.
+   - Why: The upstream search-cluster is the service that the search service calls, and it is experiencing issues.
+   - Why: The upstream search-cluster is the root cause of the error rate increase in service search.
 
 ## Ruled out
-- The increase in error rate is due to a configuration change.: There is no evidence of a configuration change that would cause the error rate to increase. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
-- The increase in error rate is due to a deployment of a new release or version.: There is no evidence of a deployment that would cause the error rate to increase. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
-- The increase in error rate is due to a change in the data.: There is no evidence of any change in the data that would cause the error rate to increase. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
-- The increase in error rate is due to a change in the infrastructure.: There is no evidence of any change in the infrastructure that would cause the error rate to increase. [E1, E2, E3, E4, E5, E6, E7, E8, E9]
+- The error rate increase is due to a configuration change.: There is no evidence of a configuration change that would cause the error rate to increase. [E1]
+- The error rate increase is due to a sudden increase in user traffic.: The request volume for service search did not change significantly, and the error rate increase is not correlated with a spike in user traffic. [E3]
+- The error rate increase is due to a data quality issue.: There is no evidence of bad or unusual input data causing the error rate increase. [E1]
+- The error rate increase is due to infrastructure issues.: There is no evidence of any infrastructure issues, such as network or server capacity problems. [E1]
 
 ## Actions
 - (corrective, high) Investigate and fix the upstream search-cluster issue.
-- (preventive, high) Monitor the upstream search-cluster status and performance closely.
-- (preventive, medium) Review and optimize the request handling in service search.
+- (preventive, medium) Monitor the upstream search-cluster and take preemptive actions if it shows signs of degradation.
+- (preventive, medium) Review and optimize the retry logic for the search service to handle upstream failures more gracefully.
+
+## Fact-check
+- Evidence IDs cited by the model: 11, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service search rose from 0.41% to 4.35% (+948%), with a change point at 2026-03-16T11:05:00Z.

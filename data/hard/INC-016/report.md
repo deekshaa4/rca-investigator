@@ -14,24 +14,27 @@ error_rate for service auth, region ap-south went from 0.004888 to 0.04434 (+807
 - Data that would help: Details to tell the competing changes apart (e.g. a rollback test)
 
 ## Why it happened
-1. **New version deployment caused the error rate spike.** (deployment, confidence 90%) [E5, E1]
-   - Why: The deployment of auth v2.27 to ap-south led to the error rate increase.
-   - Why: The error rate for service auth in region ap-south rose from 0.49% to 4.43%.
-   - Why: The deployment occurred 2 minutes before the change point.
-2. **Feature flag change may have contributed to the error rate increase.** (config_change, confidence 80%) [E6, E1]
-   - Why: The change of auth feature flag new_ui_flow to 50% in ap-south may have introduced instability.
-   - Why: The error rate increase coincided with the change of the feature flag.
-   - Why: The feature flag change occurred 3 minutes before the change point.
+1. **The deployment of auth v2.27 to ap-south likely caused the increase in error rate.** (deployment, confidence 90%) [E5, E1]
+   - Why: The deployment of auth v2.27 to ap-south introduced a new version of the service.
+   - Why: The new version (v2.27) was deployed 2 minutes before the error rate spike.
+   - Why: The error rate increased significantly (from 0.49% to 4.43%) after the deployment.
+2. **The change in the auth feature flag to 50% in ap-south may have contributed to the error rate increase.** (config_change, confidence 80%) [E6, E1]
+   - Why: The feature flag change occurred 3 minutes before the error rate spike.
+   - Why: The feature flag change to 50% may have altered the service's behavior or performance.
+   - Why: The error rate spiked after the feature flag change.
 
 ## Ruled out
-- Increased request volume caused the error rate increase.: The request volume for service auth in region ap-south stayed about the same. [E3]
-- Latency increase caused the error rate increase.: The p95 latency for service auth in region ap-south stayed about the same. [E4]
-- External dependency failure caused the error rate increase.: No evidence found that points to an external dependency failure. []
+- The increase in request volume caused the error rate to rise.: The request volume remained about the same before and after the change. [E3]
+- The change in p95 latency caused the error rate to rise.: The p95 latency remained about the same before and after the change. [E4]
 
 ## Actions
-- (corrective, high) Roll back the auth v2.27 deployment to ap-south.
-- (preventive, high) Review and potentially revert the auth feature flag change to 50%.
-- (preventive, medium) Monitor the system for any new deployments or config changes in the next 24 hours.
+- (corrective, high) Roll back the deployment of auth v2.27 to ap-south.
+- (preventive, high) Review and potentially revert the change in the auth feature flag to 50% in ap-south.
+- (preventive, medium) Monitor the error rate and request volume closely for any further spikes.
+
+## Fact-check
+- Evidence IDs cited by the model: 6, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service auth in region ap-south rose from 0.49% to 4.43% (+807%), with a change point at 2026-03-07T07:10:00Z.

@@ -15,29 +15,34 @@
       "E2"
     ]
   },
-  "contributing_factors": [],
-  "ruled_out": [
+  "contributing_factors": [
     {
-      "hypothesis": "The increase in error rate is due to a configuration change.",
-      "reason": "The error rate increase is specific to service search and not affecting other services, indicating a targeted issue rather than a broad configuration change.",
+      "rank": 1,
+      "description": "The error rate increase is due to a configuration change that affected the search-cluster.",
+      "category": "config_change",
+      "confidence": 0.3,
+      "why_chain": [
+        "The error rate for service search increased from 0.36% to 3.66%.",
+        "The change is concentrated in service search, affecting 3 out of 12 segments.",
+        "The configuration change that affected the search-cluster is the root cause."
+      ],
       "evidence_ids": [
-        "E1",
         "E2"
       ]
-    },
+    }
+  ],
+  "ruled_out": [
     {
-      "hypothesis": "The increase in error rate is due to a sudden increase in user traffic.",
-      "reason": "The request volume for service search did not change significantly, with a 17% increase in requests per 5 minutes.",
+      "hypothesis": "The increase in error rate is due to a sudden increase in request volume.",
+      "reason": "The request volume for service search stayed about the same (2520 per 5 min before, 2942 per 5 min after, +17%).",
       "evidence_ids": [
         "E3"
       ]
     },
     {
-      "hypothesis": "The increase in error rate is due to a sudden increase in data quality.",
-      "reason": "There is no evidence of unusual input data causing the error rate increase.",
-      "evidence_ids": [
-        "E8"
-      ]
+      "hypothesis": "The increase in error rate is due to a network issue.",
+      "reason": "There are no evidence of network issues, such as connectivity problems or latency spikes.",
+      "evidence_ids": []
     }
   ],
   "evidence": [
@@ -110,5 +115,37 @@
       "Deploy and config-change history for the affected segment"
     ]
   },
-  "actions": []
+  "actions": [
+    {
+      "action": "Investigate and fix the configuration change that affected the search-cluster.",
+      "type": "corrective",
+      "priority": "high",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Monitor the search-cluster status and performance closely.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    },
+    {
+      "action": "Review and update the configuration for the search-cluster.",
+      "type": "preventive",
+      "priority": "medium",
+      "addresses_factors": [
+        1
+      ]
+    }
+  ],
+  "guardrails": {
+    "model_used": true,
+    "ids_cited": 7,
+    "ids_invented": 0,
+    "factors_dropped": 1,
+    "engine_fallback": false
+  }
 }

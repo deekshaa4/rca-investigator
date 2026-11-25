@@ -12,22 +12,27 @@ latency_p95_ms for service auth went from 90.55 to 252.6 (+179%) starting 2026-0
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **The connection pool size was reduced, causing increased latency.** (config_change, confidence 90%) [E5, E7, E8, E9]
+1. **The connection pool size change likely caused the increase in p95 latency.** (config_change, confidence 90%) [E5, E7, E8, E9]
    - Why: The auth db.pool_size was changed from 50 to 5.
-   - Why: This reduction in pool size led to more frequent connection pool exhaustion.
-   - Why: Connection pool exhaustion resulted in increased latency as the system had to wait for a free connection.
-2. **The increase in request volume did not cause the latency increase.** (unknown, confidence 90%) [E3, E4]
-   - Why: The request volume for service auth did not change significantly.
-   - Why: The error rate increased, indicating issues within the service itself, not just increased load.
+   - Why: This reduction in pool size means fewer connections are available to service requests.
+   - Why: With more requests than connections, the connection pool becomes exhausted, leading to increased latency.
+2. **The increase in request volume could have contributed to the latency increase.** (traffic, confidence 70%) [E3]
+   - Why: The request volume for service auth increased by 23%.
+   - Why: With more requests, the connection pool becomes more strained.
+   - Why: Exhausted connections lead to increased latency.
 
 ## Ruled out
-- The increase in latency was due to a sudden spike in user traffic.: The request volume did not increase significantly. [E3]
-- The increase in latency was due to a failure of an upstream service.: No evidence of a failure in an upstream service was found. [E1, E2, E3, E4]
+- The increase in latency was due to a sudden spike in user traffic.: The request volume did not increase significantly, and the error rate increased instead. [E3]
+- The increase in latency was caused by a new deployment.: There is no evidence of a new deployment or version change. [E1, E2, E4, E5, E6, E7, E8, E9]
 
 ## Actions
-- (corrective, high) Increase the auth db.pool_size back to 50 to mitigate the connection pool exhaustion issues.
-- (preventive, medium) Implement a mechanism to handle connection pool exhaustion gracefully, such as increasing the pool size or using a connection pool manager.
-- (preventive, medium) Monitor the connection pool size and request volume more closely to detect and address issues early.
+- (corrective, high) Increase the auth db.pool_size back to 50 to improve connection handling.
+- (preventive, medium) Monitor request volume and adjust the connection pool size as needed.
+- (preventive, medium) Review and optimize the connection pool size for future changes.
+
+## Fact-check
+- Evidence IDs cited by the model: 14, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for service auth rose from 91 ms to 253 ms (+179%), with a change point at 2026-03-04T12:00:00Z.

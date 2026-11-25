@@ -3,27 +3,30 @@
 ## What changed
 error_rate for service auth, region eu-west went from 0.005099 to 0.03231 (+534%) starting 2026-03-04T08:50:00Z. [E1, E2]
 
-## Verdict: insufficient (score 0.15)
+## Verdict: insufficient (score 0.25)
 - ✗ No deploy, config change, ticket or alert lines up with the change.
 - ✓ 4 log/alert record(s) after the change agree with the numbers.
-- ✗ A traffic cause is claimed, but request volume did not rise.
+- ✓ Request volume stayed steady, ruling out a traffic spike.
 - Data that would help: Deploy and config-change history for the affected segment
 
 ## Possible leads (not confirmed)
-1. **The error rate increase is localized to the auth service in eu-west region.** (traffic, confidence 30%) [E2, E3, E4]
-   - Why: The error rate increase is concentrated in the auth service in the eu-west region.
-   - Why: The request volume and latency did not change significantly.
-   - Why: This suggests the issue is not due to a sudden increase in traffic or network latency.
-   - Why: evidence_ids
+1. **The error rate spike coincides with a high error rate alert.** (unknown, confidence 30%) [E5, E9]
+   - Why: The error rate spike is also reflected in a high error rate alert.
+   - Why: This alert suggests that the error rate increase is a known issue, not a new problem.
+   - Why: The alert occurred 10 minutes before the change, indicating a possible correlation.
 
 ## Ruled out
-- The error rate increase is due to a sudden increase in traffic.: The request volume and latency did not change significantly. [E3, E4]
-- The error rate increase is due to a configuration change.: The error rate increase is localized to the auth service in the eu-west region. [E2]
+- The increase in error rate is due to a sudden increase in user traffic.: The request volume and p95 latency did not change significantly. [E3, E4]
+- The error rate increase is due to a configuration change.: There is no evidence of a configuration change that would cause the error rate to spike. [E1, E2, E3, E4]
 
 ## Actions
-- (corrective, high) Roll back the deployment of version 5.21 of the RequestHandler.
-- (preventive, medium) Monitor the RequestHandler version 5.21 closely for any further issues.
-- (preventive, medium) Review and update the error handling in the RequestHandler version 5.21.
+- (corrective, high) Roll back the deployment of the new version of the RequestHandler.
+- (preventive, medium) Monitor the service for any new errors and alert on any significant changes in error rate.
+- (preventive, high) Review the new version of the RequestHandler for potential issues and ensure proper testing before deployment.
+
+## Fact-check
+- Evidence IDs cited by the model: 12, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service auth in region eu-west rose from 0.51% to 3.23% (+534%), with a change point at 2026-03-04T08:50:00Z.

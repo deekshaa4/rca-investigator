@@ -12,20 +12,24 @@ latency_p95_ms for region eu-west went from 136.7 to 219.3 (+60%) starting 2026-
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **The increase in request volume and error rate are likely due to the flash sale campaign going live.** (traffic, confidence 90%) [E5, E6, E7]
-   - Why: The flash sale campaign went live at the same time as the change point.
-   - Why: Increased request volume led to higher p95 latency.
-   - Why: Error rate increased due to the higher load on the system.
+1. **The increase in request volume and error rate are likely due to the flash sale campaign going live.** (traffic, confidence 90%) [E5, E4, E6]
+   - Why: The flash sale campaign went live at 08:10 UTC, 162 minutes before the change.
+   - Why: The request volume increased significantly from 2048 per 5 minutes to 9799 per 5 minutes.
+   - Why: The error rate increased from 0.37% to 0.74%.
+   - Why: evidence_ids
 
 ## Ruled out
-- The increase in latency was due to a configuration change.: No evidence supports a configuration change as the cause. [E1, E2, E3, E4]
-- The increase in latency was due to a dependency issue with an external service.: No evidence supports a dependency issue with an external service. [E1, E2, E3, E4]
-- The increase in latency was due to a data quality issue.: No evidence supports a data quality issue. [E1, E2, E3, E4]
+- The increase in latency is due to a configuration change.: The change in latency occurred after the flash sale campaign and the autoscaler scaling out, and there is no evidence of a configuration change. [E1, E2, E3, E4, E5, E6, E7]
+- The increase in latency is due to a dependency issue with an external service.: There is no evidence of a dependency issue, as the error rate and request volume are within normal ranges for the region. [E1, E2, E3, E4, E5, E6, E7]
+- The increase in latency is due to a data issue.: There is no evidence of bad or unusual input data, as the error rate and request volume are within normal ranges for the region. [E1, E2, E3, E4, E5, E6, E7]
 
 ## Actions
 - (preventive, high) Implement a traffic management system to handle sudden spikes in traffic during campaigns.
-- (corrective, high) Review and optimize the autoscaler configuration to avoid unnecessary scaling out.
-- (preventive, medium) Monitor and adjust the autoscaler to avoid scaling out during sudden traffic spikes.
+- (corrective, high) Review and optimize the autoscaler configuration to better handle sudden spikes in load.
+
+## Fact-check
+- Evidence IDs cited by the model: 25, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for region eu-west rose from 137 ms to 219 ms (+60%), with a change point at 2026-03-25T08:10:00Z.

@@ -13,27 +13,32 @@ error_rate for service auth, region eu-west went from 0.002781 to 0.006804 (+145
 - Data that would help: Change records from the hour before the change; Change records for the affected service/region; Error logs or traces from the affected segment after the change
 
 ## Possible leads (not confirmed)
-1. **New feature request introduced unexpected load.** (unknown, confidence 30%) [E5]
-   - Why: Feature request R013 for dark mode was submitted 287 minutes before the error rate spike.
-   - Why: The feature request likely caused a temporary increase in load on the service.
-   - Why: This increase in load led to the observed error rate spike.
-2. **Service auth in region eu-west experienced a configuration change.** (config_change, confidence 30%) [E1, E2, E3]
-   - Why: Service auth in region eu-west saw a change in error rate and request volume.
-   - Why: The change in error rate coincided with the introduction of the feature request.
-   - Why: The configuration change could have introduced a bug or unexpected behavior.
-3. **Service auth in region eu-west saw a spike in p95 latency.** (unknown, confidence 30%) [E4]
-   - Why: Service auth in region eu-west had a spike in p95 latency.
-   - Why: The spike in latency could be due to the feature request or configuration change.
-   - Why: The spike in latency could also indicate a problem with the service itself.
+1. **New feature request may have introduced a regression.** (unknown, confidence 30%) [E5]
+   - Why: Feature request R013 was submitted 287 minutes before the error rate spike.
+   - Why: The feature request may have introduced a regression or unintended side effect.
+   - Why: The error rate spike in service auth in region eu-west coincides with the feature request submission.
+2. **Deployment of a new release may have caused the error rate spike.** (deployment, confidence 30%) [E1, E2]
+   - Why: A new release was deployed at the same time as the error rate spike.
+   - Why: The error rate spike in service auth in region eu-west coincides with the deployment.
+   - Why: The error rate spike is concentrated in service auth in region eu-west.
+3. **Configuration change may have affected the service.** (config_change, confidence 30%) [E1, E2, E3, E4]
+   - Why: The error rate spike in service auth in region eu-west coincides with the deployment.
+   - Why: The error rate spike is concentrated in service auth in region eu-west.
+   - Why: The request volume and latency did not change significantly.
 
 ## Ruled out
-- The increase in error rate was due to a sudden increase in traffic.: Request volume stayed about the same, contradicting this hypothesis. [E3]
-- The increase in error rate was due to a configuration change elsewhere in the system.: The error rate spike was specific to service auth in region eu-west, not a system-wide issue. [E1, E2]
+- The increase in error rate was due to a sudden increase in traffic.: The request volume did not change significantly. [E3]
+- The increase in error rate was due to a configuration change elsewhere in the system.: The error rate spike is concentrated in service auth in region eu-west. [E1, E2]
+- The increase in error rate was due to a dependency issue with an external service.: There is no evidence of a dependency issue. [E1, E2, E3, E4]
 
 ## Actions
-- (corrective, high) Investigate the feature request R013 for any potential issues.
-- (corrective, high) Review and test the configuration changes made to service auth in region eu-west.
-- (preventive, medium) Monitor the service auth in region eu-west for any further issues.
+- (corrective, high) Review and test the new release for the service auth in region eu-west.
+- (preventive, high) Monitor the system for any further errors and investigate if the error rate continues to increase.
+- (preventive, medium) Review the feature request R013 and its implementation for any unintended side effects.
+
+## Fact-check
+- Evidence IDs cited by the model: 14, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service auth in region eu-west rose from 0.28% to 0.68% (+145%), with a change point at 2026-03-09T15:15:00Z.

@@ -10,12 +10,23 @@ error_rate for service search went from 0.003606 to 0.03658 (+914%) starting 202
 - Data that would help: Deploy and config-change history for the affected segment
 
 ## Possible leads (not confirmed)
-No contributing factor is supported by the evidence.
+1. **The error rate increase is due to a configuration change that affected the search-cluster.** (config_change, confidence 30%) [E2]
+   - Why: The error rate for service search increased from 0.36% to 3.66%.
+   - Why: The change is concentrated in service search, affecting 3 out of 12 segments.
+   - Why: The configuration change that affected the search-cluster is the root cause.
 
 ## Ruled out
-- The increase in error rate is due to a configuration change.: The error rate increase is specific to service search and not affecting other services, indicating a targeted issue rather than a broad configuration change. [E1, E2]
-- The increase in error rate is due to a sudden increase in user traffic.: The request volume for service search did not change significantly, with a 17% increase in requests per 5 minutes. [E3]
-- The increase in error rate is due to a sudden increase in data quality.: There is no evidence of unusual input data causing the error rate increase. [E8]
+- The increase in error rate is due to a sudden increase in request volume.: The request volume for service search stayed about the same (2520 per 5 min before, 2942 per 5 min after, +17%). [E3]
+- The increase in error rate is due to a network issue.: There are no evidence of network issues, such as connectivity problems or latency spikes. []
+
+## Actions
+- (corrective, high) Investigate and fix the configuration change that affected the search-cluster.
+- (preventive, medium) Monitor the search-cluster status and performance closely.
+- (preventive, medium) Review and update the configuration for the search-cluster.
+
+## Fact-check
+- Evidence IDs cited by the model: 7, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 1
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service search rose from 0.36% to 3.66% (+914%), with a change point at 2026-03-02T14:05:00Z.

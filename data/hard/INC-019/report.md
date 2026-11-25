@@ -14,23 +14,27 @@ error_rate for service auth went from 0.003904 to 0.05058 (+1196%) starting 2026
 - Data that would help: Details to tell the competing changes apart (e.g. a rollback test)
 
 ## Why it happened
-1. **The auth feature flag change likely caused the error rate to increase.** (config_change, confidence 90%) [E5, E1]
-   - Why: The auth feature flag was changed to 50% in eu-west, affecting service auth.
-   - Why: This change could have introduced a bug or incompatibility, leading to higher error rates.
-   - Why: The error rate for service auth increased significantly after the change.
-2. **The upstream identity-db service failure contributed to the error rate increase.** (dependency, confidence 80%) [E6, E7, E8, E9]
-   - Why: The upstream identity-db service returned HTTP 503 errors (service unavailable) after the feature flag change.
-   - Why: This failure caused retries and timeouts in the auth service.
-   - Why: The retries and timeouts led to an increase in error rate.
+1. **The change in the auth feature flag caused the error rate to increase.** (config_change, confidence 90%) [E5, E1]
+   - Why: The auth feature flag was changed to 50% in eu-west, which likely affected the service's behavior.
+   - Why: The error rate for service auth increased sharply after this change.
+   - Why: The error rate for service auth was flat in other regions, indicating the change was specific to the eu-west region.
+2. **The upstream identity-db service became unavailable, causing the error rate to increase.** (dependency, confidence 80%) [E6, E7, E8, E9]
+   - Why: The upstream identity-db service returned HTTP 503, indicating it was unavailable.
+   - Why: The error rate for service auth increased after the identity-db service became unavailable.
+   - Why: The error rate for service auth was flat in other regions, indicating the issue was specific to the identity-db service.
 
 ## Ruled out
-- The increase in request volume caused the error rate to rise.: The request volume for service auth did not change significantly. [E3]
-- The increase in p95 latency caused the error rate to rise.: The p95 latency for service auth increased, but the error rate did not decrease proportionally. [E4]
+- The increase in error rate was due to a spike in request volume.: The request volume for service auth did not change significantly. [E3]
+- The increase in error rate was due to a change in the service's internal configuration.: The error rate for service auth was flat in other regions, indicating the issue was specific to the eu-west region. [E5, E1]
 
 ## Actions
-- (corrective, high) Roll back the auth feature flag change to the previous value.
-- (preventive, medium) Monitor the identity-db service for any further failures and take corrective actions if necessary.
-- (preventive, medium) Review and test the identity-db service to ensure it is stable and reliable.
+- (corrective, high) Roll back the auth feature flag change to 50% in eu-west.
+- (preventive, high) Monitor the identity-db service and ensure it is available and responsive.
+- (preventive, medium) Review and optimize the retry logic for the auth service.
+
+## Fact-check
+- Evidence IDs cited by the model: 9, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service auth rose from 0.39% to 5.06% (+1196%), with a change point at 2026-03-03T06:55:00Z.

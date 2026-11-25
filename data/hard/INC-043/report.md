@@ -13,27 +13,32 @@ latency_p95_ms for region eu-west went from 137 to 224.2 (+64%) starting 2026-03
 - Data that would help: Change records from the hour before the change; Traffic source breakdown (campaigns, bots, partners); Details to tell the competing changes apart (e.g. a rollback test)
 
 ## Possible leads (not confirmed)
-1. **The deployment of the search v3.1 to eu-west increased request volume and led to higher p95 latency.** (deployment, confidence 30%) [E7, E8, E9]
-   - Why: The deployment of search v3.1 to eu-west caused a surge in request volume.
-   - Why: The surge in request volume overwhelmed the autoscaler, leading to scaling out and increased latency.
-   - Why: The increased latency resulted in the observed p95 latency rise.
-2. **The change in the checkout feature flag led to a flash sale campaign, increasing request volume.** (config_change, confidence 30%) [E5, E6, E7]
-   - Why: The change in the checkout feature flag triggered the flash sale campaign.
-   - Why: The flash sale campaign increased request volume, which in turn caused the p95 latency rise.
-   - Why: The increased request volume overwhelmed the system, leading to higher latency.
-3. **The rise in request volume due to the flash sale campaign caused the autoscaler to scale out, leading to higher p95 latency.** (traffic, confidence 30%) [E6, E7, E9]
-   - Why: The flash sale campaign increased request volume.
-   - Why: The increased request volume caused the autoscaler to scale out.
-   - Why: The scaling out led to higher p95 latency.
+1. **The deployment of a new search version caused the increase in latency and request volume.** (deployment, confidence 30%) [E7, E8, E9]
+   - Why: The deployment of search v3.1 led to a spike in request volume and increased latency.
+   - Why: The increased request volume overwhelmed the autoscaler, which triggered scaling out.
+   - Why: The scaling out process took time, causing a delay in response times.
+2. **The config change to the checkout feature flag likely contributed to the increase in latency.** (config_change, confidence 30%) [E5, E6, E3]
+   - Why: The new_ui_flow feature flag change introduced a new path in the checkout process.
+   - Why: This new path may have introduced inefficiencies or bugs that affected latency.
+   - Why: The increased request volume due to the flash sale campaign exacerbated the issue.
+3. **The flash sale campaign likely caused the spike in request volume and error rate.** (traffic, confidence 30%) [E6, E7, E3]
+   - Why: The flash sale campaign led to a sudden increase in user traffic.
+   - Why: This increased traffic overwhelmed the system, leading to higher request volume and error rates.
+   - Why: The autoscaler scaling out process coincided with the flash sale campaign, further straining the system.
 
 ## Ruled out
-- The autoscaler scaling out was due to a bug in the autoscaler itself.: There is no evidence that the autoscaler scaling out was due to a bug. The evidence points to the flash sale campaign as the cause. [E9]
-- The increase in p95 latency was due to a configuration issue in the search service.: The deployment of search v3.1 was routine and did not indicate a configuration issue. The evidence points to the flash sale campaign as the cause. [E8]
+- The autoscaler scaling out was the main cause.: The autoscaler scaling out happened after the change, not before. [E9]
+- The error rate increase was due to a bug in the new search version.: The error rate increase is correlated with the deployment of the new search version, but not caused by it. [E4, E8]
+- The config change was the main cause.: The config change happened before the deployment, not after. [E5, E3]
 
 ## Actions
 - (corrective, high) Roll back the search v3.1 deployment to eu-west.
-- (preventive, medium) Monitor the autoscaler and ensure it is configured correctly to avoid scaling out during normal operations.
-- (preventive, medium) Review and optimize the autoscaler configuration to handle sudden spikes in request volume more gracefully.
+- (preventive, medium) Monitor the checkout feature flag and rollback if issues arise.
+- (preventive, high) Prepare for future flash sale campaigns by increasing capacity and optimizing the checkout process.
+
+## Fact-check
+- Evidence IDs cited by the model: 14, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:latency_p95_ms) P95 latency for region eu-west rose from 137 ms to 224 ms (+64%), with a change point at 2026-03-26T13:45:00Z.

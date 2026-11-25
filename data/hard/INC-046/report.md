@@ -12,20 +12,24 @@ error_rate for service checkout, region ap-south went from 0.005281 to 0.03543 (
 - ✓ The main factor rests on this event.
 
 ## Why it happened
-1. **New deployment of checkout v3.17 caused the error rate to spike.** (deployment, confidence 90%) [E5, E7, E8, E9]
-   - Why: Checkout v3.17 deployment introduced a new version of the RequestHandler.
-   - Why: NullPointerException in RequestHandler.serialize (v3.17) led to increased error rate.
-   - Why: Error rate rose from 0.53% to 3.54% on 26 March 2026.
+1. **New deployment of checkout v3.17 introduced a NullPointerException in RequestHandler.serialize.** (deployment, confidence 90%) [E5, E7, E8, E9]
+   - Why: Checkout v3.17 deployment caused the error rate to spike.
+   - Why: NullPointerException in RequestHandler.serialize was introduced with v3.17.
+   - Why: NullPointerException triggered by the new version caused the error rate to rise.
 
 ## Ruled out
-- The error rate increase was due to a sudden surge in user traffic.: Request volume and p95 latency remained stable before and after the change. [E3, E4]
-- The error rate increase was caused by a configuration change.: No evidence supports a config change leading to the error rate increase. [E1, E2, E3, E4]
-- The error rate increase was due to a dependency issue with an external service.: No evidence supports a dependency issue leading to the error rate increase. [E1, E2, E3, E4]
+- The increase in error rate was due to a sudden increase in user traffic.: Request volume and p95 latency remained stable before and after the change. [E3, E4]
+- The increase in error rate was caused by a configuration change.: No evidence supports a configuration change. [E1, E2, E3, E4]
+- The increase in error rate was due to a dependency issue with an external service.: No evidence supports a dependency issue. [E1, E2, E3, E4]
 
 ## Actions
-- (corrective, high) Fix the NullPointerException in RequestHandler.serialize (v3.17) in checkout v3.17.
-- (preventive, medium) Monitor and log RequestHandler.serialize (v3.17) for any future occurrences.
-- (preventive, high) Review and test the new checkout v3.17 in a staging environment before production deployment.
+- (corrective, high) Rollback the deployment of checkout v3.17 to revert the changes.
+- (preventive, high) Implement a robust error handling mechanism in the RequestHandler.serialize method.
+- (preventive, medium) Monitor the RequestHandler.serialize method for similar issues in future deployments.
+
+## Fact-check
+- Evidence IDs cited by the model: 14, invented (removed): 0
+- Factors dropped (no real evidence, or symptoms only): 0
 
 ## Evidence
 - **E1** (metric, metrics:error_rate) Error rate for service checkout in region ap-south rose from 0.53% to 3.54% (+571%), with a change point at 2026-03-26T06:10:00Z.

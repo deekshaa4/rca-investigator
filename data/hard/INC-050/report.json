@@ -19,18 +19,18 @@
   "contributing_factors": [
     {
       "rank": 1,
-      "description": "New deployment of checkout v1.12 to eu-west caused the error rate to rise.",
+      "description": "New deployment of search v3.8 to ap-south caused increased error rate in eu-west.",
       "category": "deployment",
       "confidence": 0.3,
       "why_chain": [
-        "Checkout v1.12 deployment introduced a new error condition.",
-        "This new error condition affected the error rate for service catalog in region eu-west.",
-        "The error rate increased from 0.53% to 0.96%.",
+        "search v3.8 deployment to ap-south increased the overall load on the system.",
+        "This additional load transferred to eu-west, causing the error rate to rise.",
+        "The error rate in eu-west did not change after the search v3.8 deployment to ap-south, indicating the issue was specific to eu-west.",
         "evidence_ids"
       ],
       "evidence_ids": [
         "E5",
-        "E1"
+        "E8"
       ]
     },
     {
@@ -39,47 +39,56 @@
       "category": "unknown",
       "confidence": 0.3,
       "why_chain": [
-        "Feature request for dark mode may have introduced a regression.",
-        "This regression affected the error rate for service catalog in region eu-west.",
-        "The error rate increased from 0.53% to 0.96%.",
+        "The feature request for dark mode could have introduced a regression in the service catalog.",
+        "This regression could have caused the error rate to increase in eu-west.",
+        "The error rate in eu-west did not change after the feature request, indicating the issue was specific to the deployment of search v3.8.",
         "evidence_ids"
       ],
       "evidence_ids": [
         "E6",
-        "E1"
+        "E9"
       ]
     },
     {
       "rank": 3,
-      "description": "The deployment of search v3.8 to ap-south may have caused a ripple effect.",
-      "category": "unknown",
+      "description": "The increase in request volume could have overwhelmed the system.",
+      "category": "traffic",
       "confidence": 0.3,
       "why_chain": [
-        "Deployment of search v3.8 to ap-south may have caused a ripple effect.",
-        "This ripple effect affected the error rate for service catalog in region eu-west.",
-        "The error rate increased from 0.53% to 0.96%.",
+        "The request volume increased by 14% in eu-west.",
+        "This increase in load could have overwhelmed the system, leading to higher error rates.",
+        "The error rate in eu-west did not change after the request volume increase, indicating the issue was specific to the deployment of search v3.8.",
         "evidence_ids"
       ],
       "evidence_ids": [
-        "E8",
+        "E3",
         "E1"
       ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in error rate was due to a sudden increase in user traffic.",
-      "reason": "Request volume and p95 latency did not change significantly.",
+      "hypothesis": "The feature request for dark mode for the account page caused the error rate to increase.",
+      "reason": "The error rate in eu-west did not change after the feature request, indicating the issue was specific to the deployment of search v3.8.",
       "evidence_ids": [
-        "E3",
-        "E4"
+        "E6",
+        "E9"
       ]
     },
     {
-      "hypothesis": "The new admin user request affected the error rate.",
-      "reason": "The request was made 192 minutes before the change.",
+      "hypothesis": "The increase in request volume caused the error rate to increase.",
+      "reason": "The error rate in eu-west did not change after the request volume increase, indicating the issue was specific to the deployment of search v3.8.",
       "evidence_ids": [
-        "E9"
+        "E3",
+        "E1"
+      ]
+    },
+    {
+      "hypothesis": "The deployment of search v3.8 to ap-south caused the error rate to increase in eu-west.",
+      "reason": "The error rate in eu-west did not change after the search v3.8 deployment to ap-south, indicating the issue was specific to the deployment of search v3.8.",
+      "evidence_ids": [
+        "E5",
+        "E8"
       ]
     }
   ],
@@ -167,7 +176,7 @@
   },
   "actions": [
     {
-      "action": "Rollback the checkout v1.12 deployment to eu-west.",
+      "action": "Roll back the deployment of search v3.8 to ap-south.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -175,20 +184,27 @@
       ]
     },
     {
-      "action": "Monitor the checkout v1.12 deployment for any further issues.",
+      "action": "Monitor the system for any further issues and take corrective action if needed.",
       "type": "preventive",
-      "priority": "medium",
+      "priority": "high",
       "addresses_factors": [
         1
       ]
     },
     {
-      "action": "Review the feature request for dark mode for the account page.",
+      "action": "Review the feature request for dark mode for the account page and ensure it does not introduce regressions.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
         2
       ]
     }
-  ]
+  ],
+  "guardrails": {
+    "model_used": true,
+    "ids_cited": 12,
+    "ids_invented": 0,
+    "factors_dropped": 0,
+    "engine_fallback": false
+  }
 }

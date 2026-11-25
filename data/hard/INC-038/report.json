@@ -23,91 +23,42 @@
       "confidence": 0.3,
       "why_chain": [
         "The deployment of auth v2.23 to ap-south occurred 220 minutes before the change point.",
-        "The p95 latency increased from 137 ms to 298 ms, a significant increase.",
-        "The deployment of auth v2.23 is a known change that could affect latency.",
-        "evidence_ids"
+        "The p95 latency increased significantly in ap-south after the deployment.",
+        "The error rate also increased after the deployment, suggesting a related issue."
       ],
       "evidence_ids": [
         "E6",
-        "E1"
+        "E2"
       ]
     },
     {
       "rank": 2,
-      "description": "The increase in request volume may have contributed to the latency increase.",
+      "description": "The increase in request volume in ap-south may have contributed to the latency increase.",
       "category": "traffic",
       "confidence": 0.3,
       "why_chain": [
-        "The request volume increased from 1236 per 5 min to 5418 per 5 min, a significant increase.",
-        "The increase in request volume could have overwhelmed the system, leading to higher latency.",
-        "The deployment of auth v2.23 to ap-south is a known change that could affect request volume.",
-        "evidence_ids"
+        "The request volume in ap-south increased significantly after the deployment.",
+        "Increased request volume can lead to higher latency due to load balancing and resource constraints.",
+        "The increase in request volume coincided with the deployment of auth v2.23."
       ],
       "evidence_ids": [
         "E3",
         "E2"
       ]
-    },
-    {
-      "rank": 3,
-      "description": "The increase in error rate may be related to the deployment of auth v2.23.",
-      "category": "unknown",
-      "confidence": 0.3,
-      "why_chain": [
-        "The error rate increased from 0.41% to 0.81%, a significant increase.",
-        "The deployment of auth v2.23 to ap-south is a known change that could affect error rates.",
-        "The increase in error rate could be a symptom of the deployment of auth v2.23.",
-        "evidence_ids"
-      ],
-      "evidence_ids": [
-        "E4",
-        "E6"
-      ]
     }
   ],
   "ruled_out": [
     {
-      "hypothesis": "The increase in latency is due to a configuration change.",
-      "reason": "No evidence supports a config_change as the cause of the latency increase.",
+      "hypothesis": "The deployment of checkout v2.3 to eu-west was the cause.",
+      "reason": "checkout v2.3 was deployed to eu-west 74 minutes before the change point.",
       "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4",
-        "E5",
-        "E6",
-        "E7",
-        "E8",
-        "E9"
+        "E8"
       ]
     },
     {
-      "hypothesis": "The increase in latency is due to a dependency issue with an external service.",
-      "reason": "No evidence supports a dependency issue as the cause of the latency increase.",
+      "hypothesis": "The slow query on the auth service in us-east was the cause.",
+      "reason": "The slow query occurred 63 minutes before the change point.",
       "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4",
-        "E5",
-        "E6",
-        "E7",
-        "E8",
-        "E9"
-      ]
-    },
-    {
-      "hypothesis": "The increase in latency is due to an infrastructure issue.",
-      "reason": "No evidence supports an infrastructure issue as the cause of the latency increase.",
-      "evidence_ids": [
-        "E1",
-        "E2",
-        "E3",
-        "E4",
-        "E5",
-        "E6",
-        "E7",
-        "E8",
         "E9"
       ]
     }
@@ -195,7 +146,7 @@
   },
   "actions": [
     {
-      "action": "Roll back the deployment of auth v2.23 to ap-south",
+      "action": "Roll back the deployment of auth v2.23 to ap-south.",
       "type": "corrective",
       "priority": "high",
       "addresses_factors": [
@@ -203,7 +154,7 @@
       ]
     },
     {
-      "action": "Monitor request volume and error rates closely in ap-south",
+      "action": "Monitor request volume and latency closely in ap-south and adjust autoscaler as needed.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
@@ -211,12 +162,19 @@
       ]
     },
     {
-      "action": "Review and optimize the autoscaler in ap-south",
+      "action": "Review and optimize the autoscaler configuration for ap-south.",
       "type": "preventive",
       "priority": "medium",
       "addresses_factors": [
-        3
+        1
       ]
     }
-  ]
+  ],
+  "guardrails": {
+    "model_used": true,
+    "ids_cited": 7,
+    "ids_invented": 0,
+    "factors_dropped": 1,
+    "engine_fallback": false
+  }
 }
