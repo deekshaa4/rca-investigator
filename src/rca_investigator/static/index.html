@@ -263,12 +263,6 @@ function addMessage(who, html) {
 
 let connected = null;
 function welcome() {
-  if (connected) {
-    const c = addMessage("bot", richText(`Hi! I'm **CuteBot**, your root cause detective. 🕵️\n${connected}\n` +
-      "Just ask me what happened, e.g. *Why did the error rate go up on 26 March?* I'll find the right tables and the right time myself. " +
-      "You can still upload or paste extra files with ➕."));
-    return c;
-  }
   const b = addMessage("bot", richText(
     "Hi! I'm **CuteBot**, your root cause detective. 🕵️\n" +
     "Click ➕ to share **anything about the problem**: an incident write-up, emails or notes (PDF, Word, text), " +

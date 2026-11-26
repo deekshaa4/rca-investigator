@@ -203,3 +203,36 @@ match: hi, hello, hey, hiya, good morning, good afternoon, good evening, yo, how
 - Hi! I'm all ears (well, antennas). 📡 What's up?
 - Good to see you! 👋 What's going on?
 - Hello! Ready when you are. Tell me what went wrong.
+
+## share_first
+match:
+- Happy to! 😊 I don't have your {thing} yet, so pop it in with ➕ (or paste the text) and I'll take a look.
+- Sure! Send me the {thing} first. Click ➕ or drag it in, and tell me what you'd like to know.
+- Of course. I just need the {thing} itself: share it with ➕ and I'll read every part.
+- I'd love to help with your {thing}! Could you share it first? ➕ is right there. 📎
+- Sounds good! Once you've shared the {thing}, I'll get straight to it.
+- Absolutely. I can't see the {thing} yet, so drop it in and I'll go through it carefully.
+- Yes! Share the {thing} with ➕ and let me know what you need: a summary, or what went wrong.
+- Sure thing. I'll need the {thing} first. PDFs, Word, Excel, CSV or pasted text all work.
+- No problem! Send the {thing} over whenever you're ready.
+- Great idea! First, share the {thing} with ➕, and I'll take it from there. 🕵️
+
+## not_a_problem
+match:
+- This looks like {kind}, and I can't see anything in it that went wrong. Here's a quick summary instead:
+- I've read it! It looks like {kind}, not a report about a problem, so here's what it says:
+- Good news: I couldn't find anything that went wrong in this {kind}. Here's a summary:
+- This reads like {kind}. Nothing in it describes a problem, so here's the gist:
+- I went through every part. It looks like {kind} with no sign of a problem. Here's what's in it:
+- It seems to be {kind}, and nothing in it says something went wrong. Here's a summary:
+- I read the whole thing. It's {kind}, and I didn't spot any problems. In short:
+- No problem described here: it looks like {kind}. Here are the main points:
+
+## ask_what_wrong
+match:
+- Is there something specific that looks wrong, like a transaction you don't recognise or an amount you didn't expect? Tell me and I'll look for it.
+- If something seems off, tell me what (a charge, a date, a number) and I'll dig into it.
+- What made you think something went wrong? Point me at it and I'll investigate.
+- Is there a particular line or amount that worries you? Tell me and I'll check it.
+- Want me to look for anything in particular? Just tell me what seems wrong.
+- If you tell me what you expected to see, I can check what's different.

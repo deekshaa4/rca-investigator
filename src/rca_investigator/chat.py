@@ -25,8 +25,11 @@ from .analyze import _aggregate, _select, analyze_change, label, metric_columns
 from .documents import (
     Document,
     answer_from_documents,
+    describes_problem,
     document_from_text,
+    document_kind,
     investigate_documents,
+    summarise_documents,
 )
 from .ingest import IngestError, Parsed, _looks_like_table, read_text, text_to_records
 from .investigate import ChatClient, investigate
@@ -34,7 +37,7 @@ from .llm import LLMError
 from .memory import CORRECTION, CaseNotes, recall_message
 from .schema import RCAReport
 from .simulate import SCENARIOS, generate_incident
-from .smalltalk import match_intent, pick_reply
+from .smalltalk import match_intent, pick_reply, reply_for
 
 Emit = Callable[[str, dict], None]
 STYLES = ("nerd", "simple", "kid")
@@ -51,6 +54,14 @@ INVESTIGATIVE = re.compile(r"\b(why|cause[ds]?|wrong|happen\w*|investigat\w*|ana
 # the user is about to share something (or asking about us): reply, don't investigate yet
 ANNOUNCES = {"later", "can_share", "forgot", "review", "privacy", "formats", "capabilities",
              "thanks", "bye"}
+SUMMARY_ASK = re.compile(r"\b(summar\w*|overview|tl;?dr|gist|key points|recap|brief me|"
+                         r"what('s| is) (this|it|in it|in this)( \w+)? about|"
+                         r"what does (it|this) say)\b", re.IGNORECASE)
+UNSHARED_THINGS = ("statements?|files?|documents?|docs?|reports?|pdfs?|spreadsheets?|sheets?|"
+                   "excel|csv|logs?|emails?|notes|invoices?|receipts?|contracts?|data|"
+                   "screenshots?|charts?|graphs?|records|minutes|transcripts?")
+UNSHARED = re.compile(rf"\b(?:my|our|the|this|these|a|an|some)\s+((?:[a-z]+\s+){{0,2}}?"
+                      rf"(?:{UNSHARED_THINGS}))\b", re.IGNORECASE)
 PASTE_DOC_CHARS = 400  # longer messages are treated as a document to read
 GREETING = re.compile(r"^\s*(hi|hello|hey|thanks|thank you|ok|okay|cool|great)\b[\s!.?]*$", re.IGNORECASE)
 GENERAL_SYSTEM = """You are CuteBot, a friendly root cause analysis assistant. The user has not
@@ -398,7 +409,19 @@ class Conversation:
             emit("say", {"text": f"Thanks! I'll read the text you pasted "
                                  f"({len(message.split())} words) carefully."})
 
-        connected = bool(self.catalog) and not (session.uploaded and session.metrics is not None)
+        nothing_shared = not session.documents and not session.uploaded
+        unshared = UNSHARED.search(message) if nothing_shared and not long_text else None
+        if unshared and not (self.catalog and re.search(r"\b(data|logs?|records)\b",
+                                                        unshared.group(1), re.IGNORECASE)):
+            thing = re.sub(r"^(?:my|our|the|this|these|a|an|some)\s+", "", unshared.group(0),
+                           flags=re.IGNORECASE)
+            emit("say", {"text": reply_for("share_first", session.recent_replies,
+                                           thing=thing.lower())})
+            return
+
+        connected = (bool(self.catalog) and not (session.uploaded and session.metrics is not None)
+                     and (session.mode == "numbers" and session.report is not None
+                          or self.catalog.relevant(message)))
         if session.documents and (session.last_shared == "documents"
                                   or (session.metrics is None and not connected)):
             self._documents(session, message, use_llm, emit)
@@ -429,10 +452,32 @@ class Conversation:
             self._follow_up(session, message, use_llm, emit)
 
     def _documents(self, session: Session, message: str, use_llm: bool, emit: Emit) -> None:
-        """Investigate the shared documents, or answer a question about them."""
+        """Summarise the shared documents, answer a question, or investigate a problem."""
         style = session.style or "simple"
-        rerun = session.report is None or session.mode != "documents" or session.changed \
-            or bool(RERUN.search(message))
+        client = self.client_factory(use_llm)
+        wants_summary = bool(SUMMARY_ASK.search(message))
+        investigative = bool(INVESTIGATIVE.search(message) or RERUN.search(message))
+        if wants_summary:
+            emit("stage", {"stage": "collect", "text": "Reading every part of it..."})
+            summary = summarise_documents(session.documents, client, STYLE_INSTRUCTION[style])
+            emit("stage", {"stage": "back", "text": "Here's the summary!"})
+            emit("say", {"text": summary})
+            if not investigative:
+                session.changed = False
+                return
+        if investigative and not describes_problem(session.documents):
+            kind = document_kind(session.documents)
+            emit("stage", {"stage": "collect", "text": "Reading every part of it..."})
+            text = reply_for("not_a_problem", session.recent_replies, kind=kind)
+            if not wants_summary:
+                text += "\n" + summarise_documents(session.documents, client,
+                                                   STYLE_INSTRUCTION[style])
+            emit("stage", {"stage": "back", "text": "Here you go!"})
+            emit("say", {"text": text})
+            emit("say", {"text": reply_for("ask_what_wrong", session.recent_replies)})
+            session.changed = False
+            return
+        rerun = investigative or (session.changed and not message)
         if not rerun and message:
             emit("stage", {"stage": "think", "text": "Looking through the documents..."})
             answer = answer_from_documents(message, session.documents,

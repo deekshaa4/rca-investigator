@@ -102,6 +102,13 @@ Not every incident comes with numbers. Upload an incident write-up, emails or me
 
 Only charts are looked at (at most 4 per investigation), and what the model saw is shown as its own clue, marked *read from the picture* so it is never mistaken for a word-for-word quote.
 
+**It understands what you're asking first.** Before doing anything, CuteBot works out whether the message is small talk, a request for a **summary**, a **question** about something shared, or a request to **investigate a problem**:
+
+- Mention a file you haven't shared yet ("can you look at my account statement?") and it asks for it, instead of guessing.
+- Ask for a summary and you get a summary (with any numbers the model wrote that aren't in the document flagged for checking).
+- Ask "what went wrong?" about a document that doesn't describe any problem (a bank statement, meeting notes, an invoice) and it says so, summarises it and asks what looks wrong, instead of inventing an incident.
+- Connected data is only used when the question is about it.
+
 With no data at all, CuteBot can still answer general questions, clearly labelled *from general knowledge, not from your data*.
 
 ### Friendly chat and a memory you control

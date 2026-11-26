@@ -24,6 +24,10 @@ import pandas as pd
 
 from .ingest import IngestError, Parsed, frame_to_parsed, read_file
 
+DATA_WORDS = ("error", "errors", "latency", "slow", "traffic", "requests", "deploy", "deploys",
+              "deployment", "alert", "alerts", "ticket", "tickets", "outage", "service",
+              "region", "downtime", "metrics", "metric", "website", "site", "app", "api",
+              "server", "servers", "checkout", "database")
 SAMPLE_ROWS = 500
 MAX_ROWS = 500_000
 FILE_TYPES = {".csv", ".tsv", ".json", ".jsonl", ".ndjson", ".xlsx", ".xlsm", ".pdf", ".docx",
@@ -258,6 +262,16 @@ class Catalog:
         names = ", ".join(dict.fromkeys(t.source for t in self.tables))
         return (f"I'm connected to **{names}**: numbers in {', '.join(metrics) or 'none'}; "
                 f"records in {', '.join(records) or 'none'}.")
+
+    def relevant(self, message: str) -> bool:
+        """Is the question about the connected data (its tables, measures or a time)?"""
+        words = set(re.findall(r"[a-z]{3,}", message.lower()))
+        vocab = set(DATA_WORDS)
+        for t in self.tables:
+            vocab |= set(re.findall(r"[a-z]{3,}", f"{t.name} {' '.join(t.columns)}".lower()))
+        when = re.search(r"\d|yesterday|today|last (night|week|hour|day)|this morning", message,
+                         re.IGNORECASE)
+        return bool(words & vocab) or bool(when)
 
     def _source_of(self, table: Table):
         return next(s for s in self.sources if s.name == table.source)

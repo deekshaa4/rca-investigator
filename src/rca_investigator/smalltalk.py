@@ -39,7 +39,7 @@ def load_intents(path: Path = REPLIES_FILE) -> tuple[Intent, ...]:
                         re.compile(rf"(?<![a-z']){re.escape(phrase)}(?![a-z'])"))
         elif current is not None and line.startswith("- "):
             current.replies.append(line[2:].strip())
-    return tuple(i for i in intents if i.patterns and i.replies)
+    return tuple(i for i in intents if i.replies)
 
 
 def match_intent(message: str, path: Path = REPLIES_FILE) -> Intent | None:
@@ -48,6 +48,12 @@ def match_intent(message: str, path: Path = REPLIES_FILE) -> Intent | None:
     if not text.strip() or len(text) > MAX_SMALLTALK_CHARS:
         return None
     return next((i for i in load_intents(path) if any(p.search(text) for p in i.patterns)), None)
+
+
+def reply_for(name: str, recent: deque, **fill: str) -> str:
+    """A reply from a named section (used by code, e.g. "share_first"), with {fields} filled."""
+    intent = next(i for i in load_intents() if i.name == name)
+    return pick_reply(intent, recent).format(**fill)
 
 
 def pick_reply(intent: Intent, recent: deque) -> str:

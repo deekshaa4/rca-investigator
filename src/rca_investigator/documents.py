@@ -45,7 +45,11 @@ CAUSE = re.compile(r"\b(because|due to|caused by|root cause|as a result of|trigg
 SYMPTOM = re.compile(r"\b(errors?|outage|went down|is down|was down|failed|failing|failures?|"
                      r"slow(er|ness)?|latency|time ?outs?|unavailable|crash(ed|es)?|"
                      r"complain(ed|ts)?|degraded|broken|could not|couldn't|unable|spike[ds]?|"
-                     r"dropped|missing|delayed|stuck)\b", re.IGNORECASE)
+                     r"dropped|missing|delayed|stuck|declined|returned|reversed|overdrawn|"
+                     r"overdraft|charge ?back|insufficient funds|unpaid|bounced|disputed?|"
+                     r"fraud\w*|unrecogni[sz]ed|duplicated?|penalty|late (payment|fee)|"
+                     r"incorrect|wrong|mistake|faulty|defect\w*|damaged|cancell?ed|"
+                     r"breach\w*|incident|issue|problem)\b", re.IGNORECASE)
 ACTION = re.compile(r"\b(fixed|rolled back|roll back|rollback|restart(ed)?|revert(ed)?|"
                     r"mitigat\w+|resolved|patch(ed)?|we will|should|plan to|action items?|"
                     r"prevent\w*|follow[- ]up)\b", re.IGNORECASE)
@@ -160,7 +164,7 @@ def load_document(name: str, data: bytes) -> Document:
         from pypdf.errors import PdfReadError
 
         try:
-            pages = [p.extract_text() or "" for p in PdfReader(io.BytesIO(data)).pages]
+            pages = [_page_text(p) for p in PdfReader(io.BytesIO(data)).pages]
         except (PdfReadError, ValueError) as exc:
             raise IngestError("That PDF couldn't be opened.") from exc
         return document_from_pages(name, pages, find_charts(data, pages))
@@ -179,6 +183,93 @@ def load_document(name: str, data: bytes) -> Document:
     if suffix in (".html", ".htm"):
         text = re.sub(r"<(script|style)[^>]*>.*?</\1>|<[^>]+>", " ", text, flags=re.DOTALL | re.IGNORECASE)
     return document_from_text(name, text)
+
+
+def _page_text(page) -> str:
+    """Page text with table rows kept on one line (falls back to plain extraction)."""
+    try:
+        text = page.extract_text(extraction_mode="layout") or ""
+        text = "\n".join(re.sub(r" {3,}", "   ", ln.rstrip()) for ln in text.splitlines())
+        if text.strip():
+            return text
+    except Exception:  # noqa: BLE001, S110 (older PDFs: plain extraction below)
+        pass
+    return page.extract_text() or ""
+
+
+# ---------- what kind of document, and is it about a problem? ----------
+
+KINDS = [
+    ("a bank or account statement", (r"statement|balance|sort code|account (number|no)|"
+                                    r"transactions?|debit|credit|overdraft|iban")),
+    ("an invoice or receipt", r"invoice|receipt|amount due|vat|subtotal|bill to|payment terms"),
+    ("an incident report", (r"incident|outage|post[- ]?mortem|root cause|downtime|sev\d|"
+                           r"impact|mitigation")),
+    ("meeting notes", r"minutes|attendees|agenda|action items?|meeting"),
+    ("an email", r"^(from|to|subject|cc):|dear |kind regards|best regards"),
+    ("a contract or agreement", r"agreement|contract|party|parties|clause|terms and conditions"),
+    ("a report", r"report|summary|findings|analysis"),
+]
+
+
+def document_kind(documents: list[Document]) -> str:
+    text = " ".join(c.text for d in documents for c in d.chunks)[:20000]
+    best = max((len(re.findall(rule, text, re.IGNORECASE | re.MULTILINE)), kind) for kind, rule in KINDS)
+    return best[1] if best[0] >= 2 else "a document"
+
+
+def describes_problem(documents: list[Document]) -> bool:
+    """Does any part say something went wrong, or what caused something?"""
+    return any(f["type"] in ("cause", "symptom") for d in documents for c in d.chunks
+               for f in rule_facts(c))
+
+
+MONEY_OR_NUMBER = re.compile(r"[£$€]?\d[\d,]*(?:\.\d+)?%?")
+SUMMARY_SYSTEM = """You summarise documents for a busy reader. Use ONLY the document text.
+Say what kind of document it is, then give the key points as short bullet points
+(important names, dates, amounts and totals, copied exactly). Mention anything unusual.
+Do not invent anything. At most 8 bullet points.{hint}"""
+SUMMARY_CHARS = 7000
+
+
+def _unverified_numbers(summary: str, source: str) -> list[str]:
+    """Numbers in the summary that don't appear anywhere in the document."""
+    plain = re.sub(r"[£$€,\s]", "", source)
+    found = []
+    for num in MONEY_OR_NUMBER.findall(summary):
+        digits = re.sub(r"[£$€,%]", "", num).rstrip(".")
+        if len(re.sub(r"\D", "", digits)) >= 2 and digits not in plain:
+            found.append(num)
+    return found
+
+
+def summarise_documents(documents: list[Document], client: ChatClient | None,
+                        style_hint: str = "") -> str:
+    """A plain summary of the shared documents (numbers checked against the text)."""
+    kind = document_kind(documents)
+    text = "\n\n".join(f"[{c.document} p.{c.page}]\n{c.text}" for d in documents
+                       for c in d.chunks)
+    if client is not None and hasattr(client, "chat"):
+        try:
+            summary = client.chat(f"Document ({kind}):\n{text[:SUMMARY_CHARS]}\n\nSummarise it.",
+                                  system=SUMMARY_SYSTEM.format(hint="\n" + style_hint),
+                                  temperature=0.1).strip()
+            missing = _unverified_numbers(summary, text)
+            if missing:
+                summary += ("\n\n⚠ These numbers aren't written in the document (the AI worked "
+                            "them out or misread them), so please double-check: "
+                            + ", ".join(dict.fromkeys(missing)))
+            if len(text) > SUMMARY_CHARS:
+                summary += ("\n\n(It's a long document, so this covers the first part. Ask me "
+                            "about any section for details.)")
+            return summary
+        except LLMError:
+            pass
+    lines = [ln.strip() for d in documents for c in d.chunks for ln in c.text.splitlines()
+             if len(ln.strip()) > 3]
+    key = [ln for ln in lines if MONEY_OR_NUMBER.search(ln)][:6] or lines[:6]
+    return (f"It looks like {kind}. Key lines:\n"
+            + "\n".join(f"• {re.sub(' {2,}', '  ', ln)[:160]}" for ln in key))
 
 
 # ---------- facts ----------
