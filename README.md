@@ -66,7 +66,7 @@ rca serve                      # then open http://127.0.0.1:8000
 
 A chat page where anyone can investigate **their own data**:
 
-- **➕ Upload files** (or drag them in): a table of numbers and any records.
+- **➕ Upload files** (or drag them in): CSV, Excel (.xlsx), PDF, Word (.docx), JSON, text or log files.
 - **Type or paste** into the message box: a question, log lines, notes like `2026-05-01 14:40 Deployed api v3.1`, or a small table.
 - **Ask** what went wrong. **CuteBot**, the investigator, leaves its corner and roams the page while it works, showing each stage: collecting the evidence, polishing the evidence, understanding the root cause, weighing it up, and coming back with the answer. The report then appears as cards (verdict with reasons, what changed, why it happened, ruled out, what to do, fact-check, all clues).
 - **Follow-up questions** ("could it be traffic instead?") are answered from the report's evidence only. Share more data and it investigates again.
@@ -78,10 +78,10 @@ Everything runs on your own computer: uploads are kept in memory for the session
 
 | Kind | Format | Needs | Optional |
 |---|---|---|---|
-| Table of numbers | CSV, TSV or JSON | a time column (`timestamp`, `time`, `date`, ...) and at least one numeric measure | `service`/`app` and `region`/`zone` columns, a request count |
-| Records | CSV/JSON with a text column, or plain text / log lines | a date and time on each record | `source`/`type`, service and region columns |
+| Table of numbers | CSV, TSV, JSON, Excel (.xlsx), or a table of dated rows inside a PDF or Word file | a time column (`timestamp`, `time`, `date`, ...) and at least one numeric measure | `service`/`app` and `region`/`zone` columns, a request count |
+| Records | CSV/JSON/Excel with a text column, or text, log, PDF or Word files with dated lines | a date and time on each record | `source`/`type`, service and region columns |
 
-Column names are matched loosely, and each record is sorted into deploys, config changes, alerts, tickets or logs from its wording. Spreadsheets should be saved as CSV first. Pictures of charts can't be read: upload the numbers behind the chart instead.
+Column names are matched loosely, and each record is sorted into deploys, config changes, alerts, tickets or logs from its wording. Pictures of charts and scanned PDFs can't be read yet: upload the numbers behind the chart instead. Unreadable files get a message saying what to upload instead.
 
 ## Test incidents
 

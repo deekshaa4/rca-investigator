@@ -1,3 +1,4 @@
+import base64
 import json
 
 from fastapi.testclient import TestClient
@@ -48,8 +49,9 @@ def test_without_data_cutebot_explains_what_to_share():
 
 def test_upload_then_ask_streams_stages_and_report():
     client = app()
+    data = base64.b64encode(own_format_table().to_csv(index=False).encode()).decode()
     r = client.post("/api/upload", json={"session": SID, "name": "export.csv",
-                                         "text": own_format_table().to_csv(index=False)})
+                                         "data_base64": data})
     assert r.status_code == 200 and r.json()["has_numbers"]
     got = chat(client, "Why did errors go up?", llm=False)
     stages = [d["stage"] for k, d in got if k == "stage"]
@@ -60,8 +62,9 @@ def test_upload_then_ask_streams_stages_and_report():
 
 
 def test_bad_upload_gives_a_friendly_error():
-    r = app().post("/api/upload", json={"session": SID, "name": "chart.png", "text": "x"})
-    assert r.status_code == 400 and "CSV" in r.json()["detail"]
+    r = app().post("/api/upload", json={"session": SID, "name": "chart.png",
+                                        "data_base64": base64.b64encode(b"x").decode()})
+    assert r.status_code == 400 and "pictures" in r.json()["detail"]
 
 
 def test_sample_then_follow_up_question():

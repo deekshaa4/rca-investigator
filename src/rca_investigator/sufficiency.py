@@ -74,6 +74,8 @@ def _candidates(hits: list[RecordHit], evidence: list[dict]) -> list[Candidate]:
     out = [
         Candidate(h, eid_by_record.get(h.record["id"]), _timing(h))
         for h in hits if h.record["source"] in CHANGE_SOURCES and _could_be_cause(h.record)
+        # a ticket raised after the change is a complaint about it, not its cause
+        and not (h.record["source"] == "tickets" and h.minutes_from_change > 0)
     ]
     return [c for c in out if c.timing > 0]
 

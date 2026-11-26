@@ -9,6 +9,8 @@ Everything stays on this computer: uploads are kept in memory for the session on
 
 from __future__ import annotations
 
+import base64
+import binascii
 import json
 import queue
 import re
@@ -22,7 +24,7 @@ from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from .chat import Conversation, Session
-from .ingest import IngestError, read_text
+from .ingest import IngestError, read_file
 from .investigate import ChatClient
 from .llm import DEFAULT_MODEL, OllamaClient
 from .simulate import generate_incident
@@ -37,7 +39,7 @@ SESSION_ID = r"^[A-Za-z0-9-]{8,64}$"
 class Upload(BaseModel):
     session: str = Field(pattern=SESSION_ID)
     name: str = Field(max_length=200)
-    text: str = Field(max_length=MAX_UPLOAD_CHARS)
+    data_base64: str = Field(max_length=MAX_UPLOAD_CHARS * 4 // 3 + 4)
 
 
 class Message(BaseModel):
@@ -95,7 +97,11 @@ def create_app(model: str = DEFAULT_MODEL,
     def upload(body: Upload) -> dict:
         session = session_for(body.session)
         try:
-            parsed = read_text(body.name, body.text, session.known())
+            data = base64.b64decode(body.data_base64, validate=True)
+        except binascii.Error as exc:
+            raise HTTPException(400, "The file didn't arrive in one piece. Please try again.") from exc
+        try:
+            parsed = read_file(body.name, data, session.known())
         except IngestError as exc:
             raise HTTPException(400, str(exc)) from exc
         session.add(parsed)

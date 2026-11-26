@@ -7,7 +7,8 @@
 <style>
 :root {
   --bg: #f4f5fb; --panel: #ffffff; --ink: #1f2430; --muted: #5d6475; --line: #e2e5ee;
-  --accent: #4f6bed; --accent-soft: #e8ecfd; --bot: #7c8cf8; --bot-dark: #4f5fd6;
+  --accent: #4f6bed; --accent-soft: #e8ecfd;
+  --bot-body: #fffdfa; --bot-line: #f1d2cb; --bot-red: #f2545b; --bot-face: #ffeee8;
   --user: #4f6bed; --user-ink: #ffffff;
   --ok: #1f8a5b; --ok-soft: #e3f5ec; --warn: #a76a00; --warn-soft: #fff3da;
   --bad: #b3383d; --bad-soft: #fbe6e7; --shadow: 0 2px 10px rgba(30, 40, 80, .08);
@@ -15,7 +16,8 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #14161d; --panel: #1d2029; --ink: #e8eaf1; --muted: #a2a8b8; --line: #2e3240;
-    --accent: #8ea0ff; --accent-soft: #262c48; --bot: #8ea0ff; --bot-dark: #5d6ee0;
+    --accent: #8ea0ff; --accent-soft: #262c48;
+    --bot-body: #fffaf6; --bot-line: #e7b9b0; --bot-red: #ff6b70; --bot-face: #ffe9e2;
     --user: #3d4fb8; --user-ink: #ffffff;
     --ok: #5fd39c; --ok-soft: #1b3329; --warn: #f0b955; --warn-soft: #3a2f17;
     --bad: #f08a8e; --bad-soft: #3d1f22; --shadow: 0 2px 10px rgba(0, 0, 0, .35);
@@ -102,14 +104,16 @@ textarea { flex: 1; border: none; resize: none; background: transparent; color: 
 #cutebot { position: fixed; left: 0; top: 0; width: 72px; z-index: 50; cursor: pointer;
   transition: transform 1.1s cubic-bezier(.45, 0, .3, 1.25); will-change: transform; }
 #cutebot.busy { pointer-events: none; }
-#cutebot svg { width: 72px; height: 82px; display: block; animation: bob 1.6s ease-in-out infinite; }
+#cutebot svg { width: 72px; height: 83px; display: block; animation: bob 1.6s ease-in-out infinite; }
 #cutebot.busy svg { animation: waddle .32s ease-in-out infinite; }
 #cutebot.happy svg { animation: hop .5s ease-in-out 3; }
-#cutebot.wave .arm-r { animation: wave .3s ease-in-out 4; transform-origin: 62px 64px; }
+#cutebot.wave .arm-r { animation: wave .3s ease-in-out 4; transform-origin: 70px 58px; }
+#cutebot.busy .arm-l, #cutebot.busy .arm-r { animation: flap .32s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes flap { 50% { transform: rotate(18deg); } }
 @keyframes bob { 50% { transform: translateY(-4px); } }
 @keyframes waddle { 0%, 100% { transform: rotate(-7deg) translateY(0); } 50% { transform: rotate(7deg) translateY(-6px); } }
 @keyframes hop { 50% { transform: translateY(-20px) scale(1.05); } }
-@keyframes wave { 50% { transform: rotate(-40deg); } }
+@keyframes wave { 0%, 100% { transform: rotate(-25deg); } 50% { transform: rotate(-70deg); } }
 .eye { animation: blink 4s infinite; transform-origin: center; transform-box: fill-box; }
 @keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
 #prop { position: absolute; right: -14px; top: 30px; font-size: 1.4rem;
@@ -131,7 +135,7 @@ textarea { flex: 1; border: none; resize: none; background: transparent; color: 
   .card { opacity: 1; transform: none; }
 }
 @media (max-width: 560px) {
-  #cutebot, #cutebot svg { width: 56px; } #cutebot svg { height: 64px; }
+  #cutebot, #cutebot svg { width: 56px; } #cutebot svg { height: 65px; }
   header h1 span { display: none; }
 }
 </style>
@@ -147,34 +151,37 @@ textarea { flex: 1; border: none; resize: none; background: transparent; color: 
 
 <div class="composer-wrap">
   <form class="composer" id="composer">
-    <button type="button" class="round" id="plus" title="Upload files (CSV, JSON, TXT, LOG)" aria-label="Upload files">+</button>
-    <input type="file" id="files" multiple accept=".csv,.tsv,.json,.jsonl,.ndjson,.txt,.log" hidden>
+    <button type="button" class="round" id="plus" title="Upload files: CSV, Excel, PDF, Word, JSON, text or logs" aria-label="Upload files">+</button>
+    <input type="file" id="files" multiple hidden>
     <textarea id="input" rows="1" placeholder="Ask CuteBot or paste data..." aria-label="Message"></textarea>
     <button type="submit" class="round" id="send" aria-label="Send">➤</button>
   </form>
-  <p class="hint">Your files stay on this computer. Drag files here or use ➕. Enter sends, Shift+Enter adds a line.</p>
+  <p class="hint">Your files stay on this computer. Drag any file here or use ➕ (CSV, Excel, PDF, Word, text). Enter sends, Shift+Enter adds a line.</p>
 </div>
 
 <div id="cutebot" title="CuteBot">
   <div id="say"></div>
   <span id="prop"></span>
-  <svg viewBox="0 0 84 96" aria-hidden="true">
-    <line x1="42" y1="14" x2="42" y2="4" stroke="var(--bot-dark)" stroke-width="3" stroke-linecap="round"/>
-    <circle cx="42" cy="4" r="4" fill="#ffb347"/>
-    <rect x="12" y="14" width="60" height="46" rx="20" fill="var(--bot)"/>
-    <rect x="20" y="22" width="44" height="28" rx="13" fill="#fff"/>
-    <ellipse class="eye" cx="33" cy="36" rx="5" ry="6" fill="#1f2430"/>
-    <ellipse class="eye" cx="51" cy="36" rx="5" ry="6" fill="#1f2430"/>
-    <circle cx="35" cy="34" r="1.6" fill="#fff"/><circle cx="53" cy="34" r="1.6" fill="#fff"/>
-    <ellipse cx="25" cy="45" rx="3.5" ry="2" fill="#ff9aa8" opacity=".8"/>
-    <ellipse cx="59" cy="45" rx="3.5" ry="2" fill="#ff9aa8" opacity=".8"/>
-    <path d="M37 45 q5 4 10 0" stroke="#1f2430" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <rect x="24" y="60" width="36" height="22" rx="10" fill="var(--bot-dark)"/>
-    <circle cx="42" cy="71" r="4" fill="#ffd36e"/>
-    <rect x="28" y="82" width="9" height="10" rx="4" fill="var(--bot-dark)"/>
-    <rect x="47" y="82" width="9" height="10" rx="4" fill="var(--bot-dark)"/>
-    <rect class="arm-r" x="62" y="60" width="6" height="14" rx="3" fill="var(--bot-dark)"/>
-    <rect x="16" y="60" width="6" height="14" rx="3" fill="var(--bot-dark)" transform="rotate(20 19 67)"/>
+  <svg viewBox="0 0 90 104" aria-hidden="true">
+    <path d="M45 16 C45 10 45 8 45 6" stroke="var(--bot-red)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M45 7 c-2-3.5-7-2.5-6.5 1.2 c.4 2.6 4 4.6 6.5 6.4 c2.5-1.8 6.1-3.8 6.5-6.4 c.5-3.7-4.5-4.7-6.5-1.2z" fill="var(--bot-red)"/>
+    <ellipse cx="16" cy="40" rx="6" ry="7" fill="var(--bot-red)"/>
+    <ellipse cx="74" cy="40" rx="6" ry="7" fill="var(--bot-red)"/>
+    <ellipse class="arm-l" cx="15" cy="66" rx="7" ry="11" fill="var(--bot-body)" stroke="var(--bot-line)" stroke-width="2" transform="rotate(25 15 66)"/>
+    <ellipse class="arm-r" cx="75" cy="66" rx="7" ry="11" fill="var(--bot-body)" stroke="var(--bot-line)" stroke-width="2" transform="rotate(-25 75 66)"/>
+    <ellipse cx="31" cy="95" rx="10" ry="6" fill="var(--bot-red)"/>
+    <ellipse cx="59" cy="95" rx="10" ry="6" fill="var(--bot-red)"/>
+    <ellipse cx="45" cy="56" rx="31" ry="38" fill="var(--bot-body)" stroke="var(--bot-line)" stroke-width="2"/>
+    <ellipse cx="45" cy="42" rx="20" ry="16" fill="var(--bot-face)"/>
+    <ellipse class="eye" cx="37" cy="41" rx="3.6" ry="4.6" fill="#2b2230"/>
+    <ellipse class="eye" cx="53" cy="41" rx="3.6" ry="4.6" fill="#2b2230"/>
+    <circle cx="38.4" cy="39.4" r="1.3" fill="#fff"/><circle cx="54.4" cy="39.4" r="1.3" fill="#fff"/>
+    <ellipse cx="30" cy="48" rx="3.6" ry="2.2" fill="#ff8a9b" opacity=".75"/>
+    <ellipse cx="60" cy="48" rx="3.6" ry="2.2" fill="#ff8a9b" opacity=".75"/>
+    <path d="M41 49 q4 3.5 8 0" stroke="#2b2230" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <circle cx="45" cy="73" r="9" fill="var(--bot-red)"/>
+    <circle cx="43.5" cy="71.5" r="4" fill="none" stroke="#fff" stroke-width="2"/>
+    <path d="M46.5 74.5 l3.5 3.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
   </svg>
 </div>
 
@@ -190,6 +197,13 @@ const STAGES = [
 const IDLE_LINES = ["Hmm, let me look closer...", "Sniff sniff 🔍", "Ooh, a clue!", "Hold on, nearly there...",
   "Checking under this graph...", "Connecting the dots...", "Tiny detective at work 🕵️"];
 const TAP_LINES = ["Hi there! 👋", "That tickles!", "Ready when you are!", "Share some data with me ✨"];
+const AVATAR = `<svg viewBox="14 14 62 58" width="26" height="26" aria-hidden="true">
+  <ellipse cx="16" cy="40" rx="6" ry="7" fill="var(--bot-red)"/><ellipse cx="74" cy="40" rx="6" ry="7" fill="var(--bot-red)"/>
+  <ellipse cx="45" cy="50" rx="29" ry="28" fill="var(--bot-body)" stroke="var(--bot-line)" stroke-width="2"/>
+  <ellipse cx="45" cy="44" rx="19" ry="15" fill="var(--bot-face)"/>
+  <ellipse cx="37" cy="43" rx="3.6" ry="4.6" fill="#2b2230"/><ellipse cx="53" cy="43" rx="3.6" ry="4.6" fill="#2b2230"/>
+  <ellipse cx="30" cy="50" rx="3.6" ry="2.2" fill="#ff8a9b" opacity=".75"/><ellipse cx="60" cy="50" rx="3.6" ry="2.2" fill="#ff8a9b" opacity=".75"/>
+  <path d="M41 51 q4 3.5 8 0" stroke="#2b2230" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>`;
 let sessionId = newSessionId();
 let busy = false;
 
@@ -207,7 +221,7 @@ function richText(t) {
 function addMessage(who, html) {
   const row = document.createElement("div");
   row.className = `msg ${who}`;
-  row.innerHTML = who === "bot" ? `<div class="avatar">🤖</div><div class="bubble">${html}</div>`
+  row.innerHTML = who === "bot" ? `<div class="avatar">${AVATAR}</div><div class="bubble">${html}</div>`
                                 : `<div class="bubble">${html}</div>`;
   const box = $("#messages");
   box.appendChild(row);
@@ -218,8 +232,8 @@ function addMessage(who, html) {
 function welcome() {
   const b = addMessage("bot", richText(
     "Hi! I'm **CuteBot**, your root cause detective. 🕵️\n" +
-    "Click ➕ to upload a **table of numbers** (CSV with a time column and measures like error rate) and any " +
-    "**records** (deploys, setting changes, alerts, tickets, logs with dates). You can also paste them here.\n" +
+    "Click ➕ to upload your files: a **table of numbers** (CSV, Excel or PDF with a time column and measures like error rate) and any " +
+    "**records** (deploys, setting changes, alerts, tickets, logs with dates, as CSV, PDF, Word or text). You can also paste them here.\n" +
     "Then ask me what went wrong, e.g. *Why did the error rate go up on Tuesday?*"));
   b.insertAdjacentHTML("beforeend", `<div class="actions-row">
     <button type="button" data-act="sample">Try a sample</button>
@@ -252,6 +266,15 @@ async function post(url, body) {
   return data;
 }
 
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = () => reject(new Error("The file couldn't be read."));
+    reader.readAsDataURL(file);
+  });
+}
+
 async function uploadFiles(fileList) {
   if (busy) return;
   for (const file of [...fileList]) {
@@ -259,8 +282,7 @@ async function uploadFiles(fileList) {
     if (file.size > 20e6) { addMessage("bot", `<p class="error-text">${esc(file.name)} is too big (over 20 MB).</p>`); continue; }
     roam("collect", `Reading ${file.name}`);
     try {
-      const text = await file.text();
-      const r = await post("/api/upload", { session: sessionId, name: file.name, text });
+      const r = await post("/api/upload", { session: sessionId, name: file.name, data_base64: await toBase64(file) });
       let reply = `Got **${file.name}**. ${r.summary}`;
       if (!r.has_numbers) reply += "\nI still need a table of numbers to see what changed.";
       else reply += "\nAsk me what went wrong whenever you're ready!";

@@ -203,15 +203,136 @@ def _looks_like_table(text: str) -> bool:
     return width >= 1 and all(ln.count(sep) == width for ln in lines[1:6])
 
 
+IMAGE_HELP = ("I can't read pictures of charts yet. Please upload the numbers behind the chart "
+              "(most tools can export them as CSV or Excel).")
+BINARY_ONLY = {
+    ".png": IMAGE_HELP, ".jpg": IMAGE_HELP, ".jpeg": IMAGE_HELP, ".gif": IMAGE_HELP,
+    ".webp": IMAGE_HELP, ".heic": IMAGE_HELP, ".svg": IMAGE_HELP,
+    ".xls": "Old-style .xls files can't be read. Please save it as .xlsx or CSV.",
+    ".numbers": "Numbers files can't be read. Please export it as CSV or Excel (.xlsx).",
+    ".doc": "Old-style .doc files can't be read. Please save it as .docx, PDF or text.",
+    ".zip": "Please unzip the folder and upload the files inside it.",
+}
+NUMBER = re.compile(r"^-?\d+(?:[.,]\d+)?%?$")
+
+
+def _combine(parts: list[Parsed]) -> Parsed:
+    tables = [p.metrics for p in parts if p.metrics is not None]
+    metrics = None
+    if tables:
+        metrics = (pd.concat(tables, ignore_index=True)
+                   .groupby(["timestamp", "service", "region"], as_index=False)
+                   .mean(numeric_only=True))
+    records = [r for p in parts for r in p.records]
+    return Parsed(metrics=metrics, records=records,
+                  summary=" ".join(p.summary for p in parts if p.summary))
+
+
+def _table_from_text(text: str) -> pd.DataFrame | None:
+    """Rows like '2026-05-01 14:00  2.1  120' (e.g. a table inside a PDF) as a DataFrame."""
+    rows, header = [], None
+    for line in text.splitlines():
+        match = STAMP.match(line.strip())
+        rest = line.strip()[match.end():] if match else ""
+        cells = [c for c in re.split(r"[\s,;|]+", rest) if c]
+        if match and cells and all(NUMBER.match(c) for c in cells):
+            rows.append([match.group(1)] + [float(c.rstrip("%").replace(",", ".")) for c in cells])
+        elif not rows and line.strip():
+            header = [c for c in re.split(r"[\s,;|]{2,}|\t|,|;|\|", line.strip()) if c]
+    if len(rows) < 24 or len({len(r) for r in rows}) != 1:
+        return None
+    width = len(rows[0]) - 1
+    names = header[-width:] if header and len(header) >= width else [
+        f"value_{i}" for i in range(1, width + 1)]
+    return pd.DataFrame(rows, columns=["timestamp", *names])
+
+
+def _read_document_text(text: str, known: dict | None) -> Parsed:
+    """Text from a PDF or Word file: a table of numbers and/or dated record lines."""
+    parts = []
+    table = _table_from_text(text)
+    if table is not None:
+        parts.append(frame_to_parsed(table))
+    numeric_rows = {ln for ln in text.splitlines()
+                    if table is not None and STAMP.match(ln.strip())
+                    and all(NUMBER.match(c) for c in re.split(r"[\s,;|]+",
+                            ln.strip()[STAMP.match(ln.strip()).end():]) if c)}
+    records = text_to_records("\n".join(ln for ln in text.splitlines()
+                                        if ln not in numeric_rows), known)
+    if records:
+        parts.append(Parsed(records=records, summary=_records_summary(records)))
+    if not parts:
+        raise IngestError("I read the document but found no table of numbers and no lines with "
+                          "a date and time. Records need a date and time on each line.")
+    return _combine(parts)
+
+
+def read_file(name: str, data: bytes, known: dict[str, set[str]] | None = None) -> Parsed:
+    """Read any uploaded file: CSV/TSV/JSON/text, Excel (.xlsx), PDF or Word (.docx)."""
+    suffix = PurePath(name).suffix.lower()
+    if suffix in BINARY_ONLY:
+        raise IngestError(BINARY_ONLY[suffix])
+    if suffix in (".xlsx", ".xlsm"):
+        try:
+            sheets = pd.read_excel(io.BytesIO(data), sheet_name=None)
+        except Exception as exc:
+            raise IngestError("That Excel file couldn't be opened.") from exc
+        parts, first_error = [], None
+        for sheet in sheets.values():
+            if sheet.dropna(how="all").empty:
+                continue
+            try:
+                parts.append(frame_to_parsed(sheet))
+            except IngestError as exc:
+                first_error = first_error or exc
+        if not parts:
+            raise first_error or IngestError("That Excel file is empty.")
+        return _combine(parts)
+    if suffix == ".pdf":
+        from pypdf import PdfReader
+        from pypdf.errors import PdfReadError
+
+        try:
+            pages = PdfReader(io.BytesIO(data)).pages
+            text = "\n".join(page.extract_text() or "" for page in pages)
+        except (PdfReadError, ValueError) as exc:
+            raise IngestError("That PDF couldn't be opened.") from exc
+        if not text.strip():
+            raise IngestError("That PDF has no readable text (it may be a scanned image). "
+                              "Please upload the data as CSV, Excel or text instead.")
+        return _read_document_text(text, known)
+    if suffix == ".docx":
+        import docx
+
+        try:
+            doc = docx.Document(io.BytesIO(data))
+        except Exception as exc:
+            raise IngestError("That Word file couldn't be opened.") from exc
+        lines = [p.text for p in doc.paragraphs]
+        for table in doc.tables:
+            lines += ["\t".join(cell.text for cell in row.cells) for row in table.rows]
+        return _read_document_text("\n".join(lines), known)
+    if data[:4] in (b"%PDF", b"PK\x03\x04"):
+        raise IngestError("That file looks like a PDF or Office file but its name doesn't say "
+                          "so. Please keep the .pdf, .xlsx or .docx ending.")
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        try:
+            text = data.decode("latin-1")
+        except UnicodeDecodeError as exc:  # pragma: no cover
+            raise IngestError("I couldn't read that file as text.") from exc
+    text = text.replace("\ufeff", "")
+    if "\x00" in text:
+        raise IngestError("I can't read that kind of file. Try CSV, Excel, PDF, Word or text.")
+    return read_text(name or "upload.txt", text, known)
+
+
 def read_text(name: str, text: str, known: dict[str, set[str]] | None = None) -> Parsed:
     """Read one uploaded file (by its name and text content) or a pasted message."""
     suffix = PurePath(name).suffix.lower()
-    if suffix in (".xlsx", ".xls", ".numbers"):
-        raise IngestError("Spreadsheet files can't be read directly. Please save it as CSV "
-                          "(File > Export or Save As > CSV) and upload that.")
-    if suffix in (".png", ".jpg", ".jpeg", ".gif", ".pdf", ".webp"):
-        raise IngestError("I can't read pictures or PDFs of charts. Please upload the numbers "
-                          "behind the chart as a CSV file (most tools can export one).")
+    if suffix in BINARY_ONLY:
+        raise IngestError(BINARY_ONLY[suffix])
     if suffix in (".json", ".jsonl", ".ndjson"):
         stripped = text.strip()
         try:
