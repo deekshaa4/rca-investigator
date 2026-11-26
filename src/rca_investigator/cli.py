@@ -10,6 +10,7 @@ from . import __version__
 from .llm import DEFAULT_MODEL, LLMError, OllamaClient
 from .memory import DEFAULT_DIR
 from .schema import export_json_schema
+from .settings import DEFAULT_PATH as SETTINGS_PATH
 
 
 def cmd_check(args: argparse.Namespace) -> int:
@@ -250,13 +251,16 @@ def cmd_serve(args: argparse.Namespace) -> int:
         return 1
     try:
         app = create_app(model=args.model, sources=args.source,
-                         memory_dir=None if args.no_memory else args.memory_dir)
+                         memory_dir=None if args.no_memory else args.memory_dir,
+                         settings_path=SETTINGS_PATH, admin=not args.no_admin)
     except (FileNotFoundError, ImportError) as exc:
         print(f"Problem: {exc}")
         return 1
     if args.source:
         print("Connected (read-only): " + ", ".join(args.source))
     print(f"Open http://{args.host}:{args.port} in your browser (Ctrl+C to stop).")
+    if not args.no_admin:
+        print(f"Control centre (this computer only): http://{args.host}:{args.port}/admin")
     uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
     return 0
 
@@ -355,7 +359,7 @@ def main(argv: list[str] | None = None) -> int:
     ev.set_defaults(func=cmd_evaluate)
 
     serve = sub.add_parser("serve", help="open the chat page with the investigator bot")
-    serve.add_argument("--model", default=DEFAULT_MODEL)
+    serve.add_argument("--model", default=None, help="override the model in the settings")
     serve.add_argument("--source", action="append", default=[],
                        help="database file/URL or folder to connect, read-only (repeatable)")
     serve.add_argument("--host", default="127.0.0.1")
@@ -363,6 +367,7 @@ def main(argv: list[str] | None = None) -> int:
     serve.add_argument("--memory-dir", default=str(DEFAULT_DIR),
                        help="where case notes are kept when a user switches memory on")
     serve.add_argument("--no-memory", action="store_true", help="never keep case notes")
+    serve.add_argument("--no-admin", action="store_true", help="turn off the control centre")
     serve.set_defaults(func=cmd_serve)
 
     mem = sub.add_parser("memory", help="list or forget CuteBot's case notes")

@@ -20,17 +20,22 @@ from collections.abc import Callable, Iterator
 from pathlib import Path, PurePath
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
+from fastapi.responses import FileResponse, PlainTextResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
+from .admin import add_admin_routes
 from .chat import Conversation, Session
 from .documents import DOC_TYPES, load_document
 from .ingest import IngestError, read_file
 from .investigate import ChatClient, to_markdown
-from .llm import DEFAULT_MODEL, OllamaClient
+from .llm import OllamaClient
 from .memory import DEFAULT_DIR, CaseNotes
+from .settings import Settings
 from .simulate import generate_incident
 from .sources import Catalog
+from .trace import TracingClient, decide, note_event
+from .trace import finish as finish_trace
+from .trace import start as start_trace
 from .vision import cloud_vision, local_vision
 
 BOT_NAME = "CuteBot"
@@ -76,15 +81,24 @@ class StyleChoice(BaseModel):
     style: str = Field(pattern="^(nerd|simple|kid)$")
 
 
-def create_app(model: str = DEFAULT_MODEL,
+def create_app(model: str | None = None,
                client_factory: Callable[[bool], ChatClient | None] | None = None,
                sources: list[str] | None = None,
                memory_dir: str | Path | None = DEFAULT_DIR,
-               vision: dict | None = None) -> FastAPI:
+               vision: dict | None = None,
+               settings_path: str | Path | None = None, admin: bool = True) -> FastAPI:
     """`sources`: databases (SQLite path or SQLAlchemy URL) or folders to connect, read-only."""
+    settings = Settings(settings_path)
+    if model:
+        settings.values["model"] = model
     if client_factory is None:
         def client_factory(use_llm: bool) -> ChatClient | None:
-            return OllamaClient(model=model) if use_llm else None
+            return OllamaClient(model=settings.values["model"]) if use_llm else None
+    base_factory = client_factory
+
+    def client_factory(use_llm: bool) -> ChatClient | None:
+        client = base_factory(use_llm)
+        return TracingClient(client) if client is not None else None
 
     app = FastAPI(title="RCA Investigator")
     catalog = Catalog.connect(sources) if sources else None
@@ -111,7 +125,7 @@ def create_app(model: str = DEFAULT_MODEL,
 
     @app.get("/api/info")
     def info() -> dict:
-        return {"bot_name": BOT_NAME, "model": model,
+        return {"bot_name": BOT_NAME, "model": settings.values["model"],
                 "connected": catalog.summary() if catalog else None,
                 "tables": catalog.describe() if catalog else [],
                 "vision": {"local": vision["local"].model if "local" in vision else None,
@@ -120,6 +134,9 @@ def create_app(model: str = DEFAULT_MODEL,
     @app.post("/api/upload")
     def upload(body: Upload) -> dict:
         session = session_for(body.session)
+        trace = start_trace(body.session, f"📎 {body.name}")
+        decide("upload", f"File uploaded: {body.name} (ingest.read_file / documents.load_document).")
+        finish_trace(trace)
         try:
             data = base64.b64decode(body.data_base64, validate=True)
         except binascii.Error as exc:
@@ -179,6 +196,14 @@ def create_app(model: str = DEFAULT_MODEL,
                                  headers={"Content-Disposition":
                                           'attachment; filename="rca-report.md"'})
 
+    @app.get("/api/appearance.css")
+    def appearance() -> Response:
+        return Response(settings.css(), media_type="text/css",
+                        headers={"Cache-Control": "no-cache"})
+
+    if admin:
+        add_admin_routes(app, settings)
+
     @app.get("/api/memory")
     def memory_info() -> dict:
         return {"available": memory is not None,
@@ -201,9 +226,11 @@ def create_app(model: str = DEFAULT_MODEL,
         events: queue.Queue = queue.Queue()
 
         def emit(kind: str, data: dict) -> None:
+            note_event(kind, data)
             events.put((kind, data))
 
         def work() -> None:
+            trace = start_trace(body.session, body.message)
             try:
                 conversation.respond(session, body.message, body.llm, emit, body.remember,
                                      body.charts)
@@ -211,6 +238,7 @@ def create_app(model: str = DEFAULT_MODEL,
                 emit("say", {"text": str(exc)})
             except Exception as exc:  # noqa: BLE001 (show any failure in the chat, never hang)
                 emit("error", {"message": f"Something went wrong: {exc}"})
+            finish_trace(trace)
             events.put(None)
 
         threading.Thread(target=work, daemon=True).start()

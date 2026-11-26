@@ -37,7 +37,8 @@ from .llm import LLMError
 from .memory import CORRECTION, CaseNotes, recall_message
 from .schema import RCAReport
 from .simulate import SCENARIOS, generate_incident
-from .smalltalk import match_intent, pick_reply, reply_for
+from .smalltalk import match_intent, matched_phrase, pick_reply, reply_for
+from .trace import decide
 
 Emit = Callable[[str, dict], None]
 STYLES = ("nerd", "simple", "kid")
@@ -383,6 +384,8 @@ class Conversation:
         session.charts = charts
         session.remember = remember
         if session.report is not None and len(message) < 500 and CORRECTION.search(message):
+            decide("correction", "There's a report and the message reads like a correction "
+                                 "(memory.CORRECTION).")
             self._correction(session, message, remember, emit)
             return
         guess = None if session.style_chosen else detect_style(message)
@@ -401,6 +404,9 @@ class Conversation:
             has_data = (session.metrics is not None or bool(session.documents)
                         or bool(self.catalog))
             if intent.name in ANNOUNCES or not (has_data and INVESTIGATIVE.search(message)):
+                decide(f"small talk: {intent.name}",
+                       f'Matched "{matched_phrase(intent, message)}" in replies.md, section '
+                       f'"{intent.name}".')
                 emit("say", {"text": pick_reply(intent, session.recent_replies)})
                 return
         if long_text:
@@ -415,6 +421,8 @@ class Conversation:
                                                         unshared.group(1), re.IGNORECASE)):
             thing = re.sub(r"^(?:my|our|the|this|these|a|an|some)\s+", "", unshared.group(0),
                            flags=re.IGNORECASE)
+            decide("ask for the file", f'Mentions "{thing}", but nothing has been shared yet '
+                                       "(chat.UNSHARED).")
             emit("say", {"text": reply_for("share_first", session.recent_replies,
                                            thing=thing.lower())})
             return
@@ -424,16 +432,22 @@ class Conversation:
                           or self.catalog.relevant(message)))
         if session.documents and (session.last_shared == "documents"
                                   or (session.metrics is None and not connected)):
+            decide("documents", "Documents were shared most recently, so they're used "
+                                "(Session.last_shared).")
             self._documents(session, message, use_llm, emit)
             return
         if session.metrics is None and not connected:
             if pasted is None and message and not GREETING.match(message) and len(message) > 12:
+                decide("general answer", "Nothing shared and not small talk, so it's answered "
+                                         "from general knowledge.")
                 self._general(message, use_llm, emit)
             elif pasted is not None:
                 emit("say", {"text": "I've kept those clues. Now I need the numbers: click ➕ "
                                      "and upload a table (CSV, Excel or PDF) with a time column "
                                      "and the measure that went wrong."})
             else:
+                decide("help", "Nothing shared and too short to answer, so the help text is "
+                               "shown.")
                 emit("say", {"text": HELP})
             return
 
@@ -444,6 +458,10 @@ class Conversation:
             mentioned = choose_metric(session.metrics, message)
             wants = wants or (mentioned != session.metric and any(
                 t in message.lower() for t in mentioned.split("_") if len(t) > 2))
+        decide("investigate numbers" if wants else "follow-up question",
+               ("New data, a re-run request or a new measure, so the numbers are investigated"
+                + (" using the connected data (Catalog.relevant)." if connected else ".")) if wants
+               else "A report already exists and nothing new was shared, so this is a follow-up.")
         if wants:
             if connected and not self._gather(session, message, emit):
                 return
@@ -458,6 +476,7 @@ class Conversation:
         wants_summary = bool(SUMMARY_ASK.search(message))
         investigative = bool(INVESTIGATIVE.search(message) or RERUN.search(message))
         if wants_summary:
+            decide("summarise document", "The message asks for a summary (chat.SUMMARY_ASK).")
             emit("stage", {"stage": "collect", "text": "Reading every part of it..."})
             summary = summarise_documents(session.documents, client, STYLE_INSTRUCTION[style])
             emit("stage", {"stage": "back", "text": "Here's the summary!"})
@@ -467,6 +486,9 @@ class Conversation:
                 return
         if investigative and not describes_problem(session.documents):
             kind = document_kind(session.documents)
+            decide("not a problem: summary instead",
+                   f"An investigation was asked for, but no sentence in {kind} describes a "
+                   "problem (documents.describes_problem).")
             emit("stage", {"stage": "collect", "text": "Reading every part of it..."})
             text = reply_for("not_a_problem", session.recent_replies, kind=kind)
             if not wants_summary:
@@ -479,12 +501,16 @@ class Conversation:
             return
         rerun = investigative or (session.changed and not message)
         if not rerun and message:
+            decide("question about the document", "Not a request to investigate or summarise, so "
+                                                  "it's answered from the most relevant passages.")
             emit("stage", {"stage": "think", "text": "Looking through the documents..."})
             answer = answer_from_documents(message, session.documents,
                                            self.client_factory(use_llm), STYLE_INSTRUCTION[style])
             emit("stage", {"stage": "back", "text": "Here you go!"})
             emit("say", {"text": answer})
             return
+        decide("investigate document", "Asked what went wrong, and the document describes a "
+                                       "problem (chat.INVESTIGATIVE).")
         asked = [q.strip() for q in re.findall(r"[^.!?\n]*\?", message)]
         question = (asked[-1] if asked else message if 0 < len(message) < 300
                     else "What happened, and what caused it?")

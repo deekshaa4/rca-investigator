@@ -406,8 +406,10 @@ def assess_documents(evidence: list[dict], factors: list[dict]) -> Sufficiency:
     score = round(min(score, 1.0), 2)
     if not (cited_causes or cited_events):
         score = min(score, 0.4)
-    verdict = (Verdict.SUFFICIENT if score >= 0.7
-               else Verdict.PARTIAL if score >= 0.45 else Verdict.INSUFFICIENT)
+    from . import sufficiency as rules
+
+    verdict = (Verdict.SUFFICIENT if score >= rules.SUFFICIENT_AT
+               else Verdict.PARTIAL if score >= rules.PARTIAL_AT else Verdict.INSUFFICIENT)
     if verdict != Verdict.INSUFFICIENT and not factors:
         verdict = Verdict.INSUFFICIENT
     return Sufficiency(verdict=verdict, score=score, reasons=reasons,

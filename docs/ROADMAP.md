@@ -29,6 +29,9 @@ A focused 2-week build, using only free and open tools.
 - [ ] Scanned pages (text recognition)
 - [x] Case notes: consent-based local memory of past investigations that learns from corrections
 - [x] Friendly small talk from an editable replies file
+- [x] Request routing: summaries, questions, unshared files, no invented incidents
+- [x] Control centre: inspector, replies editor, settings and look, health checks
+- [ ] 2026 redesign of the chat page, with streaming answers
 
 ## Later
 

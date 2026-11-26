@@ -50,6 +50,11 @@ def match_intent(message: str, path: Path = REPLIES_FILE) -> Intent | None:
     return next((i for i in load_intents(path) if any(p.search(text) for p in i.patterns)), None)
 
 
+def matched_phrase(intent: Intent, message: str) -> str:
+    text = re.sub(r"[’`]", "'", message.lower())
+    return next((m.group(0) for p in intent.patterns if (m := p.search(text))), "")
+
+
 def reply_for(name: str, recent: deque, **fill: str) -> str:
     """A reply from a named section (used by code, e.g. "share_first"), with {fields} filled."""
     intent = next(i for i in load_intents() if i.name == name)
@@ -62,3 +67,31 @@ def pick_reply(intent: Intent, recent: deque) -> str:
     reply = random.choice(fresh)
     recent.append(reply)
     return reply
+
+
+def read_sections(path: Path = REPLIES_FILE) -> tuple[str, list[dict]]:
+    """The file as editable sections: (text before the first section, sections)."""
+    text = path.read_text(encoding="utf-8")
+    head, _, rest = text.partition("\n## ")
+    sections = []
+    for block in ("## " + rest).split("\n## ") if rest else []:
+        lines = block.removeprefix("## ").splitlines()
+        match = next((ln.split(":", 1)[1].strip() for ln in lines
+                      if ln.lower().startswith("match:")), "")
+        sections.append({"name": lines[0].strip(), "match": match,
+                         "replies": [ln[2:].strip() for ln in lines if ln.startswith("- ")]})
+    return head.rstrip() + "\n", sections
+
+
+def write_sections(head: str, sections: list[dict], path: Path = REPLIES_FILE) -> None:
+    """Save edited sections back to the file (and reload them)."""
+    out = [head.rstrip(), ""]
+    for sec in sections:
+        name = re.sub(r"[^a-z0-9_]", "_", sec["name"].strip().lower())
+        replies = [r.strip() for r in sec["replies"] if r.strip()]
+        if not name or not replies:
+            raise ValueError(f"Section '{sec['name']}' needs a name and at least one reply.")
+        out += [f"## {name}", f"match: {sec.get('match', '').strip()}".rstrip()]
+        out += [f"- {r}" for r in replies] + [""]
+    path.write_text("\n".join(out), encoding="utf-8")
+    load_intents.cache_clear()

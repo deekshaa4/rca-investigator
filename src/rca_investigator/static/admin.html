@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CuteBot Control Centre</title>
+<style>
+:root {
+  --bg: #f5f6fa; --panel: #fff; --ink: #1d2130; --muted: #646b7d; --line: #e3e6ee;
+  --accent: #4f6bed; --accent-soft: #eaeefe; --ok: #1f8a5b; --ok-soft: #e3f5ec;
+  --bad: #b3383d; --bad-soft: #fbe6e7; --warn: #a76a00; --warn-soft: #fff3da;
+  --shadow: 0 1px 2px rgba(20,30,60,.05), 0 6px 20px rgba(20,30,60,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121419; --panel: #1b1e26; --ink: #e8eaf1; --muted: #9da3b4; --line: #2c3040;
+    --accent: #8ea0ff; --accent-soft: #252b47; --ok: #5fd39c; --ok-soft: #1b3329;
+    --bad: #f08a8e; --bad-soft: #3d1f22; --warn: #f0b955; --warn-soft: #3a2f17;
+    --shadow: 0 6px 20px rgba(0,0,0,.35);
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+header { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 16px;
+  padding: 12px 24px; background: color-mix(in srgb, var(--panel) 85%, transparent);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+header h1 { font-size: 1.05rem; margin: 0; }
+header a { color: var(--accent); text-decoration: none; font-size: .9rem; margin-left: auto; }
+nav { display: flex; gap: 4px; padding: 12px 24px 0; flex-wrap: wrap; }
+nav button { border: none; background: none; color: var(--muted); font: inherit; font-weight: 600;
+  padding: 8px 14px; border-radius: 10px; cursor: pointer; }
+nav button.on { background: var(--panel); color: var(--ink); box-shadow: var(--shadow); }
+main { padding: 16px 24px 60px; max-width: 1150px; }
+section[hidden] { display: none; }
+.card { background: var(--panel); border-radius: 14px; box-shadow: var(--shadow); padding: 16px 18px;
+  margin-bottom: 12px; }
+.muted { color: var(--muted); font-size: .85rem; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+button.primary, button.ghost { font: inherit; border-radius: 10px; padding: 7px 14px; cursor: pointer; }
+button.primary { background: var(--accent); color: #fff; border: none; font-weight: 600; }
+button.ghost { background: none; border: 1px solid var(--line); color: var(--ink); }
+input, select, textarea { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 9px; }
+textarea { width: 100%; min-height: 110px; resize: vertical; }
+code, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .82rem; }
+.pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: .78rem; font-weight: 600;
+  background: var(--accent-soft); color: var(--accent); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.trace summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: 70px 1fr auto auto;
+  gap: 12px; align-items: center; }
+.trace summary::-webkit-details-marker { display: none; }
+.trace .msg { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.decision { border-left: 3px solid var(--accent); padding: 4px 12px; margin: 10px 0; }
+.event { font-size: .85rem; padding: 2px 0; }
+pre { white-space: pre-wrap; word-break: break-word; background: var(--bg); border-radius: 8px; padding: 10px;
+  max-height: 320px; overflow: auto; font-size: .8rem; margin: 6px 0; }
+.code-link { font-size: .82rem; }
+.code-link a { color: var(--accent); }
+.section-card h3 { margin: 0 0 8px; font-size: .95rem; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.field { display: grid; grid-template-columns: 150px 1fr; gap: 6px 12px; align-items: center; margin: 8px 0; }
+.field label { font-weight: 600; font-size: .9rem; }
+.field .muted { grid-column: 2; }
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--panel);
+  padding: 8px 16px; border-radius: 10px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+table { border-collapse: collapse; width: 100%; }
+td, th { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); font-size: .9rem; vertical-align: top; }
+.preview { border: 1px dashed var(--line); border-radius: 12px; padding: 14px; }
+.preview .bubble { display: inline-block; background: var(--pv-accent); color: #fff; padding: 8px 12px;
+  border-radius: var(--pv-radius); font-family: var(--pv-font); font-size: var(--pv-size); }
+@media (max-width: 640px) {
+  header, nav, main { padding-left: 16px; padding-right: 16px; }
+  .trace summary { grid-template-columns: 1fr; }
+  .field { grid-template-columns: 1fr; } .field .muted { grid-column: 1; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎛️ CuteBot Control Centre</h1>
+  <span class="muted">only on this computer</span>
+  <a href="/" target="_blank">Open the chat ↗</a>
+</header>
+<nav role="tablist">
+  <button data-tab="inspector" class="on">🔍 Inspector</button>
+  <button data-tab="replies">💬 Replies</button>
+  <button data-tab="settings">⚙️ Settings &amp; look</button>
+  <button data-tab="health">🩺 Health</button>
+  <button data-tab="map">🗺️ Where to change what</button>
+</nav>
+<main>
+  <section id="inspector">
+    <div class="row" style="margin-bottom:10px">
+      <button class="ghost" id="refresh">Refresh</button>
+      <label class="muted"><input type="checkbox" id="auto" checked> refresh every 3 s</label>
+      <span class="muted">Newest first. Kept in memory only (last 100 messages).</span>
+    </div>
+    <div id="traces"></div>
+  </section>
+
+  <section id="replies" hidden>
+    <div class="card">
+      <strong>Try a message</strong>
+      <div class="row" style="margin-top:8px">
+        <input id="try-text" style="flex:1;min-width:220px" placeholder="e.g. sorry, I forgot to attach it">
+        <button class="primary" id="try-go">Try</button>
+      </div>
+      <div id="try-out" class="muted" style="margin-top:8px"></div>
+    </div>
+    <div class="row" style="margin:6px 0 12px">
+      <button class="primary" id="save-replies">Save replies</button>
+      <button class="ghost" id="add-section">+ New situation</button>
+      <span class="muted">Higher sections win when a message matches several. Trigger words are comma-separated.
+        Use <code>{thing}</code> / <code>{kind}</code> where shown.</span>
+    </div>
+    <div id="sections" class="grid2"></div>
+  </section>
+
+  <section id="settings" hidden>
+    <div class="grid2">
+      <div class="card"><h3 style="margin-top:0">🧠 Brain</h3><div id="group-Brain"></div></div>
+      <div class="card"><h3 style="margin-top:0">🎨 Look</h3><div id="group-Look"></div>
+        <div class="preview" id="preview"><div class="bubble">This is how your messages look ✨</div></div></div>
+    </div>
+    <div class="row">
+      <button class="primary" id="save-settings">Save settings</button>
+      <button class="ghost" id="reset-settings">Reset to defaults</button>
+      <span class="muted" id="settings-file"></span>
+    </div>
+  </section>
+
+  <section id="health" hidden>
+    <div class="grid2">
+      <div class="card"><strong>All tests</strong>
+        <p class="muted">Runs every automatic check (about 15 seconds).</p>
+        <button class="primary" data-check="tests">Run tests</button><div id="out-tests"></div></div>
+      <div class="card"><strong>Accuracy check</strong>
+        <p class="muted">Investigates practice incidents with known answers (engines only, a few seconds).</p>
+        <button class="primary" data-check="accuracy">Run accuracy check</button><div id="out-accuracy"></div></div>
+    </div>
+  </section>
+
+  <section id="map" hidden>
+    <div class="card">
+      <p class="muted" style="margin-top:0">Click a file to open it at the right line in VS Code (or copy the path).</p>
+      <table id="map-table"><thead><tr><th>To change…</th><th>Go to</th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (t) => { const d = document.createElement("div"); d.textContent = t ?? ""; return d.innerHTML; };
+const toast = (t) => { const el = $("#toast"); el.textContent = t; el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 2200); };
+async function api(url, opts = {}) {
+  const res = await fetch(url, { headers: { "Content-Type": "application/json" }, ...opts });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : `Request failed (${res.status})`);
+  return data;
+}
+const codeLink = (w) => w ? `<span class="code-link">📍 <a href="vscode://file/${encodeURI(w.abs)}:${w.line}">${esc(w.file)}:${w.line}</a>
+  <span class="muted">in ${esc(w.function || "")}</span></span>` : "";
+
+document.querySelectorAll("nav button").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll("nav button").forEach((x) => x.classList.toggle("on", x === b));
+  document.querySelectorAll("main section").forEach((s) => { s.hidden = s.id !== b.dataset.tab; });
+  ({ replies: loadReplies, settings: loadSettings, map: loadMap })[b.dataset.tab]?.();
+}));
+
+/* ---------- Inspector ---------- */
+const open = new Set();
+async function loadTraces() {
+  const list = await api("/api/admin/traces").catch(() => []);
+  if (!list.length) { $("#traces").innerHTML = `<div class="card muted">No messages yet. Chat with CuteBot and they'll appear here.</div>`; return; }
+  $("#traces").innerHTML = list.map((t) => {
+    const route = t.route || "";
+    const cls = /small talk|ask for|help/.test(route) ? "" : /not a problem|summar|question/.test(route) ? "ok" : /investigate/.test(route) ? "warn" : "";
+    return `<details class="card trace" data-id="${t.id}" ${open.has(t.id) ? "open" : ""}>
+      <summary><span class="muted mono">${esc(t.time)}</span><span class="msg">${esc(t.message)}</span>
+        <span class="pill ${cls}">${esc(route)}</span><span class="muted">${t.seconds ?? "…"} s</span></summary>
+      <div style="margin-top:10px">
+        ${t.decisions.map((d) => `<div class="decision"><strong>${esc(d.route)}</strong>: ${esc(d.reason)}<br>${codeLink(d)}</div>`).join("")}
+        ${t.llm_calls.length ? `<h4>🧠 AI calls (${t.llm_calls.length})</h4>` + t.llm_calls.map((c, i) => `<details><summary class="muted">#${i + 1} ${esc(c.kind)} · ${c.seconds} s · from ${esc(c.called_from?.function || "")}${c.error ? " · ⚠ " + esc(c.error) : ""}</summary>
+          ${codeLink(c.called_from)}
+          ${c.system ? `<div class="muted">Instructions</div><pre>${esc(c.system)}</pre>` : ""}
+          <div class="muted">Prompt</div><pre>${esc(c.prompt)}</pre>
+          <div class="muted">Reply</div><pre>${esc(typeof c.reply === "string" ? c.reply : JSON.stringify(c.reply, null, 2))}</pre></details>`).join("") : ""}
+        <h4>💬 What CuteBot sent back</h4>
+        ${t.events.map((e) => `<div class="event"><span class="muted mono">+${e.at}s ${esc(e.kind)}</span> ${esc(e.text)}</div>`).join("") || `<div class="muted">nothing</div>`}
+      </div></details>`;
+  }).join("");
+  document.querySelectorAll(".trace").forEach((d) => d.addEventListener("toggle", () => {
+    const id = Number(d.dataset.id); d.open ? open.add(id) : open.delete(id);
+  }));
+}
+$("#refresh").addEventListener("click", loadTraces);
+setInterval(() => { if ($("#auto").checked && !$("#inspector").hidden) loadTraces(); }, 3000);
+loadTraces();
+
+/* ---------- Replies ---------- */
+let sections = [];
+function sectionCard(s, i) {
+  return `<div class="card section-card" data-i="${i}">
+    <div class="row" style="justify-content:space-between"><h3>${i + 1}. <input class="name" value="${esc(s.name)}" style="width:170px"></h3>
+      <span class="row"><button class="ghost up" title="Move up">↑</button><button class="ghost del" title="Delete">🗑</button></span></div>
+    <label class="muted">Trigger words (comma-separated; empty = only used by code)</label>
+    <input class="match" value="${esc(s.match)}" style="width:100%;margin:4px 0 8px">
+    <label class="muted">Replies (one per line) · ${s.replies.length}</label>
+    <textarea class="replies">${esc(s.replies.join("\n"))}</textarea></div>`;
+}
+function readSections() {
+  return [...document.querySelectorAll(".section-card")].map((c) => ({
+    name: c.querySelector(".name").value, match: c.querySelector(".match").value,
+    replies: c.querySelector(".replies").value.split("\n"),
+  }));
+}
+function drawSections() {
+  $("#sections").innerHTML = sections.map(sectionCard).join("");
+  document.querySelectorAll(".section-card").forEach((c) => {
+    const i = Number(c.dataset.i);
+    c.querySelector(".del").addEventListener("click", () => { if (confirm(`Delete "${sections[i].name}"?`)) { sections = readSections(); sections.splice(i, 1); drawSections(); } });
+    c.querySelector(".up").addEventListener("click", () => { if (i) { sections = readSections(); [sections[i - 1], sections[i]] = [sections[i], sections[i - 1]]; drawSections(); } });
+  });
+}
+async function loadReplies() { sections = (await api("/api/admin/replies")).sections; drawSections(); }
+$("#add-section").addEventListener("click", () => { sections = readSections(); sections.unshift({ name: "new_situation", match: "", replies: ["A friendly reply"] }); drawSections(); });
+$("#save-replies").addEventListener("click", async () => {
+  try { const r = await api("/api/admin/replies", { method: "PUT", body: JSON.stringify({ sections: readSections() }) }); toast(`Saved ${r.saved} situations ✓`); await loadReplies(); }
+  catch (e) { toast(e.message); }
+});
+$("#try-go").addEventListener("click", async () => {
+  const r = await api("/api/admin/try", { method: "POST", body: JSON.stringify({ message: $("#try-text").value }) });
+  $("#try-out").innerHTML = r.intent
+    ? `Matches <span class="pill">${esc(r.intent)}</span> because of “<strong>${esc(r.phrase)}</strong>”. One of ${r.replies.length} replies, e.g. <em>${esc(r.replies[0])}</em>`
+    : esc(r.note);
+});
+$("#try-text").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#try-go").click(); });
+
+/* ---------- Settings ---------- */
+let fields = {};
+async function loadSettings() {
+  const r = await api("/api/admin/settings");
+  fields = r.fields;
+  $("#settings-file").textContent = r.file ? `Saved in ${r.file}` : "Not saved to a file (started without a settings file).";
+  for (const group of ["Brain", "Look"]) {
+    $(`#group-${group}`).innerHTML = Object.entries(fields).filter(([, f]) => f.group === group).map(([k, f]) => {
+      const v = r.values[k];
+      const input = f.type === "choice" ? `<select data-k="${k}">${f.choices.map((c) => `<option ${c === v ? "selected" : ""}>${c}</option>`).join("")}</select>`
+        : f.type === "color" ? `<input type="color" data-k="${k}" value="${v}">`
+        : f.type === "number" ? `<input type="number" data-k="${k}" value="${v}" min="${f.min}" max="${f.max}" step="${f.step}">`
+        : `<input data-k="${k}" value="${esc(v)}">`;
+      return `<div class="field"><label>${esc(k.replace(/_/g, " "))}</label>${input}<div class="muted">${esc(f.help)}</div></div>`;
+    }).join("");
+  }
+  document.querySelectorAll("[data-k]").forEach((el) => el.addEventListener("input", preview));
+  preview();
+}
+function values() {
+  return Object.fromEntries([...document.querySelectorAll("[data-k]")].map((el) => [el.dataset.k, el.type === "number" ? Number(el.value) : el.value]));
+}
+function preview() {
+  const v = values(), p = $("#preview");
+  const fonts = { system: "-apple-system, sans-serif", rounded: "ui-rounded, 'SF Pro Rounded', sans-serif", serif: "ui-serif, Georgia, serif", mono: "ui-monospace, Menlo, monospace" };
+  p.style.setProperty("--pv-accent", v.accent); p.style.setProperty("--pv-radius", `${v.radius}px`);
+  p.style.setProperty("--pv-font", fonts[v.font]); p.style.setProperty("--pv-size", `${v.font_size}px`);
+}
+$("#save-settings").addEventListener("click", async () => {
+  try { await api("/api/admin/settings", { method: "PUT", body: JSON.stringify(values()) }); toast("Saved ✓ The chat page picks up the look on its next reload."); }
+  catch (e) { toast(e.message); }
+});
+$("#reset-settings").addEventListener("click", async () => {
+  if (!confirm("Reset all settings to their defaults?")) return;
+  await api("/api/admin/settings/reset", { method: "POST" }); await loadSettings(); toast("Back to defaults");
+});
+
+/* ---------- Health ---------- */
+document.querySelectorAll("[data-check]").forEach((b) => b.addEventListener("click", async () => {
+  const check = b.dataset.check, out = $(`#out-${check}`);
+  b.disabled = true; out.innerHTML = `<p class="muted">Running…</p>`;
+  try {
+    const r = await api(`/api/admin/health/${check}`, { method: "POST" });
+    out.innerHTML = check === "tests"
+      ? `<p><span class="pill ${r.ok ? "ok" : "bad"}">${r.ok ? "All passing" : "Something failed"}</span></p><pre>${esc(r.output)}</pre>`
+      : Object.entries(r.result).map(([name, scores]) => `<p><strong>${esc(name)}</strong></p><table>${Object.entries(scores).map(([k, v]) =>
+          `<tr><td>${esc(k)}</td><td><span class="pill ${v >= 90 ? "ok" : v >= 70 ? "warn" : "bad"}">${v}%</span></td></tr>`).join("")}</table>`).join("");
+  } catch (e) { out.innerHTML = `<p class="pill bad">${esc(e.message)}</p>`; }
+  b.disabled = false;
+}));
+
+/* ---------- Where to change what ---------- */
+async function loadMap() {
+  const rows = await api("/api/admin/map");
+  $("#map-table tbody").innerHTML = rows.map((r) => `<tr><td>${esc(r.task)}</td>
+    <td><a href="vscode://file/${encodeURI(r.abs)}:${r.line}">${esc(r.file)}:${r.line}</a>
+    <button class="ghost" style="padding:1px 8px;margin-left:6px" data-copy="${esc(r.abs)}:${r.line}">copy</button></td></tr>`).join("");
+  document.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", () => {
+    navigator.clipboard?.writeText(b.dataset.copy).then(() => toast("Path copied"), () => toast(b.dataset.copy));
+  }));
+}
+</script>
+</body>
+</html>

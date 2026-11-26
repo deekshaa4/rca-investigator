@@ -116,6 +116,18 @@ With no data at all, CuteBot can still answer general questions, clearly labelle
 - **Human small talk.** "Hi!", "I'll send it in a minute", "sorry, I forgot", "can I share some docs?" get a friendly reply instantly, without the model. The replies live in a plain file, [`replies.md`](src/rca_investigator/replies.md) (about 170 replies for 15 situations), so they're easy to read and extend, and CuteBot avoids repeating itself.
 - **Case notes (off by default).** Switch on **🧠 Remember** and, after each investigation, CuteBot writes a tiny Markdown note on this computer: what happened, the cause, the fix, how sure it was. Next time it recognises a similar case ("this reminds me of…"), and when you correct it ("no, it was actually the database") the correction is added to the note and shown next time. No model training, nothing leaves the computer, and **Forget** (or `rca memory --forget`) deletes everything. `rca memory` lists the notes; `rca serve --no-memory` turns the feature off.
 
+### Control centre (for whoever runs CuteBot)
+
+`rca serve` also opens a control centre at `/admin`, available **only from the same computer**:
+
+- **Inspector:** every message with what CuteBot decided and *why*, the exact file and line that made the decision (one click opens it in VS Code), every call to the language model (instructions, prompt, reply, time taken) and everything sent back. Kept in memory only.
+- **Replies:** edit the reply situations and trigger words in `replies.md`, and try a message to see which reply it gets.
+- **Settings and look:** the model, how sure "sure" must be, how much of a document the model reads closely, the default chart mode, and the chat page's font, text size, accent colour, roundness, message-box height and spacing. Saved to `~/.rca-investigator/settings.json` and applied immediately.
+- **Health:** run all the tests, or the accuracy check on practice incidents.
+- **Where to change what:** common changes mapped to their file and line.
+
+Turn it off with `rca serve --no-admin`.
+
 ### Connect it to your own data
 
 Install it next to your data and point it at a database or a folder. CuteBot explores the data itself: it samples every table, works out which ones hold numbers over time and which hold records (deploys, config changes, alerts, tickets, logs), and when you ask a question it picks the right table and loads only the time window the question is about.
@@ -271,6 +283,9 @@ src/rca_investigator/
   chat.py       the conversation: collect data, investigate, answer follow-ups
   documents.py  document mode: read every part, quote-checked facts, document rules
   vision.py     charts in PDFs: find them, read labels, optional local or cloud vision
+  admin.py      control centre (/admin): inspector, replies, settings, health
+  trace.py      records what was decided for each message, and where in the code
+  settings.py   behaviour and appearance settings
   smalltalk.py  everyday chat answered from replies.md
   memory.py     consent-based case notes on this computer
   sources.py    read-only connections to databases and folders, table discovery
