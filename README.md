@@ -57,6 +57,15 @@ rca evaluate data/generated   # re-scores saved reports, by scenario and by twis
 pytest                     # runs the tests
 ```
 
+## Web page
+
+```bash
+pip install -e ".[web]"
+rca serve                      # then open http://127.0.0.1:8000
+```
+
+Pick an incident and watch **CuteBot**, the investigator, run between stations (graphs, records, model, fact-check, judge) while each step is streamed live. It then comes back and presents the report as cards: verdict with reasons, what changed, why it happened with the "5 Whys", ruled-out alternatives, actions, the fact-check, and the evidence (hover a clue number to read it). If the local model isn't running, it carries on with the engines only.
+
 ## Test incidents
 
 To measure whether the investigator finds the *right* cause, it needs incidents where the truth is known. `rca simulate` generates software-service incidents (4 services x 3 regions, 48 hours of 5-minute metrics, plus deploy notes, config changes, alerts, tickets and logs) with one of five injected scenarios:
@@ -173,6 +182,8 @@ src/rca_investigator/
   investigate.py  evidence pack, model prompt, guardrails, Markdown report
   sufficiency.py  rules-based evidence-sufficiency verdict
   evaluate.py   scores reports against the known truth
+  web.py        web page server: streams each investigation step live (`rca serve`)
+  static/       the web page with CuteBot
   cli.py        command-line interface (`rca ...`)
 schemas/        JSON Schema of the report
 examples/       example report

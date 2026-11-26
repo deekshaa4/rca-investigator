@@ -238,6 +238,26 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     return _print_scores(rows, folder)
 
 
+def cmd_serve(args: argparse.Namespace) -> int:
+    """Start the web page where CuteBot investigates incidents live."""
+    from pathlib import Path
+
+    try:
+        import uvicorn
+
+        from .web import create_app
+    except ImportError:
+        print('The web page needs extra packages:  pip install -e ".[web]"')
+        return 1
+    if not Path(args.data).is_dir():
+        print(f"No folder {args.data}. Make some incidents first:  rca simulate")
+        return 1
+    print(f"Open http://{args.host}:{args.port} in your browser (Ctrl+C to stop).")
+    uvicorn.run(create_app(args.data, model=args.model), host=args.host, port=args.port,
+                log_level="warning")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="rca", description="Evidence-first root cause analysis")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
@@ -286,6 +306,13 @@ def main(argv: list[str] | None = None) -> int:
     ev = sub.add_parser("evaluate", help="score saved reports against the known answers")
     ev.add_argument("path")
     ev.set_defaults(func=cmd_evaluate)
+
+    serve = sub.add_parser("serve", help="open the web page with the investigator bot")
+    serve.add_argument("--data", default="data/generated", help="folder of incidents")
+    serve.add_argument("--model", default=DEFAULT_MODEL)
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8000)
+    serve.set_defaults(func=cmd_serve)
 
     args = parser.parse_args(argv)
     return args.func(args)

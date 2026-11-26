@@ -15,6 +15,7 @@ Division of work, so that a small local model is enough:
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from typing import Any, Protocol
 
 import pandas as pd
@@ -259,20 +260,39 @@ def _prefer_credible(factors: list[dict], ruled_out: list[dict], actions: list[d
 
 
 def investigate(incident_id: str, question: str, metric: str, metrics: pd.DataFrame,
-                records: list[dict], client: ChatClient | None, top_k: int = 5) -> RCAReport:
+                records: list[dict], client: ChatClient | None, top_k: int = 5,
+                on_step: Callable[[str, str], None] | None = None) -> RCAReport:
+    """Run the whole investigation. `on_step(step, message)` is told about each stage,
+    so a caller (e.g. the web page) can show progress live."""
+    def step(name: str, message: str) -> None:
+        if on_step is not None:
+            on_step(name, message)
+
+    step("numbers", "Looking at the graphs for the moment things changed...")
     analysis = analyze_change(metrics, metric)
+    if analysis.detected:
+        where = ", ".join(f"{k} {v}" for k, v in analysis.segment.items()) or "everywhere"
+        step("numbers_done", f"{metric} jumped {analysis.relative_change:+.0%} at "
+             f"{analysis.change_start[11:16]}, in {where}.")
+    else:
+        step("numbers_done", "No clear jump found in the graphs.")
+    step("records", f"Reading {len(records)} records for clues...")
     hits = rank_records(records, analysis, top_k=top_k)
     evidence = build_evidence(analysis, hits)
+    step("records_done", f"Found {len(hits)} likely clues; best: {hits[0].record['text']}"
+         if hits else "No matching records found.")
 
     factors: list[dict] = []
     ruled_out: list[dict] = []
     actions: list[dict] = []
     guard = {"model_used": client is not None}
     if analysis.detected and client is not None:
+        step("model", "Asking the language model to explain the clues...")
         reply = client.chat_json(build_prompt(question, evidence), llm_reply_schema(),
                                  system=SYSTEM_PROMPT)
         factors, ruled_out, actions, stats = _clean(reply, evidence)
         guard.update(stats)
+        step("model_done", f"The model suggested {len(factors)} cause(s).")
 
     if analysis.detected:
         factors, ruled_out, actions, override, added, fallback = _prefer_credible(
@@ -285,7 +305,14 @@ def investigate(incident_id: str, question: str, metric: str, metrics: pd.DataFr
         if cand is not None and cand.evidence_id:
             factors = [engine_factor(cand, analysis)]
             guard["engine_fallback"] = True
+    if guard.get("ids_invented") or guard.get("factors_dropped"):
+        step("fact_check", f"Fact-check: removed {guard.get('ids_invented', 0)} invented "
+             f"clue(s) and {guard.get('factors_dropped', 0)} unsupported cause(s).")
+    else:
+        step("fact_check", "Fact-check: every cause rests on a real clue.")
+    step("judge", "Deciding whether the clues are enough...")
     sufficiency = assess(analysis, hits, factors, evidence)
+    step("judge_done", f"Verdict: {sufficiency.verdict.value} (score {sufficiency.score:.2f}).")
     if sufficiency.verdict == Verdict.INSUFFICIENT:
         # Without enough evidence, present factors as unconfirmed rather than as the answer.
         for f in factors:
