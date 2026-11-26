@@ -329,6 +329,20 @@ def _followup_prompt(report: RCAReport, question: str) -> str:
     return f"Investigation:\n{json.dumps(facts, indent=1)}\n\nQuestion: {question}"
 
 
+def streaming_ask(client, emit: Emit) -> Callable[..., str]:
+    """ask(prompt, system, temperature) -> full text, sending each piece to the page as it's
+    written ("delta" events) when the model can stream."""
+    def ask(prompt: str, system: str | None = None, temperature: float = 0.1) -> str:
+        if hasattr(client, "chat_stream"):
+            parts = []
+            for piece in client.chat_stream(prompt, system=system, temperature=temperature):
+                parts.append(piece)
+                emit("delta", {"text": piece})
+            return "".join(parts)
+        return client.chat(prompt, system=system, temperature=temperature)
+    return ask
+
+
 class Conversation:
     def __init__(self, client_factory: Callable[[bool], ChatClient | None], catalog=None,
                  memory: CaseNotes | None = None, vision: dict | None = None):
@@ -342,8 +356,8 @@ class Conversation:
         if not (remember and self.memory):
             return
         top = report.contributing_factors[0].description if report.contributing_factors else ""
-        query = " ".join([report.question, report.summary or "", top,
-                          *[e.summary for e in report.evidence[:10]]])
+        # compare what happened and the cause, not the generic wording of every clue
+        query = " ".join([report.question, report.summary or "", top])
         past = self.memory.recall(query)
         if past is not None:
             emit("say", {"text": recall_message(past)})
@@ -478,9 +492,10 @@ class Conversation:
         if wants_summary:
             decide("summarise document", "The message asks for a summary (chat.SUMMARY_ASK).")
             emit("stage", {"stage": "collect", "text": "Reading every part of it..."})
-            summary = summarise_documents(session.documents, client, STYLE_INSTRUCTION[style])
+            summary = summarise_documents(session.documents, client, STYLE_INSTRUCTION[style],
+                                          ask=streaming_ask(client, emit) if client else None)
             emit("stage", {"stage": "back", "text": "Here's the summary!"})
-            emit("say", {"text": summary})
+            emit("say", {"text": summary, "final": True})
             if not investigative:
                 session.changed = False
                 return
@@ -504,10 +519,11 @@ class Conversation:
             decide("question about the document", "Not a request to investigate or summarise, so "
                                                   "it's answered from the most relevant passages.")
             emit("stage", {"stage": "think", "text": "Looking through the documents..."})
-            answer = answer_from_documents(message, session.documents,
-                                           self.client_factory(use_llm), STYLE_INSTRUCTION[style])
+            answer = answer_from_documents(message, session.documents, client,
+                                           STYLE_INSTRUCTION[style],
+                                           ask=streaming_ask(client, emit) if client else None)
             emit("stage", {"stage": "back", "text": "Here you go!"})
-            emit("say", {"text": answer})
+            emit("say", {"text": answer, "final": True})
             return
         decide("investigate document", "Asked what went wrong, and the document describes a "
                                        "problem (chat.INVESTIGATIVE).")
@@ -534,12 +550,13 @@ class Conversation:
             return
         emit("stage", {"stage": "think", "text": "Thinking..."})
         try:
-            answer = client.chat(message, system=GENERAL_SYSTEM, temperature=0.3).strip()
+            answer = streaming_ask(client, emit)(message, GENERAL_SYSTEM, 0.3).strip()
         except LLMError:
             emit("say", {"text": HELP})
             return
         emit("stage", {"stage": "back", "text": "Here you go!"})
-        emit("say", {"text": "*From general knowledge, not from your data:*\n" + answer})
+        emit("say", {"text": "*From general knowledge, not from your data:*\n" + answer,
+                     "final": True})
 
     def _gather(self, session: Session, message: str, emit: Emit) -> bool:
         emit("stage", {"stage": "collect", "text": "Looking through your connected data..."})
@@ -588,11 +605,11 @@ class Conversation:
             return
         emit("stage", {"stage": "think", "text": "Thinking about your question..."})
         try:
-            answer = client.chat(_followup_prompt(session.report, message),
-                                 system=FOLLOWUP_SYSTEM + "\n" + STYLE_INSTRUCTION[style],
-                                 temperature=0.2)
+            answer = streaming_ask(client, emit)(
+                _followup_prompt(session.report, message),
+                FOLLOWUP_SYSTEM + "\n" + STYLE_INSTRUCTION[style], 0.2)
         except LLMError as exc:
             answer = (f"I couldn't reach the AI model ({exc}). Here's the short version:\n"
                       + summary_for(session.report, style))
         emit("stage", {"stage": "back", "text": "Here you go!"})
-        emit("say", {"text": answer.strip()})
+        emit("say", {"text": answer.strip(), "final": True})

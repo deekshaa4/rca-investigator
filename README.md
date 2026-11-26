@@ -82,6 +82,8 @@ A chat page where anyone can investigate **their own data**:
 
 Everything runs on your own computer: uploads are kept in memory for the session only, and the model runs locally.
 
+The page has a calm, modern design: a welcoming start screen with suggestion chips, a floating message box, answers that **stream in word by word** as the model writes them, a compact "thinking" line while CuteBot works, light and dark themes, text sizes, and a single ⚙️ menu for the AI, memory and chart options. It works on phones too.
+
 ### Documents and any topic
 
 Not every incident comes with numbers. Upload an incident write-up, emails or meeting notes (PDF, Word, text), or paste the story into the chat, and CuteBot investigates the text itself, on any topic (software, deliveries, operations, ...):

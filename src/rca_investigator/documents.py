@@ -244,16 +244,16 @@ def _unverified_numbers(summary: str, source: str) -> list[str]:
 
 
 def summarise_documents(documents: list[Document], client: ChatClient | None,
-                        style_hint: str = "") -> str:
+                        style_hint: str = "", ask: Callable[..., str] | None = None) -> str:
     """A plain summary of the shared documents (numbers checked against the text)."""
     kind = document_kind(documents)
     text = "\n\n".join(f"[{c.document} p.{c.page}]\n{c.text}" for d in documents
                        for c in d.chunks)
     if client is not None and hasattr(client, "chat"):
         try:
-            summary = client.chat(f"Document ({kind}):\n{text[:SUMMARY_CHARS]}\n\nSummarise it.",
-                                  system=SUMMARY_SYSTEM.format(hint="\n" + style_hint),
-                                  temperature=0.1).strip()
+            ask = ask or (lambda p, s, t: client.chat(p, system=s, temperature=t))
+            summary = ask(f"Document ({kind}):\n{text[:SUMMARY_CHARS]}\n\nSummarise it.",
+                          SUMMARY_SYSTEM.format(hint="\n" + style_hint), 0.1).strip()
             missing = _unverified_numbers(summary, text)
             if missing:
                 summary += ("\n\n⚠ These numbers aren't written in the document (the AI worked "
@@ -538,14 +538,15 @@ def investigate_documents(question: str, documents: list[Document], client: Chat
 
 
 def answer_from_documents(question: str, documents: list[Document], client: ChatClient | None,
-                          style_hint: str = "") -> str:
+                          style_hint: str = "", ask: Callable[..., str] | None = None) -> str:
     """A chat answer about the documents, from the most relevant passages."""
     chunks = rank_chunks([c for d in documents for c in d.chunks], question, 3)
     if client is not None and hasattr(client, "chat"):
         passages = "\n\n".join(f"[p.{c.page} of {c.document}]\n{c.text}" for c in chunks)
         try:
-            return client.chat(f"Passages:\n{passages}\n\nQuestion: {question}",
-                               system=QA_SYSTEM + "\n" + style_hint, temperature=0.2).strip()
+            ask = ask or (lambda p, s, t: client.chat(p, system=s, temperature=t))
+            return ask(f"Passages:\n{passages}\n\nQuestion: {question}",
+                       QA_SYSTEM + "\n" + style_hint, 0.2).strip()
         except LLMError:
             pass
     words = set(re.findall(r"[a-z]{4,}", question.lower()))

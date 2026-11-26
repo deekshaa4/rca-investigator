@@ -21,7 +21,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from .schema import RCAReport
 
 DEFAULT_DIR = Path.home() / ".rca-investigator" / "cases"
-SIMILAR_AT = 0.2
+SIMILAR_AT = 0.35
 CORRECTION = re.compile(
     r"^\s*(no\b|nope\b|actually\b|that'?s (not right|wrong|incorrect)|wrong\b|incorrect\b|"
     r"not quite\b)|\bthe (real|actual) (root )?cause (was|is)\b|\bit was actually\b", re.IGNORECASE)
@@ -89,8 +89,10 @@ class CaseNotes:
         cases = [c for c in self.cases() if c["path"] != exclude]
         if not cases or not query.strip():
             return None
-        matrix = TfidfVectorizer(stop_words="english").fit_transform(
-            [query] + [c["text"] for c in cases])
+        # compare the parts that matter (not the date/verdict lines every note shares)
+        keys = [" ".join([c["title"], c["happened"], c["cause"], *c["corrections"]])
+                for c in cases]
+        matrix = TfidfVectorizer(stop_words="english").fit_transform([query] + keys)
         scores = cosine_similarity(matrix[0], matrix[1:]).ravel()
         best = int(scores.argmax())
         return {**cases[best], "score": float(scores[best])} if scores[best] >= SIMILAR_AT \

@@ -10,6 +10,7 @@ import json
 import os
 import urllib.error
 import urllib.request
+from collections.abc import Iterator
 from typing import Any
 
 DEFAULT_HOST = os.environ.get("RCA_OLLAMA_HOST", "http://localhost:11434")
@@ -73,6 +74,31 @@ class OllamaClient:
             return reply["message"]["content"]
         except (KeyError, TypeError) as exc:
             raise LLMError(f"unexpected reply from Ollama: {reply}") from exc
+
+    def chat_stream(self, prompt: str, system: str | None = None,
+                    temperature: float = 0.1) -> Iterator[str]:
+        """Like chat(), but yields the reply piece by piece as the model writes it."""
+        messages = [{"role": "system", "content": system}] if system else []
+        messages.append({"role": "user", "content": prompt})
+        payload = {"model": self.model, "messages": messages, "stream": True,
+                   "options": {"temperature": temperature}}
+        req = urllib.request.Request(f"{self.host}/api/chat", data=json.dumps(payload).encode(),
+                                     headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
+                for line in resp:
+                    if not line.strip():
+                        continue
+                    part = json.loads(line)
+                    if part.get("error"):
+                        raise LLMError(part["error"])
+                    text = part.get("message", {}).get("content", "")
+                    if text:
+                        yield text
+                    if part.get("done"):
+                        break
+        except (urllib.error.URLError, TimeoutError) as exc:
+            raise LLMError(f"cannot reach Ollama at {self.host}: {exc}") from exc
 
     def chat_json(self, prompt: str, json_schema: dict[str, Any], system: str | None = None) -> Any:
         """Like chat(), but parses and returns the JSON reply."""

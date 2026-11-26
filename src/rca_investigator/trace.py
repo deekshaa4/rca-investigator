@@ -126,5 +126,34 @@ class TracingClient:
             lambda: self.client.chat(prompt, system=system, json_schema=json_schema,
                                      temperature=temperature))
 
+    @property
+    def chat_stream(self):
+        if not hasattr(self.client, "chat_stream"):
+            raise AttributeError("chat_stream")
+
+        def stream(prompt, system=None, temperature=0.1):
+            parts: list[str] = []
+
+            def run():
+                for piece in self.client.chat_stream(prompt, system=system,
+                                                     temperature=temperature):
+                    parts.append(piece)
+                    yield piece
+
+            started, error = time.time(), None
+            try:
+                yield from run()
+            except Exception as exc:
+                error = str(exc)
+                raise
+            finally:
+                trace = current.get()
+                if trace is not None:
+                    trace.llm_calls.append({
+                        "kind": "chat (streamed)", "system": (system or "")[:3000],
+                        "prompt": prompt[:6000], "reply": "".join(parts)[:4000], "error": error,
+                        "seconds": round(time.time() - started, 1), "called_from": where(3)})
+        return stream
+
     def __getattr__(self, name: str) -> Any:
         return getattr(self.client, name)

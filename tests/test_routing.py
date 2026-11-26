@@ -111,3 +111,21 @@ def test_summary_numbers_are_checked():
 
     events = run(with_doc(STATEMENT), "summarise this", llm=Inventor())
     assert "£9,999" in said(events) and "aren't written in the document" in said(events)
+
+
+def test_answers_stream_piece_by_piece():
+    class Streamer:
+        def chat(self, prompt, system=None, json_schema=None, temperature=0.1):
+            return "unused"
+
+        def chat_stream(self, prompt, system=None, temperature=0.1):
+            yield from ["Root cause analysis ", "finds why ", "things went wrong."]
+
+        def chat_json(self, *a, **k):
+            return {"facts": []}
+
+    events = run(Session(), "What is a root cause analysis exactly?", llm=Streamer())
+    deltas = [d["text"] for k, d in events if k == "delta"]
+    assert deltas == ["Root cause analysis ", "finds why ", "things went wrong."]
+    final = [d for k, d in events if k == "say"][-1]
+    assert final["final"] and "things went wrong." in final["text"]
