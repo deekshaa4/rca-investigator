@@ -24,7 +24,7 @@ rca = "rca_investigator.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-rca_investigator = ["static/*"]
+rca_investigator = ["static/*", "replies.md"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -26,7 +26,8 @@ A focused 2-week build, using only free and open tools.
 
 - [x] Document mode: write-ups, emails, notes or pasted text on any topic, with quote-checked evidence and document rules
 - [ ] Charts and scanned pages inside PDFs
-- [ ] Case notes: consent-based local memory of past investigations that learns from corrections
+- [x] Case notes: consent-based local memory of past investigations that learns from corrections
+- [x] Friendly small talk from an editable replies file
 
 ## Later
 

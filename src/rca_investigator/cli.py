@@ -8,6 +8,7 @@ import time
 
 from . import __version__
 from .llm import DEFAULT_MODEL, LLMError, OllamaClient
+from .memory import DEFAULT_DIR
 from .schema import export_json_schema
 
 
@@ -248,7 +249,8 @@ def cmd_serve(args: argparse.Namespace) -> int:
         print('The web page needs extra packages:  pip install -e ".[web]"')
         return 1
     try:
-        app = create_app(model=args.model, sources=args.source)
+        app = create_app(model=args.model, sources=args.source,
+                         memory_dir=None if args.no_memory else args.memory_dir)
     except (FileNotFoundError, ImportError) as exc:
         print(f"Problem: {exc}")
         return 1
@@ -256,6 +258,23 @@ def cmd_serve(args: argparse.Namespace) -> int:
         print("Connected (read-only): " + ", ".join(args.source))
     print(f"Open http://{args.host}:{args.port} in your browser (Ctrl+C to stop).")
     uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
+    return 0
+
+
+def cmd_memory(args: argparse.Namespace) -> int:
+    """List the case notes, or forget them all."""
+    from .memory import CaseNotes
+
+    notes = CaseNotes(args.memory_dir)
+    if args.forget:
+        print(f"Forgot {notes.forget_all()} case note(s).")
+        return 0
+    cases = notes.cases()
+    if not cases:
+        print(f"No case notes in {notes.folder}")
+    for c in cases:
+        extra = f"  (corrected: {c['corrections'][-1]})" if c["corrections"] else ""
+        print(f"  {c['date']}  {c['title']}\n      cause: {c['cause']}{extra}")
     return 0
 
 
@@ -341,7 +360,15 @@ def main(argv: list[str] | None = None) -> int:
                        help="database file/URL or folder to connect, read-only (repeatable)")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
+    serve.add_argument("--memory-dir", default=str(DEFAULT_DIR),
+                       help="where case notes are kept when a user switches memory on")
+    serve.add_argument("--no-memory", action="store_true", help="never keep case notes")
     serve.set_defaults(func=cmd_serve)
+
+    mem = sub.add_parser("memory", help="list or forget CuteBot's case notes")
+    mem.add_argument("--memory-dir", default=str(DEFAULT_DIR))
+    mem.add_argument("--forget", action="store_true", help="delete all case notes")
+    mem.set_defaults(func=cmd_memory)
 
     srcs = sub.add_parser("sources", help="show the tables found in databases or folders")
     srcs.add_argument("--source", action="append", required=True)

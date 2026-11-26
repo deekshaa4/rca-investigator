@@ -14,8 +14,10 @@ from __future__ import annotations
 import json
 import random
 import re
+from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import pandas as pd
 
@@ -29,8 +31,10 @@ from .documents import (
 from .ingest import IngestError, Parsed, _looks_like_table, read_text, text_to_records
 from .investigate import ChatClient, investigate
 from .llm import LLMError
+from .memory import CORRECTION, CaseNotes, recall_message
 from .schema import RCAReport
 from .simulate import SCENARIOS, generate_incident
+from .smalltalk import match_intent, pick_reply
 
 Emit = Callable[[str, dict], None]
 STYLES = ("nerd", "simple", "kid")
@@ -42,6 +46,11 @@ STAGE_OF_STEP = {
     "judge": "weigh", "judge_done": "weigh",
     "doc_read": "collect", "doc_facts": "polish",
 }
+INVESTIGATIVE = re.compile(r"\b(why|cause[ds]?|wrong|happen\w*|investigat\w*|analy[sz]\w*|"
+                           r"explain|root|what went|look (into|again))\b", re.IGNORECASE)
+# the user is about to share something (or asking about us): reply, don't investigate yet
+ANNOUNCES = {"later", "can_share", "forgot", "review", "privacy", "formats", "capabilities",
+             "thanks", "bye"}
 PASTE_DOC_CHARS = 400  # longer messages are treated as a document to read
 GREETING = re.compile(r"^\s*(hi|hello|hey|thanks|thank you|ok|okay|cool|great)\b[\s!.?]*$", re.IGNORECASE)
 GENERAL_SYSTEM = """You are CuteBot, a friendly root cause analysis assistant. The user has not
@@ -109,6 +118,9 @@ class Session:
     documents: list[Document] = field(default_factory=list)
     mode: str = "numbers"  # what the last report was based on: "numbers" or "documents"
     last_shared: str = "data"  # "documents" when the latest thing shared was a document
+    recent_replies: deque = field(default_factory=lambda: deque(maxlen=30))
+    case_path: Path | None = None  # this investigation's case note, if memory is on
+    remember: bool = False  # the user's consent to keep case notes
 
     def add_document(self, doc: Document) -> None:
         self.documents.append(doc)
@@ -305,9 +317,34 @@ def _followup_prompt(report: RCAReport, question: str) -> str:
 
 
 class Conversation:
-    def __init__(self, client_factory: Callable[[bool], ChatClient | None], catalog=None):
+    def __init__(self, client_factory: Callable[[bool], ChatClient | None], catalog=None,
+                 memory: CaseNotes | None = None):
         self.client_factory = client_factory
         self.catalog = catalog
+        self.memory = memory
+
+    def _remember(self, session: Session, report: RCAReport, remember: bool, emit: Emit) -> None:
+        """With the user's consent: mention a similar past case, then save this one."""
+        if not (remember and self.memory):
+            return
+        top = report.contributing_factors[0].description if report.contributing_factors else ""
+        query = " ".join([report.question, report.summary or "", top,
+                          *[e.summary for e in report.evidence[:10]]])
+        past = self.memory.recall(query)
+        if past is not None:
+            emit("say", {"text": recall_message(past)})
+        session.case_path = self.memory.save(report, session.mode)
+
+    def _correction(self, session: Session, message: str, remember: bool, emit: Emit) -> None:
+        if remember and self.memory and session.case_path:
+            self.memory.add_correction(session.case_path, message)
+            text = ("Thank you for correcting me! 💛 I've added that to my case notes, so I'll "
+                    "remember it next time something similar happens.")
+        else:
+            text = ("Thank you for correcting me! 💛 My memory is switched off, so I won't keep "
+                    "this for next time. Turn on 🧠 Remember at the top if you'd like me to learn "
+                    "from corrections.")
+        emit("say", {"text": text})
 
     def load_sample(self, session: Session, seed: int | None = None) -> dict:
         rng = random.Random(seed)
@@ -327,8 +364,13 @@ class Conversation:
         session.style, session.style_chosen = style, True
         return summary_for(session.report, style) if session.report else None
 
-    def respond(self, session: Session, message: str, use_llm: bool, emit: Emit) -> None:
+    def respond(self, session: Session, message: str, use_llm: bool, emit: Emit,
+                remember: bool = False) -> None:
         message = message.strip()
+        session.remember = remember
+        if session.report is not None and len(message) < 500 and CORRECTION.search(message):
+            self._correction(session, message, remember, emit)
+            return
         guess = None if session.style_chosen else detect_style(message)
         if guess and guess != session.style:
             session.style = guess
@@ -340,7 +382,14 @@ class Conversation:
             emit("stage", {"stage": "collect", "text": "Collecting the evidence you pasted..."})
             emit("say", {"text": f"Got it! I picked up {pasted.summary} from your message."})
 
-        if len(message) >= PASTE_DOC_CHARS and not _looks_like_table(message):
+        long_text = len(message) >= PASTE_DOC_CHARS and not _looks_like_table(message)
+        if pasted is None and not long_text and (intent := match_intent(message)):
+            has_data = (session.metrics is not None or bool(session.documents)
+                        or bool(self.catalog))
+            if intent.name in ANNOUNCES or not (has_data and INVESTIGATIVE.search(message)):
+                emit("say", {"text": pick_reply(intent, session.recent_replies)})
+                return
+        if long_text:
             session.add_document(document_from_text(
                 f"pasted text {len(session.documents) + 1}", message))
             emit("say", {"text": f"Thanks! I'll read the text you pasted "
@@ -401,6 +450,7 @@ class Conversation:
         emit("stage", {"stage": "back", "text": "Coming back with the answer!"})
         emit("report", {"report": report.model_dump(mode="json"), "chart": None, "style": style})
         emit("say", {"text": summary_for(report, style), "summary": True})
+        self._remember(session, report, session.remember, emit)
 
     def _general(self, message: str, use_llm: bool, emit: Emit) -> None:
         """No data shared yet: answer from general knowledge, clearly labelled."""
@@ -452,6 +502,7 @@ class Conversation:
                         "chart": chart_data(session.metrics, report),
                         "style": session.style or "simple"})
         emit("say", {"text": summary_for(report, session.style or "simple"), "summary": True})
+        self._remember(session, report, session.remember, emit)
 
     def _follow_up(self, session: Session, message: str, use_llm: bool, emit: Emit) -> None:
         client = self.client_factory(use_llm)

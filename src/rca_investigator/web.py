@@ -28,6 +28,7 @@ from .documents import DOC_TYPES, load_document
 from .ingest import IngestError, read_file
 from .investigate import ChatClient, to_markdown
 from .llm import DEFAULT_MODEL, OllamaClient
+from .memory import DEFAULT_DIR, CaseNotes
 from .simulate import generate_incident
 from .sources import Catalog
 
@@ -48,6 +49,7 @@ class Message(BaseModel):
     session: str = Field(pattern=SESSION_ID)
     message: str = Field(default="", max_length=200_000)
     llm: bool = True
+    remember: bool = False  # the user's consent to keep case notes on this computer
 
 
 class SessionOnly(BaseModel):
@@ -74,7 +76,8 @@ class StyleChoice(BaseModel):
 
 def create_app(model: str = DEFAULT_MODEL,
                client_factory: Callable[[bool], ChatClient | None] | None = None,
-               sources: list[str] | None = None) -> FastAPI:
+               sources: list[str] | None = None,
+               memory_dir: str | Path | None = DEFAULT_DIR) -> FastAPI:
     """`sources`: databases (SQLite path or SQLAlchemy URL) or folders to connect, read-only."""
     if client_factory is None:
         def client_factory(use_llm: bool) -> ChatClient | None:
@@ -82,7 +85,8 @@ def create_app(model: str = DEFAULT_MODEL,
 
     app = FastAPI(title="RCA Investigator")
     catalog = Catalog.connect(sources) if sources else None
-    conversation = Conversation(client_factory, catalog)
+    memory = CaseNotes(memory_dir) if memory_dir else None
+    conversation = Conversation(client_factory, catalog, memory)
     sessions: OrderedDict[str, Session] = OrderedDict()
     lock = threading.Lock()
 
@@ -167,6 +171,16 @@ def create_app(model: str = DEFAULT_MODEL,
                                  headers={"Content-Disposition":
                                           'attachment; filename="rca-report.md"'})
 
+    @app.get("/api/memory")
+    def memory_info() -> dict:
+        return {"available": memory is not None,
+                "cases": len(memory.cases()) if memory else 0,
+                "folder": str(memory.folder) if memory else None}
+
+    @app.delete("/api/memory")
+    def forget() -> dict:
+        return {"forgotten": memory.forget_all() if memory else 0}
+
     @app.post("/api/reset")
     def reset(body: SessionOnly) -> dict:
         with lock:
@@ -183,7 +197,7 @@ def create_app(model: str = DEFAULT_MODEL,
 
         def work() -> None:
             try:
-                conversation.respond(session, body.message, body.llm, emit)
+                conversation.respond(session, body.message, body.llm, emit, body.remember)
             except IngestError as exc:
                 emit("say", {"text": str(exc)})
             except Exception as exc:  # noqa: BLE001 (show any failure in the chat, never hang)

@@ -94,6 +94,11 @@ Not every incident comes with numbers. Upload an incident write-up, emails or me
 
 With no data at all, CuteBot can still answer general questions, clearly labelled *from general knowledge, not from your data*.
 
+### Friendly chat and a memory you control
+
+- **Human small talk.** "Hi!", "I'll send it in a minute", "sorry, I forgot", "can I share some docs?" get a friendly reply instantly, without the model. The replies live in a plain file, [`replies.md`](src/rca_investigator/replies.md) (about 170 replies for 15 situations), so they're easy to read and extend, and CuteBot avoids repeating itself.
+- **Case notes (off by default).** Switch on **🧠 Remember** and, after each investigation, CuteBot writes a tiny Markdown note on this computer: what happened, the cause, the fix, how sure it was. Next time it recognises a similar case ("this reminds me of…"), and when you correct it ("no, it was actually the database") the correction is added to the note and shown next time. No model training, nothing leaves the computer, and **Forget** (or `rca memory --forget`) deletes everything. `rca memory` lists the notes; `rca serve --no-memory` turns the feature off.
+
 ### Connect it to your own data
 
 Install it next to your data and point it at a database or a folder. CuteBot explores the data itself: it samples every table, works out which ones hold numbers over time and which hold records (deploys, config changes, alerts, tickets, logs), and when you ask a question it picks the right table and loads only the time window the question is about.
@@ -248,6 +253,8 @@ src/rca_investigator/
   ingest.py     reads uploaded files and pasted text into the engines' format
   chat.py       the conversation: collect data, investigate, answer follow-ups
   documents.py  document mode: read every part, quote-checked facts, document rules
+  smalltalk.py  everyday chat answered from replies.md
+  memory.py     consent-based case notes on this computer
   sources.py    read-only connections to databases and folders, table discovery
   demo.py       demo company database (`rca demo-db`)
   web.py        chat page server: uploads and live progress (`rca serve`)

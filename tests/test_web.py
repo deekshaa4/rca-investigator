@@ -43,8 +43,10 @@ def test_page_and_info():
 
 
 def test_without_data_cutebot_explains_what_to_share():
-    got = chat(app(), "hello")
-    assert got[0][0] == "say" and "upload" in got[0][1]["text"].lower()
+    got = [e for e in chat(app(), "please show me what you've got so far") if e[0] == "say"]
+    assert "upload" in got[0][1]["text"].lower()
+    hello = [e for e in chat(app(), "hello") if e[0] == "say"]
+    assert hello[0][1]["text"]
 
 
 def test_upload_then_ask_streams_stages_and_report():

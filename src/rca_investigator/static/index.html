@@ -167,6 +167,8 @@ textarea { flex: 1; border: none; resize: none; background: transparent; color: 
 <body>
 <header>
   <h1>RCA Investigator <span>· find what changed, why, and whether the evidence is enough</span></h1>
+  <label class="toggle" title="Keep short case notes on this computer so I can recognise similar problems and learn from your corrections. Nothing leaves this computer."><input type="checkbox" id="remember"> 🧠 Remember</label>
+  <button class="ghost" id="forget" hidden title="Delete all case notes">Forget</button>
   <label class="toggle"><input type="checkbox" id="use-llm" checked> AI model</label>
   <button class="ghost" id="new-chat">New chat</button>
 </header>
@@ -353,7 +355,7 @@ async function send(text) {
   let tracker = null;
   try {
     const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session: sessionId, message: text, llm: $("#use-llm").checked }) });
+      body: JSON.stringify({ session: sessionId, message: text, llm: $("#use-llm").checked, remember: $("#remember").checked }) });
     if (!res.ok) throw new Error(`Request failed (${res.status})`);
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -629,6 +631,29 @@ const composer = $("#composer");
 ["dragenter", "dragover"].forEach((t) => document.addEventListener(t, (e) => { e.preventDefault(); composer.classList.add("drag"); }));
 ["dragleave", "drop"].forEach((t) => document.addEventListener(t, (e) => { e.preventDefault(); composer.classList.remove("drag"); }));
 document.addEventListener("drop", (e) => { if (e.dataTransfer?.files.length) uploadFiles(e.dataTransfer.files); });
+/* ---------- memory (consent) ---------- */
+const rememberBox = $("#remember");
+try { rememberBox.checked = localStorage.getItem("cutebot-remember") === "1"; } catch (e) { /* private mode */ }
+$("#forget").hidden = !rememberBox.checked;
+rememberBox.addEventListener("change", async () => {
+  try { localStorage.setItem("cutebot-remember", rememberBox.checked ? "1" : "0"); } catch (e) { /* ignore */ }
+  $("#forget").hidden = !rememberBox.checked;
+  if (rememberBox.checked) {
+    const info = await fetch("/api/memory").then((r) => r.json()).catch(() => ({ available: false }));
+    addMessage("bot", richText(info.available
+      ? `🧠 **Memory on.** After each investigation I'll keep a tiny case note on this computer (in ${info.folder}), so I can spot similar problems and learn from your corrections. Nothing leaves this computer, and you can delete everything with **Forget**. I have ${info.cases} note(s) so far.`
+      : "Memory isn't available on this server (it was started with --no-memory)."));
+    hop("I'll remember! 🧠");
+  } else {
+    addMessage("bot", richText("🧠 **Memory off.** I won't keep notes from now on. Existing notes stay until you press Forget."));
+  }
+});
+$("#forget").addEventListener("click", async () => {
+  if (!confirm("Delete all of CuteBot's case notes on this computer? This can't be undone.")) return;
+  const r = await fetch("/api/memory", { method: "DELETE" }).then((x) => x.json()).catch(() => ({ forgotten: 0 }));
+  addMessage("bot", richText(`Done! I forgot ${r.forgotten} case note(s). 🧹`));
+});
+
 $("#new-chat").addEventListener("click", async () => {
   if (busy) return;
   await post("/api/reset", { session: sessionId }).catch(() => {});
