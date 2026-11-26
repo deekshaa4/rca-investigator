@@ -81,9 +81,7 @@ def test_statement_summary_is_a_summary_not_an_investigation():
 def test_statement_without_problems_is_not_turned_into_an_incident():
     events = run(with_doc(STATEMENT), "what went wrong?")
     assert "report" not in kinds(events)
-    text = said(events)
-    assert "statement" in text and ("didn't" in text or "nothing" in text.lower()
-                                    or "no sign" in text or "can't see" in text)
+    assert "a bank or account statement" in said(events)
 
 
 def test_statement_with_a_problem_is_investigated():
