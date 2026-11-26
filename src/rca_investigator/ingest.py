@@ -21,9 +21,10 @@ from pathlib import PurePath
 import pandas as pd
 
 TIME_NAMES = ("timestamp", "time", "datetime", "date", "ts", "@timestamp", "created_at",
-              "created", "event_time", "when")
-SERVICE_NAMES = ("service", "app", "application", "component", "system", "host", "api")
-REGION_NAMES = ("region", "zone", "location", "datacenter", "dc", "environment", "env", "site")
+              "created", "event_time", "when", "occurred_at", "event_ts")
+SERVICE_NAMES = ("service", "app", "application", "component", "system", "host", "api", "pod", "namespace")
+REGION_NAMES = ("region", "zone", "location", "datacenter", "dc", "environment", "env", "site",
+                "cluster", "availability_zone", "country")
 COUNT_NAMES = ("requests", "count", "volume", "traffic", "calls", "hits", "transactions")
 TEXT_NAMES = ("text", "message", "msg", "description", "summary", "event", "details", "log",
               "title", "note", "notes")

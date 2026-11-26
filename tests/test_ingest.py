@@ -128,3 +128,23 @@ def test_full_investigation_on_uploaded_data():
     report = investigate("X", inc.question, inc.metric, m, recs, None)
     assert report.sufficiency.verdict.value in {"sufficient", "partial"}
     assert report.contributing_factors[0].category.value == "deployment"
+
+
+@pytest.mark.parametrize("time_name", ["occurred_at", "event_ts"])
+@pytest.mark.parametrize("service_name", ["pod", "namespace"])
+@pytest.mark.parametrize("region_name", ["cluster", "availability_zone", "country"])
+def test_common_export_aliases_preserve_time_and_dimensions(time_name, service_name, region_name):
+    frame = pd.DataFrame({
+        "requests": [100, 200],
+        time_name: ["2026-05-01T00:00:00Z", "2026-05-01T00:15:00Z"],
+        service_name: ["checkout", "search"],
+        region_name: ["west", "east"],
+        "errors": [2.0, 8.0],
+    })
+    parsed = read_text("export.csv", frame.to_csv(index=False))
+    assert parsed.metrics is not None
+    records = parsed.metrics.sort_values("timestamp").to_dict("records")
+    assert records == [
+        {"timestamp": "2026-05-01T00:00:00Z", "service": "checkout", "region": "west", "requests": 100.0, "errors": 2.0},
+        {"timestamp": "2026-05-01T00:15:00Z", "service": "search", "region": "east", "requests": 200.0, "errors": 8.0},
+    ]
