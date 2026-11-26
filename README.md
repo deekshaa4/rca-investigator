@@ -92,6 +92,16 @@ Not every incident comes with numbers. Upload an incident write-up, emails or me
 4. The model tells the story from the numbered facts; **rules** judge whether the documents are enough: is a cause actually stated, is it backed by more than one passage, are other causes suggested, is there a timeline?
 5. **Follow-up questions** ("was it staff shortages?") are answered from the most relevant passages, with page references.
 
+**Charts inside PDFs (local first, cloud optional).** CuteBot finds the pages that contain a chart and always reads the chart's caption and labels, instantly and on your computer. To have it *look at the picture* too (the trend, a sudden jump, when it happened), pick an option in the 📊 menu:
+
+| Option | How | Speed | Privacy |
+|---|---|---|---|
+| Chart labels only (default) | captions and labels from the page text | instant | stays on this computer |
+| Look on this computer | a local vision model in Ollama, e.g. `ollama pull qwen2.5vl:3b` | slower on a laptop (tens of seconds per chart) | stays on this computer |
+| Look in the cloud | any OpenAI-compatible vision service: your own GPU server or a hosted provider (`RCA_CLOUD_VISION_URL`, `RCA_CLOUD_VISION_MODEL`, `RCA_CLOUD_VISION_KEY`) | a few seconds per chart | **only the chart pictures** leave the computer, after the user confirms |
+
+Only charts are looked at (at most 4 per investigation), and what the model saw is shown as its own clue, marked *read from the picture* so it is never mistaken for a word-for-word quote.
+
 With no data at all, CuteBot can still answer general questions, clearly labelled *from general knowledge, not from your data*.
 
 ### Friendly chat and a memory you control
@@ -253,6 +263,7 @@ src/rca_investigator/
   ingest.py     reads uploaded files and pasted text into the engines' format
   chat.py       the conversation: collect data, investigate, answer follow-ups
   documents.py  document mode: read every part, quote-checked facts, document rules
+  vision.py     charts in PDFs: find them, read labels, optional local or cloud vision
   smalltalk.py  everyday chat answered from replies.md
   memory.py     consent-based case notes on this computer
   sources.py    read-only connections to databases and folders, table discovery

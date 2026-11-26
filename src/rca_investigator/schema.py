@@ -120,6 +120,8 @@ class Guardrails(BaseModel):
     quotes_rejected: int = Field(
         default=0, ge=0, description="Quotes not found word for word in the document (removed)"
     )
+    charts_found: int = Field(default=0, ge=0, description="Charts found in the documents")
+    charts_read: int = Field(default=0, ge=0, description="Charts looked at by a vision model")
     engine_override: bool = Field(
         default=False,
         description="A model factor resting on a change that is too early or in another "

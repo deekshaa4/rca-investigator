@@ -253,6 +253,20 @@
           "title": "Quotes Rejected",
           "type": "integer"
         },
+        "charts_found": {
+          "default": 0,
+          "description": "Charts found in the documents",
+          "minimum": 0,
+          "title": "Charts Found",
+          "type": "integer"
+        },
+        "charts_read": {
+          "default": 0,
+          "description": "Charts looked at by a vision model",
+          "minimum": 0,
+          "title": "Charts Read",
+          "type": "integer"
+        },
         "engine_override": {
           "default": false,
           "description": "A model factor resting on a change that is too early or in another place was replaced by the engines' candidate",

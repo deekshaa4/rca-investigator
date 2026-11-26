@@ -25,7 +25,8 @@ A focused 2-week build, using only free and open tools.
 ## Version 2: understands any document
 
 - [x] Document mode: write-ups, emails, notes or pasted text on any topic, with quote-checked evidence and document rules
-- [ ] Charts and scanned pages inside PDFs
+- [x] Charts inside PDFs: labels always, local or cloud vision optional
+- [ ] Scanned pages (text recognition)
 - [x] Case notes: consent-based local memory of past investigations that learns from corrections
 - [x] Friendly small talk from an editable replies file
 

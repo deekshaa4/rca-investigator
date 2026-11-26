@@ -31,6 +31,7 @@ from .llm import DEFAULT_MODEL, OllamaClient
 from .memory import DEFAULT_DIR, CaseNotes
 from .simulate import generate_incident
 from .sources import Catalog
+from .vision import cloud_vision, local_vision
 
 BOT_NAME = "CuteBot"
 STATIC = Path(__file__).parent / "static"
@@ -50,6 +51,7 @@ class Message(BaseModel):
     message: str = Field(default="", max_length=200_000)
     llm: bool = True
     remember: bool = False  # the user's consent to keep case notes on this computer
+    charts: str = Field(default="labels", pattern="^(labels|local|cloud)$")
 
 
 class SessionOnly(BaseModel):
@@ -77,7 +79,8 @@ class StyleChoice(BaseModel):
 def create_app(model: str = DEFAULT_MODEL,
                client_factory: Callable[[bool], ChatClient | None] | None = None,
                sources: list[str] | None = None,
-               memory_dir: str | Path | None = DEFAULT_DIR) -> FastAPI:
+               memory_dir: str | Path | None = DEFAULT_DIR,
+               vision: dict | None = None) -> FastAPI:
     """`sources`: databases (SQLite path or SQLAlchemy URL) or folders to connect, read-only."""
     if client_factory is None:
         def client_factory(use_llm: bool) -> ChatClient | None:
@@ -86,7 +89,10 @@ def create_app(model: str = DEFAULT_MODEL,
     app = FastAPI(title="RCA Investigator")
     catalog = Catalog.connect(sources) if sources else None
     memory = CaseNotes(memory_dir) if memory_dir else None
-    conversation = Conversation(client_factory, catalog, memory)
+    if vision is None:  # find a local vision model; a cloud one only if configured
+        vision = {"local": local_vision(), "cloud": cloud_vision()}
+    vision = {k: v for k, v in vision.items() if v is not None}
+    conversation = Conversation(client_factory, catalog, memory, vision)
     sessions: OrderedDict[str, Session] = OrderedDict()
     lock = threading.Lock()
 
@@ -107,7 +113,9 @@ def create_app(model: str = DEFAULT_MODEL,
     def info() -> dict:
         return {"bot_name": BOT_NAME, "model": model,
                 "connected": catalog.summary() if catalog else None,
-                "tables": catalog.describe() if catalog else []}
+                "tables": catalog.describe() if catalog else [],
+                "vision": {"local": vision["local"].model if "local" in vision else None,
+                           "cloud": vision["cloud"].host if "cloud" in vision else None}}
 
     @app.post("/api/upload")
     def upload(body: Upload) -> dict:
@@ -197,7 +205,8 @@ def create_app(model: str = DEFAULT_MODEL,
 
         def work() -> None:
             try:
-                conversation.respond(session, body.message, body.llm, emit, body.remember)
+                conversation.respond(session, body.message, body.llm, emit, body.remember,
+                                     body.charts)
             except IngestError as exc:
                 emit("say", {"text": str(exc)})
             except Exception as exc:  # noqa: BLE001 (show any failure in the chat, never hang)

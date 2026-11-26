@@ -31,12 +31,13 @@ from .ingest import IngestError
 from .investigate import ChatClient, _clean, build_prompt, llm_reply_schema
 from .llm import LLMError
 from .schema import Guardrails, RCAReport, Sufficiency, Verdict
+from .vision import READ_CHARTS, ChartImage, VisionClient, VisionError, find_charts
 
 DOC_TYPES = {".pdf", ".docx", ".txt", ".md", ".log", ".rtf", ".html", ".htm", ".eml"}
 CHUNK_CHARS = 1800
 MODEL_CHUNKS = 6  # pieces the language model reads closely (all pieces get the rule scan)
 MAX_FACTS = 40
-FACT_TYPES = ("cause", "symptom", "event", "action", "context")
+FACT_TYPES = ("cause", "symptom", "event", "action", "context", "chart")
 
 CAUSE = re.compile(r"\b(because|due to|caused by|root cause|as a result of|triggered by|led to|"
                    r"resulted in|the cause|was caused|stemmed from|traced (back )?to|"
@@ -104,6 +105,7 @@ class Chunk:
 class Document:
     name: str
     chunks: list[Chunk] = field(default_factory=list)
+    charts: list[ChartImage] = field(default_factory=list)
 
     @property
     def pages(self) -> int:
@@ -135,12 +137,12 @@ def _split(text: str, limit: int = CHUNK_CHARS) -> list[str]:
     return pieces
 
 
-def document_from_pages(name: str, pages: list[str]) -> Document:
-    doc = Document(name)
+def document_from_pages(name: str, pages: list[str], charts: list | None = None) -> Document:
+    doc = Document(name, charts=charts or [])
     for number, page in enumerate(pages, start=1):
         for piece in _split(page):
             doc.chunks.append(Chunk(f"{name}#{len(doc.chunks) + 1}", name, number, piece))
-    if not doc.chunks:
+    if not doc.chunks and not doc.charts:
         raise IngestError(f"{name} has no readable text. If it's a scan or a picture, I can't "
                           "read it yet; please share the text or the data instead.")
     return doc
@@ -161,7 +163,7 @@ def load_document(name: str, data: bytes) -> Document:
             pages = [p.extract_text() or "" for p in PdfReader(io.BytesIO(data)).pages]
         except (PdfReadError, ValueError) as exc:
             raise IngestError("That PDF couldn't be opened.") from exc
-        return document_from_pages(name, pages)
+        return document_from_pages(name, pages, find_charts(data, pages))
     if suffix == ".docx":
         import docx
 
@@ -278,6 +280,8 @@ def assess_documents(evidence: list[dict], factors: list[dict]) -> Sufficiency:
     cited_causes = [e for e in cited if e.get("fact_type") == "cause"]
     cited_events = [e for e in cited if e.get("fact_type") == "event"]
     kinds = [e.get("fact_type") for e in evidence]
+    if "chart" in kinds:  # a chart shows the problem and when it happened
+        kinds += ["symptom", "event"]
 
     check(0.35, 1.0 if cited_causes else 0.5 if cited_events else 0.0,
           "The documents say what caused it, and the main factor rests on that.",
@@ -291,7 +295,7 @@ def assess_documents(evidence: list[dict], factors: list[dict]) -> Sufficiency:
     check(0.15, 1.0 if "event" in kinds else 0.0, "The order of events is described.",
           "There is no timeline of what happened when.",
           "A timeline: when it started, what changed, when it was fixed")
-    support = {e["chunk_id"] for e in cited if e.get("fact_type") in ("cause", "event")}
+    support = {e["chunk_id"] for e in cited if e.get("fact_type") in ("cause", "event", "chart")}
     check(0.15, 1.0 if len(support) >= 2 else 0.5 if support else 0.0,
           "More than one passage backs up the cause." if len(support) >= 2 else
           "One passage backs up the cause.",
@@ -321,8 +325,36 @@ def assess_documents(evidence: list[dict], factors: list[dict]) -> Sufficiency:
 
 # ---------- the investigation ----------
 
+def _chart_facts(documents: list[Document], vision: VisionClient | None, step) -> tuple[list, int]:
+    """Chart captions (always) and, with a vision model, what each chart picture shows."""
+    facts, read = [], 0
+    for doc in documents:
+        for chart in doc.charts:
+            if chart.caption:
+                facts.append({"type": "chart", "statement": chart.caption, "quote": chart.caption,
+                              "chunk": Chunk(f"{doc.name}#chart{chart.page}", doc.name,
+                                             chart.page, chart.caption)})
+            if vision is None or read >= READ_CHARTS:
+                continue
+            where = "in the cloud" if vision.where == "cloud" else "on this computer"
+            step("doc_chart", f"Looking at the chart on page {chart.page} of {doc.name} "
+                              f"({where})...")
+            try:
+                seen = vision.describe(chart.png, chart.caption)
+            except VisionError as exc:
+                step("doc_chart", f"I couldn't look at the chart: {exc}. Using its labels only.")
+                vision = None
+                continue
+            read += 1
+            facts.append({"type": "chart", "statement": seen, "quote": seen, "seen": True,
+                          "chunk": Chunk(f"{doc.name}#chart{chart.page}", doc.name, chart.page,
+                                         seen)})
+    return facts, read
+
+
 def investigate_documents(question: str, documents: list[Document], client: ChatClient | None,
-                          on_step: Callable[[str, str], None] | None = None) -> RCAReport:
+                          on_step: Callable[[str, str], None] | None = None,
+                          vision: VisionClient | None = None) -> RCAReport:
     def step(name: str, message: str) -> None:
         if on_step is not None:
             on_step(name, message)
@@ -343,20 +375,25 @@ def investigate_documents(question: str, documents: list[Document], client: Chat
                 break
             checked, rejected = checked + c, rejected + r
             facts = found + facts  # the model's facts first, then the rule scan
-    facts = _dedupe(facts)
-    order = {"cause": 0, "event": 1, "symptom": 2, "action": 3, "context": 4}
+    found_charts = sum(len(d.charts) for d in documents)
+    chart_facts, charts_read = _chart_facts(documents, vision, step) if found_charts else ([], 0)
+    facts = _dedupe(chart_facts + facts)
+    order = {"cause": 0, "event": 1, "chart": 2, "symptom": 3, "action": 4, "context": 5}
     facts = sorted(facts, key=lambda f: order[f["type"]])[:MAX_FACTS]
     counts = {k: sum(f["type"] == k for f in facts) for k in FACT_TYPES}
     step("doc_facts", f"Found {len(facts)} facts: {counts['cause']} about causes, "
                       f"{counts['symptom']} symptoms, {counts['event']} events, "
-                      f"{counts['action']} actions.")
+                      f"{counts['action']} actions"
+                      + (f", {counts['chart']} from charts." if counts["chart"] else "."))
     if checked:
         step("fact_check", f"Fact-check: {checked - rejected} of {checked} quotes were found "
                            f"word for word; {rejected} removed.")
 
     evidence = [{
         "id": f"E{i}", "kind": "document", "source": f"{f['chunk'].document} p.{f['chunk'].page}",
-        "summary": f"{f['type'].capitalize()}: \"{f['quote']}\"", "timestamp": None,
+        "summary": (f"Chart (read from the picture on p.{f['chunk'].page}): {f['quote']}"
+                    if f.get("seen") else f"{f['type'].capitalize()}: \"{f['quote']}\""),
+        "timestamp": None,
         "fact_type": f["type"], "chunk_id": f["chunk"].id,
     } for i, f in enumerate(facts, start=1)]
     if not evidence:
@@ -367,7 +404,8 @@ def investigate_documents(question: str, documents: list[Document], client: Chat
 
     factors, ruled_out, actions, summary = [], [], [], None
     guard = {"model_used": client is not None, "quotes_checked": checked,
-             "quotes_rejected": rejected}
+             "quotes_rejected": rejected, "charts_found": found_charts,
+             "charts_read": charts_read}
     if client is not None and facts:
         step("model", "Putting the story together...")
         schema = llm_reply_schema()

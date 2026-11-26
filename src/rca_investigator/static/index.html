@@ -33,6 +33,10 @@ header { display: flex; align-items: center; gap: 10px; padding: 10px 16px;
   border-bottom: 1px solid var(--line); background: var(--panel); }
 header h1 { font-size: 1.05rem; margin: 0; flex: 1; }
 header h1 span { color: var(--muted); font-weight: 400; }
+header select { font: inherit; font-size: .8rem; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: var(--ink); padding: 2px 4px; max-width: 190px; }
+@media (max-width: 1100px) { header h1 span { display: none; } }
+@media (max-width: 700px) { header { flex-wrap: wrap; } header h1 { flex-basis: 100%; } }
 .toggle { display: flex; gap: 6px; align-items: center; font-size: .85rem; color: var(--muted); }
 .ghost { background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 8px;
   padding: 4px 10px; font-size: .85rem; }
@@ -169,6 +173,8 @@ textarea { flex: 1; border: none; resize: none; background: transparent; color: 
   <h1>RCA Investigator <span>· find what changed, why, and whether the evidence is enough</span></h1>
   <label class="toggle" title="Keep short case notes on this computer so I can recognise similar problems and learn from your corrections. Nothing leaves this computer."><input type="checkbox" id="remember"> 🧠 Remember</label>
   <button class="ghost" id="forget" hidden title="Delete all case notes">Forget</button>
+  <label class="toggle" title="How should I read charts inside PDFs?">📊 <select id="charts" aria-label="How to read charts">
+    <option value="labels">Chart labels only</option></select></label>
   <label class="toggle"><input type="checkbox" id="use-llm" checked> AI model</label>
   <button class="ghost" id="new-chat">New chat</button>
 </header>
@@ -355,7 +361,7 @@ async function send(text) {
   let tracker = null;
   try {
     const res = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session: sessionId, message: text, llm: $("#use-llm").checked, remember: $("#remember").checked }) });
+      body: JSON.stringify({ session: sessionId, message: text, llm: $("#use-llm").checked, remember: $("#remember").checked, charts: $("#charts").value }) });
     if (!res.ok) throw new Error(`Request failed (${res.status})`);
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -506,6 +512,7 @@ function reportHtml(r, style = "simple") {
     `<li><span class="meta">${esc(a.type)} · ${esc(a.priority)}</span><br>${esc(a.action)}</li>`).join("")}</ul>`);
   const g = r.guardrails;
   if (g && g.model_used) card(`<h3>Fact-check</h3><ul>
+    ${g.charts_found ? `<li>Charts found: ${g.charts_found}; looked at by a vision model: ${g.charts_read}</li>` : ""}
     ${g.quotes_checked ? `<li>Quotes checked against the document: ${g.quotes_checked}; not found and removed: ${g.quotes_rejected}</li>` : ""}
     <li>Clue numbers cited: ${g.ids_cited}; invented and removed: ${g.ids_invented}</li>
     <li>Unsupported causes dropped: ${g.factors_dropped}</li>
@@ -631,6 +638,30 @@ const composer = $("#composer");
 ["dragenter", "dragover"].forEach((t) => document.addEventListener(t, (e) => { e.preventDefault(); composer.classList.add("drag"); }));
 ["dragleave", "drop"].forEach((t) => document.addEventListener(t, (e) => { e.preventDefault(); composer.classList.remove("drag"); }));
 document.addEventListener("drop", (e) => { if (e.dataTransfer?.files.length) uploadFiles(e.dataTransfer.files); });
+/* ---------- charts (local first, cloud optional) ---------- */
+function setupCharts(vision) {
+  const sel = $("#charts");
+  if (vision.local) sel.insertAdjacentHTML("beforeend", `<option value="local">Look at charts on this computer</option>`);
+  if (vision.cloud) sel.insertAdjacentHTML("beforeend", `<option value="cloud">Look at charts in the cloud (faster)</option>`);
+  let saved = "";
+  try { saved = localStorage.getItem("cutebot-charts") || ""; } catch (e) { /* private mode */ }
+  sel.value = [...sel.options].some((o) => o.value === saved && saved !== "cloud") ? saved : (vision.local ? "local" : "labels");
+  sel.dataset.prev = sel.value;
+  sel.addEventListener("change", () => {
+    if (sel.value === "cloud" && !confirm(`Chart pictures from your PDFs (only the charts, nothing else) will be sent to ${vision.cloud} to be read. Your other data stays here. Continue?`)) {
+      sel.value = sel.dataset.prev;
+      return;
+    }
+    sel.dataset.prev = sel.value;
+    try { localStorage.setItem("cutebot-charts", sel.value); } catch (e) { /* ignore */ }
+    addMessage("bot", richText({
+      labels: "📊 I'll read chart **titles and labels** only. Instant and private.",
+      local: `📊 I'll **look at chart pictures on this computer** (${vision.local}). Private, but each chart takes a little while.`,
+      cloud: `📊 I'll **look at chart pictures in the cloud** (${vision.cloud}). Faster; only the chart pictures leave this computer.`,
+    }[sel.value]));
+  });
+}
+
 /* ---------- memory (consent) ---------- */
 const rememberBox = $("#remember");
 try { rememberBox.checked = localStorage.getItem("cutebot-remember") === "1"; } catch (e) { /* private mode */ }
@@ -663,7 +694,7 @@ $("#new-chat").addEventListener("click", async () => {
   hop("Fresh start! ✨");
 });
 
-fetch("/api/info").then((r) => r.json()).then((info) => { connected = info.connected; })
+fetch("/api/info").then((r) => r.json()).then((info) => { connected = info.connected; setupCharts(info.vision || {}); })
   .catch(() => {}).finally(() => welcome());
 requestAnimationFrame(() => { placeAt(homeSpot()); say("Hi, I'm CuteBot! 👋", 3500); });
 </script>

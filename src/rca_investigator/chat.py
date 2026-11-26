@@ -44,7 +44,7 @@ STAGE_OF_STEP = {
     "records": "polish", "records_done": "polish",
     "model": "think", "model_done": "think", "fact_check": "think",
     "judge": "weigh", "judge_done": "weigh",
-    "doc_read": "collect", "doc_facts": "polish",
+    "doc_read": "collect", "doc_facts": "polish", "doc_chart": "polish",
 }
 INVESTIGATIVE = re.compile(r"\b(why|cause[ds]?|wrong|happen\w*|investigat\w*|analy[sz]\w*|"
                            r"explain|root|what went|look (into|again))\b", re.IGNORECASE)
@@ -121,6 +121,7 @@ class Session:
     recent_replies: deque = field(default_factory=lambda: deque(maxlen=30))
     case_path: Path | None = None  # this investigation's case note, if memory is on
     remember: bool = False  # the user's consent to keep case notes
+    charts: str = "labels"  # how to read charts: "labels", "local" or "cloud" (user's choice)
 
     def add_document(self, doc: Document) -> None:
         self.documents.append(doc)
@@ -318,8 +319,9 @@ def _followup_prompt(report: RCAReport, question: str) -> str:
 
 class Conversation:
     def __init__(self, client_factory: Callable[[bool], ChatClient | None], catalog=None,
-                 memory: CaseNotes | None = None):
+                 memory: CaseNotes | None = None, vision: dict | None = None):
         self.client_factory = client_factory
+        self.vision = vision or {}
         self.catalog = catalog
         self.memory = memory
 
@@ -365,8 +367,9 @@ class Conversation:
         return summary_for(session.report, style) if session.report else None
 
     def respond(self, session: Session, message: str, use_llm: bool, emit: Emit,
-                remember: bool = False) -> None:
+                remember: bool = False, charts: str = "labels") -> None:
         message = message.strip()
+        session.charts = charts
         session.remember = remember
         if session.report is not None and len(message) < 500 and CORRECTION.search(message):
             self._correction(session, message, remember, emit)
@@ -445,7 +448,7 @@ class Conversation:
             emit("stage", {"stage": STAGE_OF_STEP.get(step, "think"), "text": text})
 
         report = investigate_documents(question, session.documents, self.client_factory(use_llm),
-                                       on_step)
+                                       on_step, vision=self.vision.get(session.charts))
         session.report, session.mode, session.changed = report, "documents", False
         emit("stage", {"stage": "back", "text": "Coming back with the answer!"})
         emit("report", {"report": report.model_dump(mode="json"), "chart": None, "style": style})
