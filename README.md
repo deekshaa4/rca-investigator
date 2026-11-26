@@ -4,7 +4,14 @@
 
 Most AI assistants tell you *what* went wrong. RCA Investigator works like an investigator: it finds **what changed**, works out **why it happened**, shows **the evidence** behind every finding, says honestly whether that evidence is **enough to be sure**, and recommends **how to prevent it** from happening again.
 
-> Status: **v0.1**, a working end-to-end investigator (week 1 of a 2-week build). See the [roadmap](docs/ROADMAP.md).
+![CuteBot presenting a report: a chart of the error rate with the change point, the verdict and what changed](docs/screenshot.jpg)
+
+**Two ways to use it**
+
+- **Chat and upload**: open the web page, drop in files (CSV, Excel, PDF, Word, logs) or paste notes, and ask what went wrong. Made for anyone, technical or not.
+- **Install and connect**: point it at your own database or folder of exports (read-only). CuteBot, the investigator, finds the right tables and time window by itself.
+
+> Status: **v1.0**. See the [roadmap](docs/ROADMAP.md) and [how to contribute](CONTRIBUTING.md).
 
 ## What it does
 
@@ -15,6 +22,7 @@ Given numerical data (metrics over time) and text records (logs, tickets, deploy
 3. **Cites evidence**: every claim points to a numbered piece of evidence (`E1`, `E2`, ...). Claims without evidence are rejected.
 4. **Judges sufficiency**: returns a verdict of `sufficient`, `partial` or `insufficient`, with reasons and the data that would settle open questions.
 5. **Recommends actions**: corrective and preventive actions linked to each contributing factor.
+6. **Explains for every reader**: a data-nerd version, a straight answer, or an explain-like-I'm-5 story, with a chart and a downloadable report.
 
 ## Design principles
 
@@ -26,11 +34,11 @@ Given numerical data (metrics over time) and text records (logs, tickets, deploy
 ## How it works
 
 ```
- metrics.csv ──► Numerical engine ──┐
-                 (change points,      │
-                  segment drill-down) ├─► Evidence pack ─► LLM investigator ─► Sufficiency check ─► RCA report
- records.jsonl ─► Text engine ───────┘   (numbered IDs)
-                 (search, timeline)
+ uploads, pasted text,      ┌─► Numerical engine ──┐
+ or a connected database ──►│   (change points,     │
+ (read-only)                 │    segment drill-down)├─► Evidence pack ─► LLM investigator ─► Sufficiency check ─► RCA report
+        Ingest: find time,   └─► Text engine ───────┘   (numbered IDs)     + guardrails        (rules, not the LLM)   + chart, 3 styles
+        numbers and records       (search, timeline)
 ```
 
 The report format is defined in [`src/rca_investigator/schema.py`](src/rca_investigator/schema.py) and exported as a JSON Schema in [`schemas/rca_report.schema.json`](schemas/rca_report.schema.json). An example report is in [`examples/example_report.json`](examples/example_report.json).

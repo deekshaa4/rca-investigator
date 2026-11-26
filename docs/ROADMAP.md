@@ -11,7 +11,7 @@ A focused 2-week build, using only free and open tools.
 - [x] LLM investigator: evidence pack in, structured cited report out
 - [x] Command-line interface: `rca investigate <incident>`
 
-## Week 2: trust and presentation (v1.0)
+## Week 2: trust and presentation (v1.0) ✅
 
 - [x] Evidence sufficiency check: timing match, agreement between numbers and records, ruled-out alternatives, data gaps
 - [x] Harder incidents: noise, red herrings, overlapping changes, missing records
@@ -20,7 +20,7 @@ A focused 2-week build, using only free and open tools.
 - [x] Chat web page: upload files or paste data, ask questions, CuteBot roams the page showing each stage, then presents the report and answers follow-ups
 - [x] Connect to databases and folders (read-only), with automatic table discovery
 - [x] Explanations for every reader (data nerd, straight answer, like I'm 5), chart, report download
-- [ ] Documentation, examples and v1.0 release
+- [x] Documentation, examples and v1.0 release
 
 ## Later
 
