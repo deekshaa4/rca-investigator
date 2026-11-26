@@ -134,3 +134,11 @@ def test_competing_change_is_named():
     assert len(report.contributing_factors) == 2
     assert "Competing change" in report.contributing_factors[1].description
     assert score_report(report, inc.truth)["cause_named"]
+
+
+def test_leftover_notes_are_not_why_steps():
+    from rca_investigator.investigate import _real_step
+
+    assert _real_step("The new release had a bug.")
+    assert not _real_step("evidence_ids: [E4, E5]")
+    assert not _real_step("reasoning_for_confidence_0.9: clear evidence")

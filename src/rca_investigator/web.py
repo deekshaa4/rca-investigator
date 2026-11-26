@@ -17,13 +17,14 @@ import re
 import threading
 from collections import OrderedDict
 from collections.abc import Callable, Iterator
-from pathlib import Path
+from pathlib import Path, PurePath
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from .chat import Conversation, Session
+from .documents import DOC_TYPES, load_document
 from .ingest import IngestError, read_file
 from .investigate import ChatClient, to_markdown
 from .llm import DEFAULT_MODEL, OllamaClient
@@ -111,13 +112,35 @@ def create_app(model: str = DEFAULT_MODEL,
             data = base64.b64decode(body.data_base64, validate=True)
         except binascii.Error as exc:
             raise HTTPException(400, "The file didn't arrive in one piece. Please try again.") from exc
+        doc, doc_error = None, None
+        if PurePath(body.name).suffix.lower() in DOC_TYPES:
+            try:
+                doc = load_document(body.name, data)
+            except IngestError as exc:
+                doc_error = exc
         try:
             parsed = read_file(body.name, data, session.known())
         except IngestError as exc:
-            raise HTTPException(400, str(exc)) from exc
-        session.add(parsed)
-        session.uploaded = True
-        return {"summary": parsed.summary, "has_numbers": session.metrics is not None}
+            if doc is None:
+                raise HTTPException(400, str(doc_error or exc)) from exc
+            parsed = None
+        parts = []
+        if doc is not None:
+            session.add_document(doc)
+            parts.append(f"I'll read all of it ({doc.pages} page(s), {doc.words:,} words) when "
+                         "you ask me what happened.")
+        if parsed is not None and (parsed.metrics is not None or parsed.records):
+            session.add(parsed)
+            session.uploaded = True
+            parts.append(f"I also found {parsed.summary[0].lower()}{parsed.summary[1:]}")
+        elif parsed is not None:
+            parts.append(parsed.summary)
+        if session.metrics is None and not session.documents:
+            parts.append("I still need a table of numbers or a document to read.")
+        else:
+            parts.append("Ask me what went wrong whenever you're ready!")
+        return {"summary": " ".join(parts), "has_numbers": session.metrics is not None,
+                "message": f"Got **{body.name}**. " + "\n".join(parts)}
 
     @app.post("/api/sample")
     def sample(body: SessionOnly) -> dict:

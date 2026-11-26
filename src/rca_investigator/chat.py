@@ -20,6 +20,12 @@ from dataclasses import dataclass, field
 import pandas as pd
 
 from .analyze import _aggregate, _select, analyze_change, label, metric_columns
+from .documents import (
+    Document,
+    answer_from_documents,
+    document_from_text,
+    investigate_documents,
+)
 from .ingest import IngestError, Parsed, _looks_like_table, read_text, text_to_records
 from .investigate import ChatClient, investigate
 from .llm import LLMError
@@ -34,7 +40,13 @@ STAGE_OF_STEP = {
     "records": "polish", "records_done": "polish",
     "model": "think", "model_done": "think", "fact_check": "think",
     "judge": "weigh", "judge_done": "weigh",
+    "doc_read": "collect", "doc_facts": "polish",
 }
+PASTE_DOC_CHARS = 400  # longer messages are treated as a document to read
+GREETING = re.compile(r"^\s*(hi|hello|hey|thanks|thank you|ok|okay|cool|great)\b[\s!.?]*$", re.IGNORECASE)
+GENERAL_SYSTEM = """You are CuteBot, a friendly root cause analysis assistant. The user has not
+shared any data, so answer from general knowledge in at most 5 sentences, then suggest what
+they could share (documents, notes, logs or numbers) for a proper investigation."""
 RERUN = re.compile(r"investigat|again|re-?run|start over|analy[sz]e|check (it|this|now)", re.IGNORECASE)
 QUESTION_START = re.compile(r"^\s*(why|what|how|when|where|which|who|is|are|did|does|can|could)\b",
                             re.IGNORECASE)
@@ -94,6 +106,14 @@ class Session:
     uploaded: bool = False  # the user shared data themselves (uploads take priority)
     style: str | None = None
     style_chosen: bool = False  # picked by the user, so don't re-detect
+    documents: list[Document] = field(default_factory=list)
+    mode: str = "numbers"  # what the last report was based on: "numbers" or "documents"
+    last_shared: str = "data"  # "documents" when the latest thing shared was a document
+
+    def add_document(self, doc: Document) -> None:
+        self.documents.append(doc)
+        self.changed = True
+        self.last_shared = "documents"
 
     def known(self) -> dict[str, set[str]]:
         if self.metrics is None:
@@ -112,6 +132,8 @@ class Session:
             merged = sorted([*self.records, *parsed.records], key=lambda r: r["timestamp"])
             self.records = [{**r, "id": f"R{i:03d}"} for i, r in enumerate(merged, start=1)]
         self.changed = True
+        if parsed.metrics is not None:
+            self.last_shared = "data"
 
 
 def choose_metric(metrics: pd.DataFrame, message: str) -> str:
@@ -155,6 +177,8 @@ def _where(report: RCAReport) -> str:
 
 def summary_for(report: RCAReport, style: str = "simple") -> str:
     """The short answer under the report, written for the reader."""
+    if report.what_changed is None and report.summary:
+        return _document_summary(report, style)
     v = report.sufficiency.verdict.value
     wc = report.what_changed
     top = report.contributing_factors[0] if report.contributing_factors else None
@@ -206,6 +230,47 @@ def summary_for(report: RCAReport, style: str = "simple") -> str:
     if report.sufficiency.missing_data:
         lines.append("More data that would help: " + "; ".join(report.sufficiency.missing_data))
     lines.append("Ask me anything about it, or share more data and I'll look again.")
+    return "\n".join(lines)
+
+
+def _document_summary(report: RCAReport, style: str) -> str:
+    v = report.sufficiency.verdict.value
+    top = report.contributing_factors[0] if report.contributing_factors else None
+    fix = report.actions[0].action if report.actions else None
+    if style == "nerd":
+        lines = [f"**Verdict: {v}** (score {report.sufficiency.score:.2f}, documents only).",
+                 f"What happened: {report.summary}"]
+        lines += [f"{f.rank}. {f.description} [{f.category.value}, {f.confidence:.0%}; "
+                  f"{', '.join(f.evidence_ids)}]" for f in report.contributing_factors]
+        lines += [r for r in report.sufficiency.reasons if r.startswith("✗")]
+        g = report.guardrails
+        if g and g.quotes_checked:
+            lines.append(f"Quote check: {g.quotes_rejected}/{g.quotes_checked} model quotes "
+                         "not found in the text and removed.")
+        return "\n".join(lines)
+    if style == "kid":
+        sure = {"sufficient": "I'm really sure! 🎯",
+                "partial": "I'm a little bit sure. 🤔",
+                "insufficient": "The story doesn't say for sure, so this is a guess. 🔍"}[v]
+        lines = [f"Here's the story: {report.summary} 📖"]
+        if top:
+            lines.append(f"Why? *{top.description}* That's what started the trouble, like "
+                         "the first domino that knocks the others over. 🁢")
+        lines.append(sure)
+        if fix:
+            lines.append(f"To make it better: {fix} 🩹")
+        return "\n".join(lines)
+    opener = {"sufficient": "I'm sure about this one!",
+              "partial": "I'm partly sure: the documents don't settle it completely.",
+              "insufficient": "The documents don't say clearly what caused it."}[v]
+    lines = [opener, f"What happened: {report.summary}"]
+    if top:
+        lines.append(f"{'Main cause' if v != 'insufficient' else 'Best lead'}: {top.description}")
+    if fix:
+        lines.append(f"What to do first: {fix}")
+    if report.sufficiency.missing_data:
+        lines.append("More that would help: " + "; ".join(report.sufficiency.missing_data))
+    lines.append("Ask me anything about the documents, or share more and I'll look again.")
     return "\n".join(lines)
 
 
@@ -275,9 +340,21 @@ class Conversation:
             emit("stage", {"stage": "collect", "text": "Collecting the evidence you pasted..."})
             emit("say", {"text": f"Got it! I picked up {pasted.summary} from your message."})
 
+        if len(message) >= PASTE_DOC_CHARS and not _looks_like_table(message):
+            session.add_document(document_from_text(
+                f"pasted text {len(session.documents) + 1}", message))
+            emit("say", {"text": f"Thanks! I'll read the text you pasted "
+                                 f"({len(message.split())} words) carefully."})
+
         connected = bool(self.catalog) and not (session.uploaded and session.metrics is not None)
+        if session.documents and (session.last_shared == "documents"
+                                  or (session.metrics is None and not connected)):
+            self._documents(session, message, use_llm, emit)
+            return
         if session.metrics is None and not connected:
-            if pasted is not None:
+            if pasted is None and message and not GREETING.match(message) and len(message) > 12:
+                self._general(message, use_llm, emit)
+            elif pasted is not None:
                 emit("say", {"text": "I've kept those clues. Now I need the numbers: click ➕ "
                                      "and upload a table (CSV, Excel or PDF) with a time column "
                                      "and the measure that went wrong."})
@@ -298,6 +375,47 @@ class Conversation:
             self._investigate(session, message, use_llm, emit)
         elif message:
             self._follow_up(session, message, use_llm, emit)
+
+    def _documents(self, session: Session, message: str, use_llm: bool, emit: Emit) -> None:
+        """Investigate the shared documents, or answer a question about them."""
+        style = session.style or "simple"
+        rerun = session.report is None or session.mode != "documents" or session.changed \
+            or bool(RERUN.search(message))
+        if not rerun and message:
+            emit("stage", {"stage": "think", "text": "Looking through the documents..."})
+            answer = answer_from_documents(message, session.documents,
+                                           self.client_factory(use_llm), STYLE_INSTRUCTION[style])
+            emit("stage", {"stage": "back", "text": "Here you go!"})
+            emit("say", {"text": answer})
+            return
+        asked = [q.strip() for q in re.findall(r"[^.!?\n]*\?", message)]
+        question = (asked[-1] if asked else message if 0 < len(message) < 300
+                    else "What happened, and what caused it?")
+
+        def on_step(step: str, text: str) -> None:
+            emit("stage", {"stage": STAGE_OF_STEP.get(step, "think"), "text": text})
+
+        report = investigate_documents(question, session.documents, self.client_factory(use_llm),
+                                       on_step)
+        session.report, session.mode, session.changed = report, "documents", False
+        emit("stage", {"stage": "back", "text": "Coming back with the answer!"})
+        emit("report", {"report": report.model_dump(mode="json"), "chart": None, "style": style})
+        emit("say", {"text": summary_for(report, style), "summary": True})
+
+    def _general(self, message: str, use_llm: bool, emit: Emit) -> None:
+        """No data shared yet: answer from general knowledge, clearly labelled."""
+        client = self.client_factory(use_llm)
+        if client is None or not hasattr(client, "chat"):
+            emit("say", {"text": HELP})
+            return
+        emit("stage", {"stage": "think", "text": "Thinking..."})
+        try:
+            answer = client.chat(message, system=GENERAL_SYSTEM, temperature=0.3).strip()
+        except LLMError:
+            emit("say", {"text": HELP})
+            return
+        emit("stage", {"stage": "back", "text": "Here you go!"})
+        emit("say", {"text": "*From general knowledge, not from your data:*\n" + answer})
 
     def _gather(self, session: Session, message: str, emit: Emit) -> bool:
         emit("stage", {"stage": "collect", "text": "Looking through your connected data..."})
@@ -328,6 +446,7 @@ class Conversation:
                                   "use my maths helpers only.")
             report = investigate(*args, None, on_step=on_step)
         session.report, session.metric, session.changed = report, metric, False
+        session.mode = "numbers"
         emit("stage", {"stage": "back", "text": "Coming back with the answer!"})
         emit("report", {"report": report.model_dump(mode="json"),
                         "chart": chart_data(session.metrics, report),

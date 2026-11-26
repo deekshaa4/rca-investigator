@@ -82,6 +82,18 @@ A chat page where anyone can investigate **their own data**:
 
 Everything runs on your own computer: uploads are kept in memory for the session only, and the model runs locally.
 
+### Documents and any topic
+
+Not every incident comes with numbers. Upload an incident write-up, emails or meeting notes (PDF, Word, text), or paste the story into the chat, and CuteBot investigates the text itself, on any topic (software, deliveries, operations, ...):
+
+1. **Every part is read.** The document is split into pieces (pages, then sections) and every piece is scanned for sentences describing causes, symptoms, events and actions.
+2. **The most relevant pieces are read closely** by the language model, which writes down each fact with an **exact quote**.
+3. **Quote check:** a fact is kept only if its quote really appears in the document, so the model cannot invent evidence.
+4. The model tells the story from the numbered facts; **rules** judge whether the documents are enough: is a cause actually stated, is it backed by more than one passage, are other causes suggested, is there a timeline?
+5. **Follow-up questions** ("was it staff shortages?") are answered from the most relevant passages, with page references.
+
+With no data at all, CuteBot can still answer general questions, clearly labelled *from general knowledge, not from your data*.
+
 ### Connect it to your own data
 
 Install it next to your data and point it at a database or a folder. CuteBot explores the data itself: it samples every table, works out which ones hold numbers over time and which hold records (deploys, config changes, alerts, tickets, logs), and when you ask a question it picks the right table and loads only the time window the question is about.
@@ -235,6 +247,7 @@ src/rca_investigator/
   evaluate.py   scores reports against the known truth
   ingest.py     reads uploaded files and pasted text into the engines' format
   chat.py       the conversation: collect data, investigate, answer follow-ups
+  documents.py  document mode: read every part, quote-checked facts, document rules
   sources.py    read-only connections to databases and folders, table discovery
   demo.py       demo company database (`rca demo-db`)
   web.py        chat page server: uploads and live progress (`rca serve`)

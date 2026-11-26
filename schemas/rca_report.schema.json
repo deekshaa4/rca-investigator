@@ -185,7 +185,8 @@
     "EvidenceKind": {
       "enum": [
         "metric",
-        "record"
+        "record",
+        "document"
       ],
       "title": "EvidenceKind",
       "type": "string"
@@ -237,6 +238,20 @@
           "description": "The main factor came from the engines, not the model",
           "title": "Engine Fallback",
           "type": "boolean"
+        },
+        "quotes_checked": {
+          "default": 0,
+          "description": "Document quotes checked",
+          "minimum": 0,
+          "title": "Quotes Checked",
+          "type": "integer"
+        },
+        "quotes_rejected": {
+          "default": 0,
+          "description": "Quotes not found word for word in the document (removed)",
+          "minimum": 0,
+          "title": "Quotes Rejected",
+          "type": "integer"
         },
         "engine_override": {
           "default": false,
@@ -357,6 +372,18 @@
         }
       ],
       "default": null
+    },
+    "summary": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Summary"
     },
     "contributing_factors": {
       "items": {

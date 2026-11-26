@@ -19,6 +19,7 @@ EVIDENCE_ID_PATTERN = r"^E\d+$"
 class EvidenceKind(str, Enum):
     METRIC = "metric"  # a finding from the numerical data
     RECORD = "record"  # a log line, ticket, deploy note or other text record
+    DOCUMENT = "document"  # an exact quote from an uploaded document or pasted text
 
 
 class FactorCategory(str, Enum):
@@ -115,6 +116,10 @@ class Guardrails(BaseModel):
     engine_fallback: bool = Field(
         default=False, description="The main factor came from the engines, not the model"
     )
+    quotes_checked: int = Field(default=0, ge=0, description="Document quotes checked")
+    quotes_rejected: int = Field(
+        default=0, ge=0, description="Quotes not found word for word in the document (removed)"
+    )
     engine_override: bool = Field(
         default=False,
         description="A model factor resting on a change that is too early or in another "
@@ -130,6 +135,7 @@ class RCAReport(BaseModel):
     incident_id: str
     question: str
     what_changed: ChangeSummary | None = None  # None when no significant change was found
+    summary: str | None = None  # what happened, in plain words (document investigations)
     contributing_factors: list[ContributingFactor]
     ruled_out: list[RuledOutHypothesis] = Field(default_factory=list)
     evidence: list[Evidence] = Field(min_length=1)

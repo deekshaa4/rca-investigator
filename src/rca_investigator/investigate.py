@@ -15,6 +15,7 @@ Division of work, so that a small local model is enough:
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable
 from typing import Any, Protocol
 
@@ -157,6 +158,12 @@ def build_prompt(question: str, evidence: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def _real_step(step) -> bool:
+    """A "why" step written for people, not leftovers like 'evidence_ids: [E1]'."""
+    return isinstance(step, str) and len(step.strip()) > 3 and not re.match(
+        r"^\s*[\w]+_[\w.]+\s*:|^\s*(evidence|confidence|category)\w*\s*:", step, re.IGNORECASE)
+
+
 def _clean(reply: dict, evidence: list[dict]
            ) -> tuple[list[dict], list[dict], list[dict], dict]:
     """Guardrails: keep only claims backed by real evidence IDs, and count what was removed."""
@@ -187,7 +194,7 @@ def _clean(reply: dict, evidence: list[dict]
             "description": f["description"],
             "category": category,
             "confidence": min(1.0, max(0.0, float(f.get("confidence", 0.5)))),
-            "why_chain": [s for s in f.get("why_chain", []) if s][:5],
+            "why_chain": [s for s in f.get("why_chain", []) if _real_step(s)][:5],
             "evidence_ids": ids,
         })
     ruled_out = [

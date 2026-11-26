@@ -263,9 +263,9 @@ function welcome() {
   }
   const b = addMessage("bot", richText(
     "Hi! I'm **CuteBot**, your root cause detective. 🕵️\n" +
-    "Click ➕ to upload your files: a **table of numbers** (CSV, Excel or PDF with a time column and measures like error rate) and any " +
-    "**records** (deploys, setting changes, alerts, tickets, logs with dates, as CSV, PDF, Word or text). You can also paste them here.\n" +
-    "Then ask me what went wrong, e.g. *Why did the error rate go up on Tuesday?*"));
+    "Click ➕ to share **anything about the problem**: an incident write-up, emails or notes (PDF, Word, text), " +
+    "a **table of numbers** (CSV or Excel), or logs and change records. Or just paste the text here.\n" +
+    "Then ask me what went wrong, e.g. *What caused the checkout outage?* I'll read every part and show you the proof."));
   b.insertAdjacentHTML("beforeend", `<div class="actions-row">
     <button type="button" data-act="sample">Try a sample</button>
     <a href="/api/sample-file/metrics.csv">Example table (CSV)</a>
@@ -314,9 +314,7 @@ async function uploadFiles(fileList) {
     roam("collect", `Reading ${file.name}`);
     try {
       const r = await post("/api/upload", { session: sessionId, name: file.name, data_base64: await toBase64(file) });
-      let reply = `Got **${file.name}**. ${r.summary}`;
-      if (!r.has_numbers) reply += "\nI still need a table of numbers to see what changed.";
-      else reply += "\nAsk me what went wrong whenever you're ready!";
+      const reply = r.message || `Got **${file.name}**. ${r.summary}`;
       addMessage("bot", `<div class="file-note">${richText(reply)}</div>`);
       home("Yum, data! 😋");
     } catch (err) {
@@ -488,7 +486,8 @@ function reportHtml(r, style = "simple") {
     <ul class="reasons">${r.sufficiency.reasons.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
     ${r.sufficiency.missing_data.length ? `<p class="meta">Data that would help: ${esc(r.sufficiency.missing_data.join("; "))}</p>` : ""}`, `v-${v}`);
   const wc = r.what_changed;
-  card(`<h3>What changed</h3>${wc ? `<p>${esc(nice(wc.metric))} in <strong>${esc(Object.values(wc.segment).filter((x) => x !== "all").join(", ") || "everything")}</strong>
+  if (!wc && r.summary) card(`<h3>What happened</h3><p>${esc(r.summary)}</p>`);
+  else card(`<h3>What changed</h3>${wc ? `<p>${esc(nice(wc.metric))} in <strong>${esc(Object.values(wc.segment).filter((x) => x !== "all").join(", ") || "everything")}</strong>
     went from ${+wc.baseline_value.toPrecision(3)} to ${+wc.current_value.toPrecision(3)}
     (<strong>${wc.relative_change >= 0 ? "+" : ""}${Math.round(wc.relative_change * 100)}%</strong>)
     at ${esc(wc.change_start.slice(11, 16))} on ${esc(wc.change_start.slice(0, 10))}.</p><p>${chips(wc.evidence_ids, byId)}</p>`
@@ -505,6 +504,7 @@ function reportHtml(r, style = "simple") {
     `<li><span class="meta">${esc(a.type)} · ${esc(a.priority)}</span><br>${esc(a.action)}</li>`).join("")}</ul>`);
   const g = r.guardrails;
   if (g && g.model_used) card(`<h3>Fact-check</h3><ul>
+    ${g.quotes_checked ? `<li>Quotes checked against the document: ${g.quotes_checked}; not found and removed: ${g.quotes_rejected}</li>` : ""}
     <li>Clue numbers cited: ${g.ids_cited}; invented and removed: ${g.ids_invented}</li>
     <li>Unsupported causes dropped: ${g.factors_dropped}</li>
     ${g.engine_override ? "<li>The maths helpers overruled a cause that didn't fit.</li>" : ""}
@@ -513,7 +513,7 @@ function reportHtml(r, style = "simple") {
     `<li><span class="chip">${esc(e.id)}</span>${esc(e.summary)}</li>`).join("")}</ul></details>`, "wide");
   if (style === "nerd") return `<div class="cards">${out.join("")}</div>`;
   if (style === "kid") return `<details class="more"><summary>Show the grown-up details</summary><div class="cards">${out.join("")}</div></details>`;
-  const keep = out.filter((c) => /<h3>(Verdict|What changed|Why it happened|Possible leads|What to do)/.test(c));
+  const keep = out.filter((c) => /<h3>(Verdict|What changed|What happened|Why it happened|Possible leads|What to do)/.test(c));
   const rest = out.filter((c) => !keep.includes(c));
   return `<div class="cards">${keep.join("")}</div>` +
     (rest.length ? `<details class="more"><summary>More details</summary><div class="cards">${rest.join("")}</div></details>` : "");

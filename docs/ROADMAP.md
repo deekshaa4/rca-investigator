@@ -22,6 +22,12 @@ A focused 2-week build, using only free and open tools.
 - [x] Explanations for every reader (data nerd, straight answer, like I'm 5), chart, report download
 - [x] Documentation, examples and v1.0 release
 
+## Version 2: understands any document
+
+- [x] Document mode: write-ups, emails, notes or pasted text on any topic, with quote-checked evidence and document rules
+- [ ] Charts and scanned pages inside PDFs
+- [ ] Case notes: consent-based local memory of past investigations that learns from corrections
+
 ## Later
 
 - Fine-tune a small open model (LoRA) on investigation examples and compare with the base model
