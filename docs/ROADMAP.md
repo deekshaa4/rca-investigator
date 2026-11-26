@@ -18,6 +18,8 @@ A focused 2-week build, using only free and open tools.
 - [x] Evaluation: `rca evaluate` with verdict, segment, category and cause-citation accuracy, invented-evidence rate, and breakdowns by scenario and twist
 - [x] Better choice of cause on red herrings and competing changes (fit notes, engine overrule, naming all equally good candidates)
 - [x] Chat web page: upload files or paste data, ask questions, CuteBot roams the page showing each stage, then presents the report and answers follow-ups
+- [x] Connect to databases and folders (read-only), with automatic table discovery
+- [x] Explanations for every reader (data nerd, straight answer, like I'm 5), chart, report download
 - [ ] Documentation, examples and v1.0 release
 
 ## Later

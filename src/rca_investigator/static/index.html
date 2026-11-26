@@ -85,6 +85,30 @@ header h1 span { color: var(--muted); font-weight: 400; }
   border-radius: 999px; background: var(--accent-soft); color: var(--accent); cursor: help; }
 details summary { cursor: pointer; font-size: .9rem; font-weight: 600; }
 
+/* Explanation styles, chart, printing */
+.style-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+.style-btn { border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 999px;
+  padding: 3px 10px; font-size: .8rem; }
+.style-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chart { margin: 0 0 10px; background: var(--bg); border-radius: 12px; padding: 10px 12px 4px; }
+.chart figcaption { font-size: .85rem; margin-bottom: 4px; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart .axis { font-size: 10px; fill: var(--muted); }
+.chart .marker { cursor: help; }
+details.more { margin-top: 8px; }
+.report { width: 100%; }
+@media print {
+  html, body { height: auto; }
+  body { display: block; background: #fff; }
+  #messages { overflow: visible; }
+  body * { visibility: hidden; }
+  .print-me, .print-me * { visibility: visible; }
+  .print-me { box-shadow: none !important; }
+  .print-me .style-row, .print-me .actions-row { display: none; }
+  #cutebot, header, .composer-wrap { display: none; }
+  .card { opacity: 1 !important; transform: none !important; animation: none !important; }
+}
+
 /* Composer */
 .composer-wrap { padding: 10px 16px 16px; background: linear-gradient(transparent, var(--bg) 30%); }
 .composer { max-width: 760px; margin: 0 auto; display: flex; align-items: flex-end; gap: 8px;
@@ -229,7 +253,14 @@ function addMessage(who, html) {
   return row.querySelector(".bubble");
 }
 
+let connected = null;
 function welcome() {
+  if (connected) {
+    const c = addMessage("bot", richText(`Hi! I'm **CuteBot**, your root cause detective. 🕵️\n${connected}\n` +
+      "Just ask me what happened, e.g. *Why did the error rate go up on 26 March?* I'll find the right tables and the right time myself. " +
+      "You can still upload or paste extra files with ➕."));
+    return c;
+  }
   const b = addMessage("bot", richText(
     "Hi! I'm **CuteBot**, your root cause detective. 🕵️\n" +
     "Click ➕ to upload your files: a **table of numbers** (CSV, Excel or PDF with a time column and measures like error rate) and any " +
@@ -345,9 +376,12 @@ async function send(text) {
           roam(data.stage, data.text);
         } else if (event === "report") {
           tracker?.finish();
-          addMessage("bot", reportHtml(data));
+          showReport(data);
+        } else if (event === "style") {
+          currentStyle = data.style;
         } else if (event === "say") {
-          addMessage("bot", richText(data.text));
+          const el = addMessage("bot", richText(data.text));
+          if (data.summary) { lastSummary = el; el.classList.add("summary"); }
         } else if (event === "error") {
           addMessage("bot", `<p class="error-text">${esc(data.message)}</p>`);
         }
@@ -367,7 +401,81 @@ async function send(text) {
 function chips(ids, byId) {
   return ids.map((id) => `<span class="chip" title="${esc(byId[id]?.summary)}">${esc(id)}</span>`).join("");
 }
-function reportHtml(r) {
+let currentStyle = "simple";
+let lastReport = null;
+let lastSummary = null;
+const STYLE_NAMES = { nerd: "🤓 Data nerd", simple: "🙂 Straight answer", kid: "🧸 Like I'm 5" };
+
+function showReport(data) {
+  const bubble = addMessage("bot", "");
+  bubble.classList.add("report");
+  lastReport = { ...data, el: bubble };
+  currentStyle = data.style || currentStyle;
+  renderReport();
+}
+function renderReport() {
+  const { report, chart, el } = lastReport;
+  el.innerHTML = `<div class="style-row" role="group" aria-label="How should I explain it?">
+      <span class="meta">Explain it as:</span>${Object.entries(STYLE_NAMES).map(([k, n]) =>
+        `<button type="button" class="style-btn${k === currentStyle ? " on" : ""}" data-style="${k}">${n}</button>`).join("")}</div>
+    ${chart ? chartSvg(chart) : ""}
+    ${reportHtml(report, currentStyle)}
+    <div class="actions-row">
+      <a href="/api/report/${sessionId}.md" download>⬇️ Download report</a>
+      <button type="button" data-act="print">🖨️ Print or save as PDF</button></div>`;
+  el.querySelectorAll(".style-btn").forEach((b) => b.addEventListener("click", () => chooseStyle(b.dataset.style)));
+  el.querySelector('[data-act="print"]').addEventListener("click", () => printReport(el));
+}
+async function chooseStyle(style) {
+  if (busy || style === currentStyle) return;
+  currentStyle = style;
+  renderReport();
+  try {
+    const r = await post("/api/style", { session: sessionId, style });
+    if (r.summary && lastSummary) lastSummary.innerHTML = richText(r.summary);
+  } catch (err) { /* the cards are already updated */ }
+  hop({ nerd: "Nerd mode on! 🤓", simple: "Keeping it simple 🙂", kid: "Story time! 🧸" }[style]);
+}
+function printReport(el) {
+  el.querySelectorAll("details").forEach((d) => { d.open = true; });
+  if (lastSummary) lastSummary.classList.add("print-me");
+  el.classList.add("print-me");
+  window.print();
+  document.querySelectorAll(".print-me").forEach((x) => x.classList.remove("print-me"));
+}
+
+function chartSvg(c) {
+  const W = 640, H = 190, L = 44, R = 10, T = 14, B = 30;
+  const t = c.times.map((x) => Date.parse(x));
+  const t0 = Math.min(...t), t1 = Math.max(...t);
+  const vmax = Math.max(...c.values) * 1.08 || 1, vmin = Math.min(0, Math.min(...c.values));
+  const x = (ms) => L + (W - L - R) * (ms - t0) / Math.max(1, t1 - t0);
+  const y = (v) => T + (H - T - B) * (1 - (v - vmin) / (vmax - vmin));
+  const pts = c.values.map((v, i) => `${x(t[i]).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const cx = x(Date.parse(c.change));
+  const fmt = (v) => Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 1 ? v.toFixed(1) : v.toPrecision(2);
+  const colour = { deploys: "var(--bot-red)", config_changes: "#e8a33d", alerts: "#9b6dd6", tickets: "#3aa57a", logs: "var(--muted)" };
+  const markers = c.markers.filter((m) => { const ms = Date.parse(m.time); return ms >= t0 && ms <= t1; })
+    .map((m) => { const mx = x(Date.parse(m.time)).toFixed(1);
+      return `<g class="marker"><title>${esc(m.id)} · ${esc(m.source.replace("_", " "))}: ${esc(m.text)}</title>
+        <line x1="${mx}" x2="${mx}" y1="${H - B}" y2="${H - B + 7}" stroke="${colour[m.source] || "var(--muted)"}" stroke-width="2"/>
+        <circle cx="${mx}" cy="${H - B + 11}" r="4.5" fill="${colour[m.source] || "var(--muted)"}"/></g>`; }).join("");
+  const day = (ms) => new Date(ms).toISOString().slice(5, 16).replace("T", " ");
+  return `<figure class="chart"><figcaption><strong>${esc(c.metric)}</strong> in ${esc(c.where)}
+      <span class="meta">· dashed line = when it changed · dots = clues (hover to read)</span></figcaption>
+    <svg viewBox="0 0 ${W} ${H + 8}" role="img" aria-label="${esc(c.metric)} over time, jumping from ${fmt(c.before)} to ${fmt(c.after)}">
+      <line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" stroke="var(--line)"/>
+      <text x="${L - 6}" y="${y(vmax / 1.08) + 4}" text-anchor="end" class="axis">${fmt(vmax / 1.08)}</text>
+      <text x="${L - 6}" y="${H - B + 4}" text-anchor="end" class="axis">${fmt(vmin)}</text>
+      <text x="${L}" y="${H + 6}" class="axis">${day(t0)}</text>
+      <text x="${W - R}" y="${H + 6}" text-anchor="end" class="axis">${day(t1)}</text>
+      <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linejoin="round"/>
+      <line x1="${cx}" x2="${cx}" y1="${T}" y2="${H - B}" stroke="var(--bot-red)" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="${cx + 4}" y="${T + 10}" class="axis" fill="var(--bot-red)">changed ${day(Date.parse(c.change)).slice(6)}</text>
+      ${markers}</svg></figure>`;
+}
+
+function reportHtml(r, style = "simple") {
   const byId = Object.fromEntries(r.evidence.map((e) => [e.id, e]));
   const v = r.sufficiency.verdict;
   const sure = { sufficient: "I'm sure.", partial: "I'm partly sure.", insufficient: "Not enough clues yet." }[v];
@@ -403,7 +511,12 @@ function reportHtml(r) {
     ${g.rivals_added ? `<li>Competing changes named: ${g.rivals_added}</li>` : ""}</ul>`);
   card(`<details><summary>All ${r.evidence.length} clues</summary><ul>${r.evidence.map((e) =>
     `<li><span class="chip">${esc(e.id)}</span>${esc(e.summary)}</li>`).join("")}</ul></details>`, "wide");
-  return `<div class="cards">${out.join("")}</div>`;
+  if (style === "nerd") return `<div class="cards">${out.join("")}</div>`;
+  if (style === "kid") return `<details class="more"><summary>Show the grown-up details</summary><div class="cards">${out.join("")}</div></details>`;
+  const keep = out.filter((c) => /<h3>(Verdict|What changed|Why it happened|Possible leads|What to do)/.test(c));
+  const rest = out.filter((c) => !keep.includes(c));
+  return `<div class="cards">${keep.join("")}</div>` +
+    (rest.length ? `<details class="more"><summary>More details</summary><div class="cards">${rest.join("")}</div></details>` : "");
 }
 
 /* ---------- CuteBot ---------- */
@@ -525,7 +638,8 @@ $("#new-chat").addEventListener("click", async () => {
   hop("Fresh start! ✨");
 });
 
-welcome();
+fetch("/api/info").then((r) => r.json()).then((info) => { connected = info.connected; })
+  .catch(() => {}).finally(() => welcome());
 requestAnimationFrame(() => { placeAt(homeSpot()); say("Hi, I'm CuteBot! 👋", 3500); });
 </script>
 </body>

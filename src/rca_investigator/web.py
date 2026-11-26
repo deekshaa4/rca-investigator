@@ -25,9 +25,10 @@ from pydantic import BaseModel, Field
 
 from .chat import Conversation, Session
 from .ingest import IngestError, read_file
-from .investigate import ChatClient
+from .investigate import ChatClient, to_markdown
 from .llm import DEFAULT_MODEL, OllamaClient
 from .simulate import generate_incident
+from .sources import Catalog
 
 BOT_NAME = "CuteBot"
 STATIC = Path(__file__).parent / "static"
@@ -65,14 +66,22 @@ def _sample_files() -> dict[str, str]:
     return {"metrics.csv": inc.metrics.to_csv(index=False), "records.csv": "\n".join(lines) + "\n"}
 
 
+class StyleChoice(BaseModel):
+    session: str = Field(pattern=SESSION_ID)
+    style: str = Field(pattern="^(nerd|simple|kid)$")
+
+
 def create_app(model: str = DEFAULT_MODEL,
-               client_factory: Callable[[bool], ChatClient | None] | None = None) -> FastAPI:
+               client_factory: Callable[[bool], ChatClient | None] | None = None,
+               sources: list[str] | None = None) -> FastAPI:
+    """`sources`: databases (SQLite path or SQLAlchemy URL) or folders to connect, read-only."""
     if client_factory is None:
         def client_factory(use_llm: bool) -> ChatClient | None:
             return OllamaClient(model=model) if use_llm else None
 
     app = FastAPI(title="RCA Investigator")
-    conversation = Conversation(client_factory)
+    catalog = Catalog.connect(sources) if sources else None
+    conversation = Conversation(client_factory, catalog)
     sessions: OrderedDict[str, Session] = OrderedDict()
     lock = threading.Lock()
 
@@ -91,7 +100,9 @@ def create_app(model: str = DEFAULT_MODEL,
 
     @app.get("/api/info")
     def info() -> dict:
-        return {"bot_name": BOT_NAME, "model": model}
+        return {"bot_name": BOT_NAME, "model": model,
+                "connected": catalog.summary() if catalog else None,
+                "tables": catalog.describe() if catalog else []}
 
     @app.post("/api/upload")
     def upload(body: Upload) -> dict:
@@ -105,6 +116,7 @@ def create_app(model: str = DEFAULT_MODEL,
         except IngestError as exc:
             raise HTTPException(400, str(exc)) from exc
         session.add(parsed)
+        session.uploaded = True
         return {"summary": parsed.summary, "has_numbers": session.metrics is not None}
 
     @app.post("/api/sample")
@@ -118,6 +130,19 @@ def create_app(model: str = DEFAULT_MODEL,
             raise HTTPException(404, "No such sample file")
         return PlainTextResponse(files[name], media_type="text/csv", headers={
             "Content-Disposition": f'attachment; filename="sample-{re.sub("[^a-z.]", "", name)}"'})
+
+    @app.post("/api/style")
+    def style(body: StyleChoice) -> dict:
+        return {"summary": conversation.set_style(session_for(body.session), body.style)}
+
+    @app.get("/api/report/{sid}.md")
+    def download(sid: str) -> PlainTextResponse:
+        session = sessions.get(sid) if re.match(SESSION_ID, sid) else None
+        if session is None or session.report is None:
+            raise HTTPException(404, "No report yet")
+        return PlainTextResponse(to_markdown(session.report), media_type="text/markdown",
+                                 headers={"Content-Disposition":
+                                          'attachment; filename="rca-report.md"'})
 
     @app.post("/api/reset")
     def reset(body: SessionOnly) -> dict:

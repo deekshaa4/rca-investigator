@@ -1,9 +1,12 @@
-"""A conversation with CuteBot: collect the user's data, investigate, answer follow-ups.
+"""A conversation with CuteBot: gather data, investigate, explain, answer follow-ups.
 
-A session holds what the user has shared so far (a table of numbers and records). Each
-message may add data (pasted records or a pasted table), start an investigation, or ask
-a follow-up question about the last report. Progress is reported through `emit` so the
-web page can show CuteBot working through each stage.
+Data comes from uploads, pasted text, or connected sources (a database or folder, see
+`sources.py`). Each message may add data, start an investigation, or ask a follow-up
+question about the last report. Progress is reported through `emit` so the web page can
+show CuteBot working through each stage.
+
+CuteBot also adapts how it explains: a technical reader gets the "data nerd" version, a
+non-technical reader a straight answer, or an "explain like I'm 5" version on request.
 """
 
 from __future__ import annotations
@@ -16,7 +19,7 @@ from dataclasses import dataclass, field
 
 import pandas as pd
 
-from .analyze import analyze_change, label, metric_columns
+from .analyze import _aggregate, _select, analyze_change, label, metric_columns
 from .ingest import IngestError, Parsed, _looks_like_table, read_text, text_to_records
 from .investigate import ChatClient, investigate
 from .llm import LLMError
@@ -24,6 +27,7 @@ from .schema import RCAReport
 from .simulate import SCENARIOS, generate_incident
 
 Emit = Callable[[str, dict], None]
+STYLES = ("nerd", "simple", "kid")
 
 STAGE_OF_STEP = {
     "numbers": "collect", "numbers_done": "collect",
@@ -36,10 +40,20 @@ QUESTION_START = re.compile(r"^\s*(why|what|how|when|where|which|who|is|are|did|
                             re.IGNORECASE)
 SYNONYMS = {"slow": ("latency", "duration", "response"), "error": ("error", "fail"),
             "fail": ("error", "fail"), "traffic": ("requests", "traffic", "volume")}
+TECH_WORDS = re.compile(
+    r"\b(p\d{2}|latency|5xx|4xx|50[0-4]|deploy\w*|rollback|config|sql|query|api|endpoint|"
+    r"cpu|memory|pod|k8s|kubernetes|cluster|node|thread|pool|timeout|throughput|qps|rps|"
+    r"metric|segment|regression|stack ?trace|exception|null ?pointer|schema|index|cache|"
+    r"replica|shard|feature flag|canary|sla|slo|percentile|anomaly|baseline|t-?stat)\b", re.IGNORECASE)
+KID_WORDS = re.compile(r"like (i'?m|i am) (5|five|a kid|a child)|explain (it )?(simply|to a kid)|"
+                       r"eli5|in simple words|not (very )?technical|non-?technical", re.IGNORECASE)
+NERD_WORDS = re.compile(r"data nerd|technical (answer|details|version)|all the details|"
+                        r"in detail|deep dive|show (me )?the numbers", re.IGNORECASE)
+STRAIGHT_WORDS = re.compile(r"straight(forward)? answer|just tell me|short answer|tl;?dr", re.IGNORECASE)
 
 HELP = ("Hi! I'm CuteBot. Share what went wrong and I'll investigate:\n"
-        "1. Click ➕ to upload a **table of numbers** (CSV) with a time column and the "
-        "measures, e.g. error rate or latency (optional: service and region columns).\n"
+        "1. Click ➕ to upload a **table of numbers** (CSV, Excel or PDF) with a time column "
+        "and the measures, e.g. error rate or latency.\n"
         "2. Upload or paste **records** like deploys, setting changes, alerts, tickets or "
         "log lines, each with a date and time.\n"
         "3. Ask your question, e.g. *Why did the error rate go up on Tuesday?*\n"
@@ -48,7 +62,26 @@ HELP = ("Hi! I'm CuteBot. Share what went wrong and I'll investigate:\n"
 FOLLOWUP_SYSTEM = """You are CuteBot, a friendly incident investigator.
 Answer the user's question using ONLY the investigation below. Cite evidence IDs
 like [E3]. If the investigation doesn't answer it, say so and say what data would help.
-Use plain, friendly words and at most 4 sentences."""
+At most 4 sentences."""
+STYLE_INSTRUCTION = {
+    "nerd": "The reader is technical: be precise, use the exact numbers, times and IDs.",
+    "simple": "The reader is not technical: use plain words, no jargon.",
+    "kid": "Explain it like to a 5-year-old: very simple words and a friendly comparison.",
+}
+
+
+def detect_style(message: str) -> str | None:
+    """Who is asking? 'nerd', 'simple' or 'kid'; None if it can't tell yet."""
+    if KID_WORDS.search(message):
+        return "kid"
+    if NERD_WORDS.search(message):
+        return "nerd"
+    if STRAIGHT_WORDS.search(message):
+        return "simple"
+    hits = len(TECH_WORDS.findall(message))
+    if hits >= 2 or (hits == 1 and len(message.split()) <= 8):
+        return "nerd"
+    return "simple" if len(message.split()) >= 4 else None
 
 
 @dataclass
@@ -58,6 +91,9 @@ class Session:
     report: RCAReport | None = None
     metric: str | None = None
     changed: bool = False
+    uploaded: bool = False  # the user shared data themselves (uploads take priority)
+    style: str | None = None
+    style_chosen: bool = False  # picked by the user, so don't re-detect
 
     def known(self) -> dict[str, set[str]]:
         if self.metrics is None:
@@ -112,19 +148,83 @@ def _pasted_data(message: str, known: dict) -> Parsed | None:
     return Parsed(records=records, summary=f"{len(records)} records") if records else None
 
 
-def _short_summary(report: RCAReport) -> str:
+def _where(report: RCAReport) -> str:
+    seg = report.what_changed.segment if report.what_changed else {}
+    return ", ".join(v for v in seg.values() if v != "all") or "everywhere"
+
+
+def summary_for(report: RCAReport, style: str = "simple") -> str:
+    """The short answer under the report, written for the reader."""
     v = report.sufficiency.verdict.value
+    wc = report.what_changed
+    top = report.contributing_factors[0] if report.contributing_factors else None
+    fix = next((a.action for a in report.actions if a.type.value == "corrective"),
+               report.actions[0].action if report.actions else None)
+    if style == "nerd":
+        lines = [f"**Verdict: {v}** (score {report.sufficiency.score:.2f})."]
+        if wc:
+            lines.append(f"{label(wc.metric).capitalize()} in {_where(report)}: "
+                         f"{wc.baseline_value:.4g} → {wc.current_value:.4g} "
+                         f"({wc.relative_change:+.0%}), change point {wc.change_start}.")
+        for f in report.contributing_factors:
+            lines.append(f"{f.rank}. {f.description} [{f.category.value}, "
+                         f"{f.confidence:.0%}; {', '.join(f.evidence_ids)}]")
+        lines += [r for r in report.sufficiency.reasons if r.startswith("✗")]
+        if report.sufficiency.missing_data:
+            lines.append("Missing data: " + "; ".join(report.sufficiency.missing_data))
+        g = report.guardrails
+        if g and g.model_used:
+            lines.append(f"Fact-check: {g.ids_invented}/{g.ids_cited} cited IDs invented, "
+                         f"{g.factors_dropped} factor(s) dropped.")
+        return "\n".join(lines)
+    if style == "kid":
+        sure = {"sufficient": "I'm really sure! 🎯",
+                "partial": "I'm a little bit sure, but two things could have done it. 🤔",
+                "insufficient": "I don't have enough clues yet, so this is only a guess. 🔍"}[v]
+        lines = []
+        if wc:
+            word = "went up" if wc.relative_change >= 0 else "went down"
+            lines.append(f"Something in the computer shop got poorly: the {label(wc.metric)} "
+                         f"{word} a lot at {wc.change_start[11:16]}, like a fever "
+                         f"suddenly going up. 🤒")
+        if top:
+            lines.append(f"Just before that, this happened: *{top.description}* "
+                         "That's most likely what made it poorly, like eating a bad sweet "
+                         "right before a tummy ache. 🍬")
+        lines.append(sure)
+        if fix:
+            lines.append(f"To make it better: {fix} 🩹")
+        return "\n".join(lines)
     opener = {"sufficient": "I'm sure about this one!",
               "partial": "I'm partly sure: there's more than one possible answer.",
               "insufficient": "I don't have enough clues to be sure yet."}[v]
-    top = report.contributing_factors[0].description if report.contributing_factors else None
     lines = [opener]
     if top:
-        lines.append(f"{'Main cause' if v != 'insufficient' else 'Best lead'}: {top}")
+        lines.append(f"{'Main cause' if v != 'insufficient' else 'Best lead'}: {top.description}")
+    if fix:
+        lines.append(f"What to do first: {fix}")
     if report.sufficiency.missing_data:
         lines.append("More data that would help: " + "; ".join(report.sufficiency.missing_data))
     lines.append("Ask me anything about it, or share more data and I'll look again.")
     return "\n".join(lines)
+
+
+def chart_data(metrics: pd.DataFrame, report: RCAReport, max_points: int = 400) -> dict | None:
+    """The changed measure over time for the affected part, plus where each clue sits."""
+    wc = report.what_changed
+    if wc is None:
+        return None
+    df = _select(metrics, {k: v for k, v in wc.segment.items() if v != "all"})
+    series = _aggregate(df, wc.metric).dropna()
+    step = max(1, len(series) // max_points)
+    series = series.iloc[::step]
+    markers = [{"id": e.id, "time": e.timestamp, "source": e.source,
+                "text": e.summary.split(" (")[0][:90]}
+               for e in report.evidence if e.kind.value == "record" and e.timestamp]
+    return {"metric": label(wc.metric), "where": _where(report),
+            "times": [str(t) for t in series.index], "values": [float(v) for v in series],
+            "change": wc.change_start, "before": wc.baseline_value, "after": wc.current_value,
+            "markers": markers}
 
 
 def _followup_prompt(report: RCAReport, question: str) -> str:
@@ -140,44 +240,77 @@ def _followup_prompt(report: RCAReport, question: str) -> str:
 
 
 class Conversation:
-    def __init__(self, client_factory: Callable[[bool], ChatClient | None]):
+    def __init__(self, client_factory: Callable[[bool], ChatClient | None], catalog=None):
         self.client_factory = client_factory
+        self.catalog = catalog
 
     def load_sample(self, session: Session, seed: int | None = None) -> dict:
         rng = random.Random(seed)
         scenario = rng.choice([s for s in SCENARIOS if s != "no_clear_cause"])
         inc = generate_incident("SAMPLE", scenario, seed=rng.randint(1, 10_000))
+        style = (session.style, session.style_chosen)
         session.__init__()
+        session.style, session.style_chosen = style
         session.add(Parsed(metrics=inc.metrics, records=inc.records))
+        session.uploaded = True
         return {"summary": f"Sample loaded: a table of {len(inc.metrics):,} rows (requests, "
                            f"error rate, latency by service and region) and "
                            f"{len(inc.records)} records.",
                 "question": inc.question}
 
+    def set_style(self, session: Session, style: str) -> str | None:
+        session.style, session.style_chosen = style, True
+        return summary_for(session.report, style) if session.report else None
+
     def respond(self, session: Session, message: str, use_llm: bool, emit: Emit) -> None:
         message = message.strip()
+        guess = None if session.style_chosen else detect_style(message)
+        if guess and guess != session.style:
+            session.style = guess
+            emit("style", {"style": guess, "detected": True})
         pasted = _pasted_data(message, session.known()) if message else None
         if pasted is not None:
             session.add(pasted)
+            session.uploaded = True
             emit("stage", {"stage": "collect", "text": "Collecting the evidence you pasted..."})
             emit("say", {"text": f"Got it! I picked up {pasted.summary} from your message."})
 
-        if session.metrics is None:
+        connected = bool(self.catalog) and not (session.uploaded and session.metrics is not None)
+        if session.metrics is None and not connected:
             if pasted is not None:
                 emit("say", {"text": "I've kept those clues. Now I need the numbers: click ➕ "
-                                     "and upload a table (CSV) with a time column and the "
-                                     "measure that went wrong."})
+                                     "and upload a table (CSV, Excel or PDF) with a time column "
+                                     "and the measure that went wrong."})
             else:
                 emit("say", {"text": HELP})
             return
 
-        mentioned = choose_metric(session.metrics, message) if message else session.metric
-        new_metric = session.report is not None and message and mentioned != session.metric \
-            and any(t in message.lower() for t in mentioned.split("_") if len(t) > 2)
-        if session.report is None or session.changed or RERUN.search(message) or new_metric:
+        wants = session.report is None or session.changed or bool(RERUN.search(message))
+        if connected and message and (QUESTION_START.match(message) or "?" in message):
+            wants = wants or bool(re.search(r"\d|yesterday|today|last ", message))
+        if session.metrics is not None and session.report is not None and message:
+            mentioned = choose_metric(session.metrics, message)
+            wants = wants or (mentioned != session.metric and any(
+                t in message.lower() for t in mentioned.split("_") if len(t) > 2))
+        if wants:
+            if connected and not self._gather(session, message, emit):
+                return
             self._investigate(session, message, use_llm, emit)
         elif message:
             self._follow_up(session, message, use_llm, emit)
+
+    def _gather(self, session: Session, message: str, emit: Emit) -> bool:
+        emit("stage", {"stage": "collect", "text": "Looking through your connected data..."})
+        parsed, used, window = self.catalog.gather(message, session.known())
+        if parsed.metrics is None or parsed.metrics.empty:
+            emit("say", {"text": "I looked through your connected data but found no numbers for "
+                                 "that time. Try another date, or upload a file with ➕."})
+            return False
+        session.metrics, session.records = None, []
+        session.add(parsed)
+        lo, hi = (w.strftime("%d %b %H:%M") for w in window)
+        emit("stage", {"stage": "collect", "text": f"Read {', '.join(used)} from {lo} to {hi}."})
+        return True
 
     def _investigate(self, session: Session, message: str, use_llm: bool, emit: Emit) -> None:
         metric = choose_metric(session.metrics, message)
@@ -196,22 +329,26 @@ class Conversation:
             report = investigate(*args, None, on_step=on_step)
         session.report, session.metric, session.changed = report, metric, False
         emit("stage", {"stage": "back", "text": "Coming back with the answer!"})
-        emit("report", report.model_dump(mode="json"))
-        emit("say", {"text": _short_summary(report)})
+        emit("report", {"report": report.model_dump(mode="json"),
+                        "chart": chart_data(session.metrics, report),
+                        "style": session.style or "simple"})
+        emit("say", {"text": summary_for(report, session.style or "simple"), "summary": True})
 
     def _follow_up(self, session: Session, message: str, use_llm: bool, emit: Emit) -> None:
         client = self.client_factory(use_llm)
+        style = session.style or "simple"
         if client is None or not hasattr(client, "chat"):
-            emit("say", {"text": "I can answer follow-up questions when the language model is "
+            emit("say", {"text": "I can answer follow-up questions when the AI model is "
                                  "switched on. Here's the short version:\n"
-                                 + _short_summary(session.report)})
+                                 + summary_for(session.report, style)})
             return
         emit("stage", {"stage": "think", "text": "Thinking about your question..."})
         try:
             answer = client.chat(_followup_prompt(session.report, message),
-                                 system=FOLLOWUP_SYSTEM, temperature=0.2)
+                                 system=FOLLOWUP_SYSTEM + "\n" + STYLE_INSTRUCTION[style],
+                                 temperature=0.2)
         except LLMError as exc:
-            answer = (f"I couldn't reach the language model ({exc}). Here's the short "
-                      "version:\n" + _short_summary(session.report))
+            answer = (f"I couldn't reach the AI model ({exc}). Here's the short version:\n"
+                      + summary_for(session.report, style))
         emit("stage", {"stage": "back", "text": "Here you go!"})
         emit("say", {"text": answer.strip()})

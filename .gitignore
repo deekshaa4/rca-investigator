@@ -16,3 +16,6 @@ dist/
 
 # Generated data
 data/generated/
+
+# demo databases
+*.db

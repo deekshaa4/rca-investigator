@@ -56,7 +56,7 @@ def test_upload_then_ask_streams_stages_and_report():
     got = chat(client, "Why did errors go up?", llm=False)
     stages = [d["stage"] for k, d in got if k == "stage"]
     assert stages[0] == "collect" and "weigh" in stages and stages[-1] == "back"
-    report = next(d for k, d in got if k == "report")
+    report = next(d["report"] for k, d in got if k == "report")
     assert report["what_changed"]["metric"] == "errors"
     assert got[-1][0] == "done"
 
@@ -118,3 +118,67 @@ def test_on_step_reports_each_stage():
     investigate("INC-T", inc.question, inc.metric, inc.metrics, inc.records, None,
                 on_step=lambda step, msg: seen.append(step))
     assert seen[0] == "numbers" and seen[-1] == "judge_done"
+
+
+def test_style_detection():
+    from rca_investigator.chat import detect_style
+
+    assert detect_style("why did p95 latency spike after the deploy?") == "nerd"
+    assert detect_style("explain like I'm 5 please") == "kid"
+    assert detect_style("Our website seems broken for customers this morning") == "simple"
+    assert detect_style("hi") is None
+
+
+def test_styles_change_the_summary_and_report_downloads():
+    client = app()
+    q = client.post("/api/sample", json={"session": SID}).json()["question"]
+    got = chat(client, "Explain like I'm 5: " + q, llm=False)
+    assert ("style", {"style": "kid", "detected": True}) in got
+    report = next(d for k, d in got if k == "report")
+    assert report["chart"]["values"] and report["chart"]["change"]
+    kid = next(d["text"] for k, d in got if k == "say" and d.get("summary"))
+    assert "fever" in kid
+    nerd = client.post("/api/style", json={"session": SID, "style": "nerd"}).json()["summary"]
+    assert "Verdict:" in nerd and "score" in nerd
+    md = client.get(f"/api/report/{SID}.md")
+    assert md.status_code == 200 and md.text.startswith("# CHAT")
+    assert client.get("/api/report/nobody-here.md").status_code == 404
+
+
+def test_connected_database(tmp_path):
+    from rca_investigator.demo import write_demo_db
+    from rca_investigator.sources import Catalog
+
+    db = tmp_path / "shop.db"
+    question = write_demo_db(db)["question"]
+    catalog = Catalog.connect([str(db)])
+    kinds = {t.name: t.kind for t in catalog.tables}
+    assert kinds["service_metrics_5min"] == "metrics" and kinds["deploys"] == "records"
+    client = TestClient(create_app(client_factory=lambda llm: None, sources=[str(db)]))
+    assert "shop.db" in client.get("/api/info").json()["connected"]
+    got = chat(client, question, llm=False)
+    texts = [d.get("text", "") for k, d in got if k == "stage"]
+    assert any("service_metrics_5min" in t for t in texts)
+    report = next(d["report"] for k, d in got if k == "report")
+    assert report["sufficiency"]["verdict"] == "sufficient"
+    assert report["contributing_factors"][0]["category"] == "deployment"
+
+
+def test_connected_folder_and_question_window(tmp_path):
+    from datetime import datetime, timezone
+
+    from rca_investigator.sources import Catalog, question_window
+
+    inc = generate_incident("X", "config_change", seed=5)
+    inc.metrics.to_csv(tmp_path / "metrics.csv", index=False)
+    (tmp_path / "changes.txt").write_text(
+        "\n".join(f"{r['timestamp']} {r.get('service', '')} {r['text']}" for r in inc.records))
+    catalog = Catalog.connect([str(tmp_path)])
+    assert {t.kind for t in catalog.tables} == {"metrics", "records"}
+    parsed, used, _ = catalog.gather(inc.question)
+    assert parsed.metrics is not None and parsed.records and len(used) == 2
+    latest = datetime(2026, 3, 30, tzinfo=timezone.utc)
+    start, end = question_window("what happened on 26 March?", latest)
+    assert start.day == 25 and end.day == 28
+    start, end = question_window("anything odd?", latest)
+    assert (end - start).days == 2

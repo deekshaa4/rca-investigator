@@ -247,9 +247,42 @@ def cmd_serve(args: argparse.Namespace) -> int:
     except ImportError:
         print('The web page needs extra packages:  pip install -e ".[web]"')
         return 1
+    try:
+        app = create_app(model=args.model, sources=args.source)
+    except (FileNotFoundError, ImportError) as exc:
+        print(f"Problem: {exc}")
+        return 1
+    if args.source:
+        print("Connected (read-only): " + ", ".join(args.source))
     print(f"Open http://{args.host}:{args.port} in your browser (Ctrl+C to stop).")
-    uvicorn.run(create_app(model=args.model), host=args.host, port=args.port,
-                log_level="warning")
+    uvicorn.run(app, host=args.host, port=args.port, log_level="warning")
+    return 0
+
+
+def cmd_sources(args: argparse.Namespace) -> int:
+    """Show what CuteBot finds in the connected sources."""
+    from .sources import Catalog
+
+    try:
+        catalog = Catalog.connect(args.source)
+    except (FileNotFoundError, ImportError) as exc:
+        print(f"Problem: {exc}")
+        return 1
+    if not catalog:
+        print("No usable tables found. Tables need a time column, plus numbers or text.")
+        return 1
+    for t in catalog.tables:
+        print(f"  {t.source}/{t.name:<28} {t.kind:<8} {t.rows:>8,} rows  {t.first} .. {t.last}")
+    return 0
+
+
+def cmd_demo_db(args: argparse.Namespace) -> int:
+    """Write a demo SQLite database (one incident) to try connected mode."""
+    from .demo import write_demo_db
+
+    info = write_demo_db(args.output, args.scenario, args.seed)
+    print(f"Wrote {args.output}. Try:  rca serve --source {args.output}")
+    print(f"Then ask: {info['question']}")
     return 0
 
 
@@ -304,9 +337,21 @@ def main(argv: list[str] | None = None) -> int:
 
     serve = sub.add_parser("serve", help="open the chat page with the investigator bot")
     serve.add_argument("--model", default=DEFAULT_MODEL)
+    serve.add_argument("--source", action="append", default=[],
+                       help="database file/URL or folder to connect, read-only (repeatable)")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
     serve.set_defaults(func=cmd_serve)
+
+    srcs = sub.add_parser("sources", help="show the tables found in databases or folders")
+    srcs.add_argument("--source", action="append", required=True)
+    srcs.set_defaults(func=cmd_sources)
+
+    demo = sub.add_parser("demo-db", help="write a demo SQLite database to try connected mode")
+    demo.add_argument("--output", default="demo.db")
+    demo.add_argument("--scenario", default="bad_deploy")
+    demo.add_argument("--seed", type=int, default=12)
+    demo.set_defaults(func=cmd_demo_db)
 
     args = parser.parse_args(argv)
     return args.func(args)

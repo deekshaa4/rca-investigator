@@ -74,6 +74,32 @@ A chat page where anyone can investigate **their own data**:
 
 Everything runs on your own computer: uploads are kept in memory for the session only, and the model runs locally.
 
+### Connect it to your own data
+
+Install it next to your data and point it at a database or a folder. CuteBot explores the data itself: it samples every table, works out which ones hold numbers over time and which hold records (deploys, config changes, alerts, tickets, logs), and when you ask a question it picks the right table and loads only the time window the question is about.
+
+```bash
+pip install -e ".[web]"
+rca sources --source shop.db             # what CuteBot finds in your data
+rca serve --source shop.db --source ./exports
+```
+
+- **Sources:** SQLite files out of the box; Postgres, MySQL and others through SQLAlchemy (`pip install sqlalchemy` plus the driver, then `--source postgresql://user@host/db`); folders of CSV, Excel, JSON, PDF, Word, text or log files.
+- **Read-only and local:** SQLite is opened read-only, only fixed `SELECT` queries written in the code are run (never SQL written by the user or the model), and nothing leaves the machine.
+- **Try it:** `rca demo-db` writes a small company-style database (`service_metrics_5min`, `deploys`, `alerts`, `support_tickets`, `app_logs`), then `rca serve --source demo.db` and ask *"Our website had problems on 17 March, what went wrong?"*
+
+### Answers for every reader
+
+CuteBot guesses from the wording whether the person asking is technical, and every report can be switched between three explanations:
+
+| Style | Who it's for | What it shows |
+|---|---|---|
+| 🤓 Data nerd | engineers, analysts | exact numbers, change point, evidence IDs, failed checks, fact-check counts, all cards |
+| 🙂 Straight answer | managers, most readers | verdict, main cause, what to do first; details folded away |
+| 🧸 Like I'm 5 | anyone new to the topic | a short story with everyday comparisons; details folded away |
+
+Each report also has a **chart** of the measure that changed (with the change point and the clues pinned to the timeline), a **Download report** button (Markdown) and **Print or save as PDF**.
+
 ### What data it understands
 
 | Kind | Format | Needs | Optional |
@@ -201,6 +227,8 @@ src/rca_investigator/
   evaluate.py   scores reports against the known truth
   ingest.py     reads uploaded files and pasted text into the engines' format
   chat.py       the conversation: collect data, investigate, answer follow-ups
+  sources.py    read-only connections to databases and folders, table discovery
+  demo.py       demo company database (`rca demo-db`)
   web.py        chat page server: uploads and live progress (`rca serve`)
   static/       the chat page with CuteBot
   cli.py        command-line interface (`rca ...`)

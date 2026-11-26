@@ -101,7 +101,8 @@ def _clean_name(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", str(name).strip().lower()).strip("_") or "value"
 
 
-def frame_to_parsed(df: pd.DataFrame) -> Parsed:
+def frame_to_parsed(df: pd.DataFrame, context: str = "") -> Parsed:
+    """`context` (e.g. a table name like "deploy_log") helps sort records into kinds."""
     df = df.rename(columns=_clean_name)
     df = df.loc[:, ~df.columns.duplicated()]
     time_col = _time_column(df)
@@ -115,7 +116,7 @@ def frame_to_parsed(df: pd.DataFrame) -> Parsed:
                and pd.api.types.is_numeric_dtype(df[c])]
     text = _text_column(df, skip | {service, region} - {None})
     if text is not None and len(numeric) <= 1:
-        return _records_from_frame(df, time_col, text, service, region)
+        return _records_from_frame(df, time_col, text, service, region, context)
     if not numeric:
         raise IngestError("I found a time column but no numbers to measure. A table needs "
                           "at least one numeric column, such as an error rate or latency.")
@@ -145,7 +146,8 @@ def _metrics_from_frame(df, time_col, numeric, service, region) -> Parsed:
     return Parsed(metrics=out, summary="Table of numbers: " + "; ".join(parts) + ".")
 
 
-def _records_from_frame(df, time_col, text, service, region) -> Parsed:
+def _records_from_frame(df, time_col, text, service, region, context="") -> Parsed:
+    by_name = guess_source(context.replace("_", " ")) if context else "logs"
     source = _find([c for c in df.columns if c not in {time_col, text}], SOURCE_NAMES)
     stamps = _iso(df[time_col])
     records = []
@@ -154,7 +156,8 @@ def _records_from_frame(df, time_col, text, service, region) -> Parsed:
             continue
         body = str(row[text])
         hint = f"{row[source]} {body}" if source else body
-        rec = {"timestamp": stamps[i], "source": guess_source(hint), "text": body}
+        kind = by_name if by_name != "logs" else guess_source(hint)
+        rec = {"timestamp": stamps[i], "source": kind, "text": body}
         if service and pd.notna(row[service]):
             rec["service"] = str(row[service])
         if region and pd.notna(row[region]):
