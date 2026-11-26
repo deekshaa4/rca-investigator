@@ -1,12 +1,21 @@
 import json
 
 from fastapi.testclient import TestClient
+from test_ingest import own_format_table
 from test_investigate import GOOD_REPLY, FakeClient
 
+from rca_investigator.chat import Conversation, Session, choose_metric
 from rca_investigator.investigate import investigate
 from rca_investigator.llm import LLMError
-from rca_investigator.simulate import generate_dataset, generate_incident, save_incident
+from rca_investigator.simulate import generate_incident
 from rca_investigator.web import create_app
+
+SID = "test-session-1"
+
+
+class Talker(FakeClient):
+    def chat(self, prompt, system=None, json_schema=None, temperature=0.1):
+        return "Because of the deploy [E5]."
 
 
 def events(text):
@@ -17,55 +26,87 @@ def events(text):
     return out
 
 
-def make_client(tmp_path, factory=lambda llm: None):
-    for inc in generate_dataset(5, seed=3):
-        save_incident(inc, tmp_path)
-    return TestClient(create_app(tmp_path, client_factory=factory))
+def app(factory=lambda llm: None):
+    return TestClient(create_app(client_factory=factory))
 
 
-def test_page_and_incident_list(tmp_path):
-    client = make_client(tmp_path)
-    assert "RCA Investigator" in client.get("/").text
+def chat(client, message, llm=True):
+    return events(client.post("/api/chat", json={"session": SID, "message": message,
+                                                  "llm": llm}).text)
+
+
+def test_page_and_info():
+    client = app()
+    assert "CuteBot" in client.get("/").text
     assert client.get("/api/info").json()["bot_name"] == "CuteBot"
-    incidents = client.get("/api/incidents").json()
-    assert len(incidents) == 5 and incidents[0]["question"]
 
 
-def test_investigation_streams_steps_then_report(tmp_path):
-    client = make_client(tmp_path)
-    first = client.get("/api/incidents").json()[0]["id"]
-    got = events(client.get(f"/api/investigate/{first}?llm=false").text)
-    kinds = [k for k, _ in got]
-    steps = [d["step"] for k, d in got if k == "step"]
-    assert steps[:2] == ["numbers", "numbers_done"] and "judge_done" in steps
-    assert kinds[-2:] == ["report", "done"]
-    assert got[-2][1]["sufficiency"]["verdict"] in {"sufficient", "partial", "insufficient"}
+def test_without_data_cutebot_explains_what_to_share():
+    got = chat(app(), "hello")
+    assert got[0][0] == "say" and "upload" in got[0][1]["text"].lower()
 
 
-def test_model_steps_are_streamed(tmp_path):
-    client = make_client(tmp_path, lambda llm: FakeClient(GOOD_REPLY))
-    first = client.get("/api/incidents").json()[0]["id"]
-    steps = [d["step"] for k, d in events(client.get(f"/api/investigate/{first}").text)
-             if k == "step"]
-    assert "model" in steps and "fact_check" in steps
+def test_upload_then_ask_streams_stages_and_report():
+    client = app()
+    r = client.post("/api/upload", json={"session": SID, "name": "export.csv",
+                                         "text": own_format_table().to_csv(index=False)})
+    assert r.status_code == 200 and r.json()["has_numbers"]
+    got = chat(client, "Why did errors go up?", llm=False)
+    stages = [d["stage"] for k, d in got if k == "stage"]
+    assert stages[0] == "collect" and "weigh" in stages and stages[-1] == "back"
+    report = next(d for k, d in got if k == "report")
+    assert report["what_changed"]["metric"] == "errors"
+    assert got[-1][0] == "done"
 
 
-def test_unreachable_model_falls_back_to_engines(tmp_path):
+def test_bad_upload_gives_a_friendly_error():
+    r = app().post("/api/upload", json={"session": SID, "name": "chart.png", "text": "x"})
+    assert r.status_code == 400 and "CSV" in r.json()["detail"]
+
+
+def test_sample_then_follow_up_question():
+    client = app(lambda llm: Talker(GOOD_REPLY) if llm else None)
+    q = client.post("/api/sample", json={"session": SID}).json()["question"]
+    assert any(k == "report" for k, _ in chat(client, q))
+    follow = chat(client, "Could it be traffic instead?")
+    assert not any(k == "report" for k, _ in follow)
+    assert any(k == "say" and "[E5]" in d["text"] for k, d in follow)
+
+
+def test_unreachable_model_falls_back_to_engines():
     class Down:
         def chat_json(self, *a, **k):
             raise LLMError("cannot reach Ollama")
 
-    client = make_client(tmp_path, lambda llm: Down())
-    first = client.get("/api/incidents").json()[0]["id"]
-    got = events(client.get(f"/api/investigate/{first}").text)
-    assert any("not available" in d.get("message", "") for k, d in got if k == "step")
-    assert [k for k, _ in got][-2:] == ["report", "done"]
+    client = app(lambda llm: Down())
+    q = client.post("/api/sample", json={"session": SID}).json()["question"]
+    got = chat(client, q)
+    assert any("isn't available" in d.get("text", "") for k, d in got if k == "stage")
+    assert any(k == "report" for k, _ in got)
 
 
-def test_unknown_incident_is_404(tmp_path):
-    client = make_client(tmp_path)
-    assert client.get("/api/investigate/..%2F..%2Fetc").status_code == 404
-    assert client.get("/api/investigate/NOPE").status_code == 404
+def test_pasted_records_are_added_but_a_dated_question_is_not():
+    session, said = Session(), []
+    convo = Conversation(lambda llm: None)
+    convo.respond(session, "2026-05-01 14:50 Deployed api v2.4\n2026-05-01 15:00 alert fired",
+                  False, lambda k, d: said.append((k, d)))
+    assert len(session.records) == 2 and "numbers" in said[-1][1]["text"]
+    convo.respond(session, "Why did errors jump at 2026-05-01 15:00?", False, lambda k, d: None)
+    assert len(session.records) == 2
+
+
+def test_choose_metric_from_words_or_biggest_change():
+    inc = generate_incident("X", "bad_deploy", seed=12)
+    assert choose_metric(inc.metrics, "why is it so slow?") == "latency_p95_ms"
+    assert choose_metric(inc.metrics, "what happened?") == inc.metric
+
+
+def test_bad_session_id_rejected_and_sample_files():
+    client = app()
+    assert client.post("/api/chat", json={"session": "../x", "message": "hi"}).status_code == 422
+    assert client.get("/api/sample-file/metrics.csv").text.startswith("timestamp,")
+    assert client.get("/api/sample-file/records.csv").text.startswith("timestamp,source")
+    assert client.get("/api/sample-file/nope").status_code == 404
 
 
 def test_on_step_reports_each_stage():

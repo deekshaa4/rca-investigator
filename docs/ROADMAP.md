@@ -17,7 +17,7 @@ A focused 2-week build, using only free and open tools.
 - [x] Harder incidents: noise, red herrings, overlapping changes, missing records
 - [x] Evaluation: `rca evaluate` with verdict, segment, category and cause-citation accuracy, invented-evidence rate, and breakdowns by scenario and twist
 - [x] Better choice of cause on red herrings and competing changes (fit notes, engine overrule, naming all equally good candidates)
-- [ ] Web interface with an animated investigator bot that shows each step live and presents the report
+- [x] Chat web page: upload files or paste data, ask questions, CuteBot roams the page showing each stage, then presents the report and answers follow-ups
 - [ ] Documentation, examples and v1.0 release
 
 ## Later

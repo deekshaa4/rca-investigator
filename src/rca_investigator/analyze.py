@@ -22,6 +22,21 @@ import pandas as pd
 
 METRICS = ("requests", "error_rate", "latency_p95_ms")
 LABELS = {"requests": "request volume", "error_rate": "error rate", "latency_p95_ms": "p95 latency"}
+KEY_COLUMNS = ("timestamp", "service", "region")
+
+
+def label(metric: str) -> str:
+    """Plain name of a metric, e.g. 'error rate' for error_rate."""
+    return LABELS.get(metric, metric.replace("_", " "))
+
+
+def metric_columns(metrics: pd.DataFrame) -> list[str]:
+    """Every numeric column apart from the time and segment columns ('requests' first)."""
+    cols = [c for c in metrics.columns
+            if c not in KEY_COLUMNS and pd.api.types.is_numeric_dtype(metrics[c])]
+    return sorted(cols, key=lambda c: c != "requests")
+
+
 MIN_SIDE = 12  # at least 1 hour of 5-minute points on each side of a change
 MIN_T = 6.0  # minimum t statistic for a significant change
 MIN_RATIO = 1.3  # minimum after/before ratio for a significant change
@@ -68,7 +83,11 @@ def best_split(x: np.ndarray, min_side: int = MIN_SIDE) -> int | None:
 
 def _t_stat(before: np.ndarray, after: np.ndarray) -> float:
     se = np.sqrt(before.var(ddof=1) / len(before) + after.var(ddof=1) / len(after))
-    return float((after.mean() - before.mean()) / se) if se > 0 else 0.0
+    diff = after.mean() - before.mean()
+    if se > 0:
+        return float(diff / se)
+    # Perfectly flat on both sides (common in exported data): any step is a clear change.
+    return float(np.sign(diff)) * 1e6 if diff else 0.0
 
 
 def segment_changes(metrics: pd.DataFrame, metric: str) -> list[SegmentChange]:
@@ -110,7 +129,9 @@ def _fmt(metric: str, value: float) -> str:
         return f"{value * 100:.2f}%"
     if metric == "latency_p95_ms":
         return f"{value:.0f} ms"
-    return f"{value:.0f} per 5 min"
+    if metric == "requests":
+        return f"{value:.0f} per 5 min"
+    return f"{value:.4g}"
 
 
 def _describe(segment: dict[str, str]) -> str:
@@ -154,7 +175,7 @@ def analyze_change(metrics: pd.DataFrame, metric: str) -> ChangeAnalysis:
             detected=False,
             findings=[{
                 "source": f"metrics:{metric}",
-                "summary": f"No significant increase in {LABELS[metric]} in any segment"
+                "summary": f"No significant increase in {label(metric)} in any segment"
                 f"{strongest}.",
                 "timestamp": None,
             }],
@@ -171,7 +192,7 @@ def analyze_change(metrics: pd.DataFrame, metric: str) -> ChangeAnalysis:
     segment = _summarise_segment(affected, metrics)
 
     group = _select(metrics, segment)
-    series = {m: _aggregate(group, m) for m in METRICS}
+    series = {m: _aggregate(group, m) for m in metric_columns(group)}
     is_after = {m: s.index >= t0 for m, s in series.items()}
     before_v = {m: float(s[~is_after[m]].mean()) for m, s in series.items()}
     after_v = {m: float(s[is_after[m]].mean()) for m, s in series.items()}
@@ -180,7 +201,7 @@ def analyze_change(metrics: pd.DataFrame, metric: str) -> ChangeAnalysis:
     desc = _describe(segment)
     findings = [{
         "source": f"metrics:{metric}",
-        "summary": f"{LABELS[metric].capitalize()} for {desc} rose from "
+        "summary": f"{label(metric).capitalize()} for {desc} rose from "
         f"{_fmt(metric, before_v[metric])} to {_fmt(metric, after_v[metric])} "
         f"({rel:+.0%}), with a change point at {t0}.",
         "timestamp": t0,
@@ -199,15 +220,15 @@ def analyze_change(metrics: pd.DataFrame, metric: str) -> ChangeAnalysis:
             "timestamp": t0,
         })
 
-    for other in METRICS:
-        if other == metric:
+    for other in series:
+        if other == metric or not before_v[other]:
             continue
         r = (after_v[other] - before_v[other]) / before_v[other]
         # small moves are normal daily variation, so only +-30% counts as a change
         verb = "rose" if r > 0.3 else "fell" if r < -0.3 else "stayed about the same"
         findings.append({
             "source": f"metrics:{other}",
-            "summary": f"At the same time, {LABELS[other]} for {desc} {verb} "
+            "summary": f"At the same time, {label(other)} for {desc} {verb} "
             f"({_fmt(other, before_v[other])} before, {_fmt(other, after_v[other])} after, "
             f"{r:+.0%}).",
             "timestamp": t0,

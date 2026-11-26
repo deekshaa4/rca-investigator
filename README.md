@@ -57,14 +57,31 @@ rca evaluate data/generated   # re-scores saved reports, by scenario and by twis
 pytest                     # runs the tests
 ```
 
-## Web page
+## Web page: chat with CuteBot
 
 ```bash
 pip install -e ".[web]"
 rca serve                      # then open http://127.0.0.1:8000
 ```
 
-Pick an incident and watch **CuteBot**, the investigator, run between stations (graphs, records, model, fact-check, judge) while each step is streamed live. It then comes back and presents the report as cards: verdict with reasons, what changed, why it happened with the "5 Whys", ruled-out alternatives, actions, the fact-check, and the evidence (hover a clue number to read it). If the local model isn't running, it carries on with the engines only.
+A chat page where anyone can investigate **their own data**:
+
+- **➕ Upload files** (or drag them in): a table of numbers and any records.
+- **Type or paste** into the message box: a question, log lines, notes like `2026-05-01 14:40 Deployed api v3.1`, or a small table.
+- **Ask** what went wrong. **CuteBot**, the investigator, leaves its corner and roams the page while it works, showing each stage: collecting the evidence, polishing the evidence, understanding the root cause, weighing it up, and coming back with the answer. The report then appears as cards (verdict with reasons, what changed, why it happened, ruled out, what to do, fact-check, all clues).
+- **Follow-up questions** ("could it be traffic instead?") are answered from the report's evidence only. Share more data and it investigates again.
+- **Try a sample** loads a practice incident; example CSV files show the expected format.
+
+Everything runs on your own computer: uploads are kept in memory for the session only, and the model runs locally.
+
+### What data it understands
+
+| Kind | Format | Needs | Optional |
+|---|---|---|---|
+| Table of numbers | CSV, TSV or JSON | a time column (`timestamp`, `time`, `date`, ...) and at least one numeric measure | `service`/`app` and `region`/`zone` columns, a request count |
+| Records | CSV/JSON with a text column, or plain text / log lines | a date and time on each record | `source`/`type`, service and region columns |
+
+Column names are matched loosely, and each record is sorted into deploys, config changes, alerts, tickets or logs from its wording. Spreadsheets should be saved as CSV first. Pictures of charts can't be read: upload the numbers behind the chart instead.
 
 ## Test incidents
 
@@ -182,8 +199,10 @@ src/rca_investigator/
   investigate.py  evidence pack, model prompt, guardrails, Markdown report
   sufficiency.py  rules-based evidence-sufficiency verdict
   evaluate.py   scores reports against the known truth
-  web.py        web page server: streams each investigation step live (`rca serve`)
-  static/       the web page with CuteBot
+  ingest.py     reads uploaded files and pasted text into the engines' format
+  chat.py       the conversation: collect data, investigate, answer follow-ups
+  web.py        chat page server: uploads and live progress (`rca serve`)
+  static/       the chat page with CuteBot
   cli.py        command-line interface (`rca ...`)
 schemas/        JSON Schema of the report
 examples/       example report
